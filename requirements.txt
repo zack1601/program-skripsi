@@ -1,0 +1,11 @@
+paramiko>=3.0
+pandas>=2.0
+openpyxl>=3.1
+st-click-detector
+streamlit>=1.28
+streamlit-gsheets>=0.4.0
+requests>=2.31
+geopy>=2.3
+psycopg2-binary>=2.9
+numpy>=1.24
+python-dotenv>=0.21

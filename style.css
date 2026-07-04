@@ -1,0 +1,184 @@
+/* NETWATCH OPS CENTER - Modern Slate Style */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+/* Main Theme Engine */
+.stApp {
+    background-color: #0E1117;
+    color: #FFFFFF !important;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Glassmorphism Metric Cards */
+.metric-card {
+    background: rgba(22, 27, 34, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(48, 54, 61, 0.5);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    height: 100%;
+}
+.metric-card:hover {
+    border-color: #00E5FF;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 229, 255, 0.2);
+}
+
+/* Glowing Status Bars */
+.glow-red { border-bottom: 3px solid #FF4D4D; }
+.glow-orange { border-bottom: 3px solid #FFA500; }
+.glow-blue { border-bottom: 3px solid #0088FF; }
+.glow-green { border-bottom: 3px solid #00E676; }
+.glow-gray { border-bottom: 3px solid #8B949E; }
+
+/* Dashboard Typography */
+h1, h2, h3, .section-title {
+    color: #00E5FF !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Professional Table & UI */
+[data-testid="stDataFrame"] {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #30363D;
+}
+thead th {
+    background-color: #161B22 !important;
+    color: #8B949E !important;
+    font-size: 0.75rem !important;
+}
+
+/* Blinking Pulse Animation for Maps */
+@keyframes blink {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.3); }
+    100% { opacity: 1; transform: scale(1); }
+}
+.blinker {
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid white; display: inline-block;
+    animation: blink 1s infinite;
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0E1117; }
+::-webkit-scrollbar-thumb { background: #30363D; border-radius: 4px; }
+
+/* Retro Loading Bar Style */
+.loader-container {
+    width: 100%;
+    margin: 20px 0;
+    text-align: left;
+}
+.custom-loader {
+    width: 100%;
+    height: 12px;
+    background-color: transparent;
+    border: 1px solid #FFFFFF;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+.progress-fill {
+    height: 100%;
+    background-color: #FFFFFF;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+.loading-text {
+    color: #FFFFFF;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    margin-top: 8px;
+    text-transform: uppercase;
+}
+
+/* Hide Streamlit Native Branding */
+header, footer { visibility: hidden; }
+
+/* ============================================================
+   STICKY HEADER BAR — Network Summary Cards
+   ============================================================
+   Streamlit scrolls inside .main .block-container.
+   We make the wrapper sticky relative to that scroll context.
+   ============================================================ */
+
+/* Make the Streamlit main block scrollable (required for sticky) */
+.main .block-container {
+    overflow-y: auto !important;
+    /* Ensure top padding so sticky bar doesn't overlap Streamlit's own header */
+    padding-top: 1rem !important;
+}
+
+/* The sticky wrapper injected from Python */
+.sticky-header-bar {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background: rgba(14, 17, 23, 0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(48, 54, 61, 0.7);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    padding: 12px 0 14px 0;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    /* Compensate for removed padding so cards line up with content below */
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Flex row containing the 6 cards */
+.sticky-cards-row {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: stretch;
+}
+
+/* Individual sticky card — more compact than the original */
+.sticky-card {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 10px !important;
+    text-align: center;
+    height: auto !important;
+    cursor: default;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sticky-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 6px 20px rgba(0, 229, 255, 0.18) !important;
+}
+
+.sticky-card-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.sticky-card-val {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+    color: #FFFFFF;
+    font-family: 'Inter', monospace;
+}
+
+.sticky-card-label {
+    font-size: 0.62rem;
+    color: #8B949E;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 3px;
+}
