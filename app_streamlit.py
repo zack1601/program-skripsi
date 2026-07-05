@@ -203,10 +203,7 @@ if not df_raw.empty:
 # --- RENDER METRICS & RISK SCORE GAUGE (STICKY HEADER) ---
 render_metrics(df_filtered)
 # Spacer to push content below the fixed Network Summary bar
-st.write("")
-st.write("")
-st.write("")
-st.write("")
+st.markdown("<div style='height: 130px;'></div>", unsafe_allow_html=True)
 
 # --- SCANNING ENGINE ---
 if st.session_state['is_scanning']:
@@ -604,7 +601,7 @@ if st.session_state['is_scanning']:
 # --- RENDER GEOGRAPHIC TOPOLOGY (MODULAR MAP) ---
 render_map(df_filtered)
 
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
 # --- RENDER LANDSCAPE DATA TABLE ---
 render_table(df_filtered)
