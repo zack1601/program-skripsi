@@ -203,7 +203,10 @@ if not df_raw.empty:
 # --- RENDER METRICS & RISK SCORE GAUGE (STICKY HEADER) ---
 render_metrics(df_filtered)
 # Spacer to push content below the fixed Network Summary bar
-st.markdown("<div style='height: 120px;'></div>", unsafe_allow_html=True)
+st.write("")
+st.write("")
+st.write("")
+st.write("")
 
 # --- SCANNING ENGINE ---
 if st.session_state['is_scanning']:

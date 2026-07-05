@@ -298,7 +298,7 @@ def render_map(df_filtered):
                                     popup=folium.Popup(tooltip_ont, max_width=350)
                                 ).add_to(m)
             if coordinates_list: m.fit_bounds(coordinates_list, padding=(30, 30))
-            st_folium(m, width="100%", height=350, key="ftth_map_final_side")
+            st_folium(m, width="100%", height=350, key="ftth_map_v2")
         else:
             st.info("Waiting for GPS Data... (Map will appear here)")
     else:
