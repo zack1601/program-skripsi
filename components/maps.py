@@ -300,6 +300,6 @@ def render_map(df_filtered):
             if coordinates_list: m.fit_bounds(coordinates_list, padding=(30, 30))
             st_folium(m, width="100%", height=540, key="ftth_map_final_side")
         else:
-            st.markdown("<div class='metric-card' style='height:540px; justify-content:center;'>Waiting for GPS Data...</div>", unsafe_allow_html=True)
+            st.info("Waiting for GPS Data... (Map will appear here)")
     else:
-        st.markdown("<div class='metric-card' style='height:540px; justify-content:center;'>Map will appear after scanning...</div>", unsafe_allow_html=True)
+        st.info("Map will appear here after scanning is complete...")
