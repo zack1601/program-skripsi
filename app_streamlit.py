@@ -17,7 +17,8 @@ from main import process_olt_audit
 from config import INPUT_FILE, MAX_WORKERS
 
 # Import visual components & layouts
-from components import inject_custom_css, render_metrics, render_filters, render_map, render_table, get_olt_coordinate, send_telegram_alarm
+from components import inject_custom_css, render_metrics, render_filters, render_map, render_table, get_olt_coordinate
+from components.telegram import send_telegram_alarm, should_send_alarm, get_region_from_olt
 from components.auth import render_login_page
 
 # --- SET PAGE CONFIG ---
@@ -52,6 +53,18 @@ if not st.session_state['logged_in']:
 
 # --- MAIN APP (Hanya berjalan jika sudah login) ---
 
+# --- LAST SCAN CACHE LOADER ---
+if st.session_state['data_final'].empty and not st.session_state['is_scanning']:
+    cache_file = "output/last_scan_data.csv"
+    if os.path.exists(cache_file):
+        try:
+            df_cache = pd.read_csv(cache_file)
+            if not df_cache.empty:
+                st.session_state['data_final'] = df_cache
+                st.toast("✅ Memuat data dari hasil scan terakhir.", icon="💾")
+        except Exception:
+            pass
+
 # --- BUSINESS/BACKEND DATA LOGIC ---
 def apply_business_logic(row):
     status_raw = str(row.get('Status', "")).lower().strip()
@@ -59,6 +72,9 @@ def apply_business_logic(row):
     cause_raw = str(row.get('last_down_cause', "")).lower().strip()
 
     if status_raw == 'offline' and cause_raw == '-': return "Suspend"
+
+    # Explicit check for "Deactivated by administrator" from OLT
+    if 'deactivated' in cause_raw or 'deactivated' in status_raw: return "Suspend"
 
     suspend_keywords = ['deactive', 'suspend', 'isolated', 'dact', 'isol', 'auth', 'fail', 'ext']
     if any(x in status_raw for x in suspend_keywords) or any(x in cause_raw for x in suspend_keywords):
@@ -110,6 +126,8 @@ with st.sidebar:
                     final_df = final_df.drop_duplicates(subset=['Nama/ID Pelanggan'], keep='first')
                     
                     st.session_state['data_final'] = final_df
+                    os.makedirs("output", exist_ok=True)
+                    final_df.to_csv("output/last_scan_data.csv", index=False)
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
     else:
@@ -122,17 +140,40 @@ with st.sidebar:
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
+    # Alarm Region Selector
+    st.markdown("---")
+    region_options = ["Semua Wilayah", "Fatmawati", "Cipedak", "Pinang/Kalijati", "Lenteng Agung", "Cinere", "Senopati"]
+    selected_region_alarm = st.selectbox("🎯 Target Alarm Region:", region_options)
+    
     # Alarm button
     btn_disabled = st.session_state['data_final'].empty
     st.markdown('<div class="alarm-btn">', unsafe_allow_html=True)
     if st.button("SEND ALARM", use_container_width=True, disabled=btn_disabled):
         df_problems = st.session_state['data_final'][st.session_state['data_final']['Category'].isin(['LOS', 'BadRx'])]
+        
+        sent_count = 0
         if df_problems.empty:
             st.sidebar.info("System Healthy: No Alarms Needed")
         else:
             for idx, row in enumerate(df_problems.to_dict('records')):
-                send_telegram_alarm(row)
-            st.success("Alarms Sent!")
+                row_region = get_region_from_olt(row.get('OLT', ''))
+                
+                # Filter by region
+                if selected_region_alarm != "Semua Wilayah" and row_region != selected_region_alarm:
+                    continue
+                
+                # Check Deduplication
+                sn = row.get('Serial Number', '')
+                status = row.get('Category', '')
+                
+                if should_send_alarm(sn, status):
+                    send_telegram_alarm(row)
+                    sent_count += 1
+            
+            if sent_count > 0:
+                st.success(f"{sent_count} Alarms Sent to {selected_region_alarm}!")
+            else:
+                st.info("No new alarms to send (or already sent).")
     st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("---")
@@ -161,6 +202,8 @@ if not df_raw.empty:
 
 # --- RENDER METRICS & RISK SCORE GAUGE (STICKY HEADER) ---
 render_metrics(df_filtered)
+# Spacer to push content below the fixed Network Summary bar
+st.markdown("<div style='height: 100px;'></div>", unsafe_allow_html=True)
 
 # --- SCANNING ENGINE ---
 if st.session_state['is_scanning']:
@@ -540,6 +583,8 @@ if st.session_state['is_scanning']:
                 final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
                 final_df = final_df.drop_duplicates(subset=['Nama/ID Pelanggan'], keep='first')
                 st.session_state['data_final'] = final_df
+                os.makedirs("output", exist_ok=True)
+                final_df.to_csv("output/last_scan_data.csv", index=False)
         
         st.session_state['is_scanning'] = False
         st.session_state['stop_scanning'] = False
@@ -556,7 +601,7 @@ if st.session_state['is_scanning']:
 # --- RENDER GEOGRAPHIC TOPOLOGY (MODULAR MAP) ---
 render_map(df_filtered)
 
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top: -2rem; height: 12px;'></div>", unsafe_allow_html=True)
 
 # --- RENDER LANDSCAPE DATA TABLE ---
 render_table(df_filtered)

@@ -422,26 +422,24 @@ def inject_custom_css():
 
     /* Enable scroll context on Streamlit main area */
     section.main > div.block-container {
-        overflow-y: auto !important;
+        overflow-y: visible !important;
         padding-top: 0.5rem !important;
     }
 
-    /* ── Outer sticky wrapper ── */
+    /* ── Fixed Network Summary Bar ── */
     .nw-sticky-bar {
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        background: rgba(13, 17, 23, 0.90);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-bottom: 1px solid rgba(48, 54, 61, 0.8);
-        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
-        padding: 10px 0 12px 0;
-        /* Bleed left/right to fill full width past Streamlit padding */
-        margin-left:  calc(-1 * var(--block-padding, 1rem));
-        margin-right: calc(-1 * var(--block-padding, 1rem));
-        padding-left:  var(--block-padding, 1rem);
-        padding-right: var(--block-padding, 1rem);
+        position: fixed !important;
+        top: 0 !important;
+        /* offset untuk sidebar Streamlit (default ~21rem / 336px) */
+        left: 21rem !important;
+        right: 0 !important;
+        z-index: 9999 !important;
+        background: rgba(13, 17, 23, 0.97) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border-bottom: 1px solid rgba(48, 54, 61, 0.8) !important;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55) !important;
+        padding: 10px 1.5rem 12px 1.5rem !important;
     }
 
     /* ── Inner content container ── */
