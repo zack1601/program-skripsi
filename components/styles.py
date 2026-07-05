@@ -17,6 +17,17 @@ def inject_custom_css():
         font-family: 'Share Tech Mono', monospace;
     }
     
+    /* Sembunyikan header & toolbar bawaan Streamlit agar tidak bentrok dengan sticky bar */
+    header[data-testid="stHeader"] {
+        display: none !important;
+    }
+    #MainMenu {
+        display: none !important;
+    }
+    [data-testid="stToolbar"] {
+        display: none !important;
+    }
+    
     [data-testid="stSidebar"] {
         background-color: #161B22 !important;
         border-right: 1px solid #30363D;
@@ -429,7 +440,7 @@ def inject_custom_css():
     /* ── Fixed Network Summary Bar ── */
     .nw-sticky-bar {
         position: fixed !important;
-        top: 40px !important;
+        top: 0 !important;
         /* offset untuk sidebar Streamlit (default ~21rem / 336px) */
         left: 21rem !important;
         right: 0 !important;
