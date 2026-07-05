@@ -429,7 +429,7 @@ def inject_custom_css():
     /* ── Fixed Network Summary Bar ── */
     .nw-sticky-bar {
         position: fixed !important;
-        top: 0 !important;
+        top: 40px !important;
         /* offset untuk sidebar Streamlit (default ~21rem / 336px) */
         left: 21rem !important;
         right: 0 !important;
