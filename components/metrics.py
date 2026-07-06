@@ -7,7 +7,7 @@ def render_metrics(df_filtered):
     """
     # ── Calculations ──────────────────────────────────────────────
     total_ont = len(df_filtered) if not df_filtered.empty else 0
-    online    = len(df_filtered[df_filtered['Status'].str.lower() == 'online']) if not df_filtered.empty else 0
+    online    = len(df_filtered[df_filtered['Category'] == 'Online']) if not df_filtered.empty else 0
     los       = len(df_filtered[df_filtered['Category'] == 'LOS'])      if not df_filtered.empty else 0
     badrx     = len(df_filtered[df_filtered['Category'] == 'BadRx'])    if not df_filtered.empty else 0
     dying     = len(df_filtered[df_filtered['Category'] == 'Dyinggasp'])if not df_filtered.empty else 0

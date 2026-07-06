@@ -16,7 +16,7 @@ def render_login_page():
         }
         
         /* Button Neon styling */
-        .stButton > button {
+        .stButton > button, .stFormSubmitButton > button {
             border: 1px solid #00E5FF !important; /* Neon Cyan Border */
             border-radius: 4px !important;
             background-color: transparent !important;
@@ -27,7 +27,7 @@ def render_login_page():
             letter-spacing: 1px;
             transition: all 0.3s ease;
         }
-        .stButton > button:hover {
+        .stButton > button:hover, .stFormSubmitButton > button:hover {
             box-shadow: 0 0 10px #00E5FF;
             background-color: rgba(0, 229, 255, 0.1) !important;
         }
@@ -47,17 +47,20 @@ def render_login_page():
             _, form_col, _ = st.columns([1, 2, 1])
             
             with form_col:
-                # Input Username & Password
-                user = st.text_input("Username |", value="Noc.fm")
-                password = st.text_input("Password |", type="password")
-                
-                # Checkbox
-                st.checkbox("Remember Me")
-                
-                # Button
-                if st.button("LOGIN"):
-                    if user.lower() == "noc.fm" and password == "noc123":
-                        st.session_state['logged_in'] = True
-                        st.rerun()
-                    else:
-                        st.error("Username atau Password salah!")
+                with st.form("login_form", clear_on_submit=False):
+                    # Input Username & Password
+                    user = st.text_input("Username |", value="Noc.fm")
+                    password = st.text_input("Password |", type="password")
+                    
+                    # Checkbox
+                    st.checkbox("Remember Me")
+                    
+                    # Button
+                    submitted = st.form_submit_button("LOGIN")
+                    
+                    if submitted:
+                        if user.lower() == "noc.fm" and password == "noc123":
+                            st.session_state['logged_in'] = True
+                            st.rerun()
+                        else:
+                            st.error("Username atau Password salah!")

@@ -121,9 +121,8 @@ with st.sidebar:
                     final_df['Serial Number'] = final_df['Serial Number'].astype(str).str.strip().str.upper()
                     final_df['Nama/ID Pelanggan'] = final_df['Nama/ID Pelanggan'].astype(str).str.strip().str.upper()
                     
-                    # Deduplikasi ketat SN + ID Pelanggan
+                    # Deduplikasi ketat hanya berdasarkan SN
                     final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
-                    final_df = final_df.drop_duplicates(subset=['Nama/ID Pelanggan'], keep='first')
                     
                     st.session_state['data_final'] = final_df
                     os.makedirs("output", exist_ok=True)
@@ -584,7 +583,6 @@ if st.session_state['is_scanning']:
                 final_df['Serial Number'] = final_df['Serial Number'].str.strip().str.upper()
                 final_df['Nama/ID Pelanggan'] = final_df['Nama/ID Pelanggan'].str.strip().str.upper()
                 final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
-                final_df = final_df.drop_duplicates(subset=['Nama/ID Pelanggan'], keep='first')
                 st.session_state['data_final'] = final_df
                 os.makedirs("output", exist_ok=True)
                 final_df.to_csv("output/last_scan_data.csv", index=False)
