@@ -31,6 +31,12 @@ def render_login_page():
             box-shadow: 0 0 10px #00E5FF;
             background-color: rgba(0, 229, 255, 0.1) !important;
         }
+        /* Center "Press Enter to submit form" helper text */
+        .stTextInput div[data-testid="InputInstructions"] {
+            text-align: center !important;
+            width: 100% !important;
+            color: #8B949E !important;
+        }
         </style>
     """, unsafe_allow_html=True)
     
