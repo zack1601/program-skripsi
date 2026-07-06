@@ -74,6 +74,7 @@ def send_telegram_alarm(record):
     cust_id = id_nama[0] if len(id_nama) > 0 else "-"
     cust_name = id_nama[1] if len(id_nama) > 1 else "-"
     
+    region = get_region_from_olt(record.get('OLT', ''))
     lat = record.get('lat', '')
     lon = record.get('lon', '')
     maps_link = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat and lon else ""
