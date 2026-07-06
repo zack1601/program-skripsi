@@ -536,5 +536,12 @@ def inject_custom_css():
     .nw-gauge svg {
         display: block;
     }
+
+    /* ── FORCE FOLIUM MAP HEIGHT (SERVER CACHE BYPASS) ── */
+    iframe[title*="folium"], iframe {
+        height: 350px !important;
+        max-height: 350px !important;
+        margin-bottom: 1.5rem !important; /* 1.5 spasi dari bawah maps ke table */
+    }
 </style>
 """, unsafe_allow_html=True)
