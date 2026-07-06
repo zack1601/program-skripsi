@@ -31,12 +31,9 @@ def render_login_page():
             box-shadow: 0 0 10px #00E5FF;
             background-color: rgba(0, 229, 255, 0.1) !important;
         }
-        /* Center "Press Enter to submit form" helper text */
+        /* Hide "Press Enter to submit form" helper text */
         .stTextInput div[data-testid="InputInstructions"] {
-            text-align: left !important;
-            padding-left: 12px !important;
-            margin-top: 4px !important;
-            color: #8B949E !important;
+            display: none !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -56,8 +53,8 @@ def render_login_page():
             with form_col:
                 with st.form("login_form", clear_on_submit=False):
                     # Input Username & Password
-                    user = st.text_input("Username |", value="Noc.fm")
-                    password = st.text_input("Password |", type="password")
+                    user = st.text_input("Username |", value="Noc.fm", placeholder="Username")
+                    password = st.text_input("Password |", type="password", placeholder="Password")
                     
                     # Checkbox
                     st.checkbox("Remember Me")
