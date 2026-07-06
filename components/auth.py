@@ -33,7 +33,7 @@ def render_login_page():
         }
         /* Center "Press Enter to submit form" helper text */
         .stTextInput div[data-testid="InputInstructions"] {
-            text-align: center !important;
+            text-align: left !important;
             width: 100% !important;
             color: #8B949E !important;
         }

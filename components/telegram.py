@@ -74,8 +74,12 @@ def send_telegram_alarm(record):
     cust_id = id_nama[0] if len(id_nama) > 0 else "-"
     cust_name = id_nama[1] if len(id_nama) > 1 else "-"
     
-    region = get_region_from_olt(record.get('OLT', ''))
+    lat = record.get('lat', '')
+    lon = record.get('lon', '')
+    maps_link = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat and lon else ""
     
+    coord_text = f'<a href="{maps_link}">{lat}, {lon}</a>' if maps_link else "-"
+
     # Template Markdown Sesuai Permintaan
     template = f"""━━━━━━━━━━━━━━━
 🚨 <b>NOC ALARM REPORT</b> 🚨
@@ -86,6 +90,7 @@ def send_telegram_alarm(record):
 🔌 <b>Port:</b> {record.get('Port', '-')}
 👤 <b>User:</b> {cust_id} - {cust_name}
 📡 <b>Power:</b> {record.get('Power/Cause', '-')}
+🗺️ <b>Coordinate:</b> {coord_text}
 ⏰ <b>Time:</b> {time.strftime('%Y-%m-%d %H:%M:%S')}
 ━━━━━━━━━━━━━━━
 🛠️ Sent via NETWATCH OPS CENTER"""

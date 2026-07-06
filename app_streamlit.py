@@ -150,27 +150,31 @@ with st.sidebar:
     if st.button("SEND ALARM", use_container_width=True, disabled=btn_disabled):
         df_problems = st.session_state['data_final'][st.session_state['data_final']['Category'].isin(['LOS', 'BadRx'])]
         
-        sent_count = 0
         if df_problems.empty:
             st.sidebar.info("System Healthy: No Alarms Needed")
         else:
-            for idx, row in enumerate(df_problems.to_dict('records')):
+            # Pre-filter and pre-check deduplication
+            to_send = []
+            for row in df_problems.to_dict('records'):
                 row_region = get_region_from_olt(row.get('OLT', ''))
                 
                 # Filter by region
                 if selected_region_alarm != "Semua Wilayah" and row_region != selected_region_alarm:
                     continue
                 
-                # Check Deduplication
                 sn = row.get('Serial Number', '')
                 status = row.get('Category', '')
                 
                 if should_send_alarm(sn, status):
-                    send_telegram_alarm(row)
-                    sent_count += 1
+                    to_send.append(row)
             
-            if sent_count > 0:
-                st.success(f"{sent_count} Alarms Sent to {selected_region_alarm}!")
+            if to_send:
+                # Tampilkan notif di awal / bersamaan dengan pengiriman pertama
+                st.success(f"{len(to_send)} Alarms Sent to {selected_region_alarm}!")
+                
+                # Kirim ke Telegram
+                for row in to_send:
+                    send_telegram_alarm(row)
             else:
                 st.info("No new alarms to send (or already sent).")
     st.markdown('</div>', unsafe_allow_html=True)
