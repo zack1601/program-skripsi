@@ -34,7 +34,8 @@ def render_login_page():
         /* Center "Press Enter to submit form" helper text */
         .stTextInput div[data-testid="InputInstructions"] {
             text-align: left !important;
-            width: 100% !important;
+            padding-left: 12px !important;
+            margin-top: 4px !important;
             color: #8B949E !important;
         }
         </style>
