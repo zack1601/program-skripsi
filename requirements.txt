@@ -7,3 +7,4 @@ st-gsheets-connection
 requests
 geopy
 tomli; python_version < "3.11"
+plotly

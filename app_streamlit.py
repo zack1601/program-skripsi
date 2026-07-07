@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 import time
 import numpy as np
 import re
@@ -205,13 +206,40 @@ render_metrics(df_filtered)
 df_trend = get_historical_trend()
 with st.expander("📈 Historical Problem Trend (LOS & BadRx)", expanded=False):
     if not df_trend.empty:
-        # Pivot the data for Streamlit line_chart
+        # Pivot the data
         df_pivot = df_trend.pivot(index='scan_timestamp', columns='Category', values='count').fillna(0)
+        df_pivot = df_pivot.reset_index()
         
         # Highlight problematic categories
         cols_to_plot = [c for c in ['LOS', 'BadRx', 'Offline', 'Dyinggasp'] if c in df_pivot.columns]
         if cols_to_plot:
-            st.line_chart(df_pivot[cols_to_plot], height=250, use_container_width=True)
+            fig = px.line(
+                df_pivot, 
+                x="scan_timestamp", 
+                y=cols_to_plot,
+                color_discrete_map={
+                    "LOS": "#ff4b4b",       # Merah Streamlit
+                    "BadRx": "#f5a623",     # Orange/Kuning
+                    "Offline": "#8e8e93",   # Abu-abu
+                    "Dyinggasp": "#9c27b0"  # Ungu
+                }
+            )
+            
+            # Premium Styling (Dark Mode)
+            fig.update_layout(
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#c9d1d9"),
+                xaxis_title="",
+                yaxis_title="Jumlah Pelanggan",
+                legend_title="",
+                hovermode="x unified",
+                margin=dict(l=0, r=0, t=30, b=0)
+            )
+            fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#30363d')
+            fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#30363d')
+            
+            st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("Belum ada data masalah (LOS/BadRx) yang tersimpan di riwayat.")
     else:
