@@ -19,6 +19,7 @@ secrets.toml
 
 # Data Files & Output
 *.xlsx
+*.db
 output/
 logs/
 

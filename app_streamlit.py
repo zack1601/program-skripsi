@@ -20,6 +20,7 @@ from config import INPUT_FILE, MAX_WORKERS
 from components import inject_custom_css, render_metrics, render_filters, render_map, render_table, get_olt_coordinate
 from components.telegram import send_telegram_alarm, should_send_alarm, get_region_from_olt
 from components.auth import render_login_page
+from components.database import save_scan_results, load_latest_scan, get_historical_trend
 
 # --- SET PAGE CONFIG ---
 st.set_page_config(
@@ -53,17 +54,12 @@ if not st.session_state['logged_in']:
 
 # --- MAIN APP (Hanya berjalan jika sudah login) ---
 
-# --- LAST SCAN CACHE LOADER ---
+# --- LAST SCAN CACHE LOADER (SQLite) ---
 if st.session_state['data_final'].empty and not st.session_state['is_scanning']:
-    cache_file = "output/last_scan_data.csv"
-    if os.path.exists(cache_file):
-        try:
-            df_cache = pd.read_csv(cache_file)
-            if not df_cache.empty:
-                st.session_state['data_final'] = df_cache
-                st.toast("✅ Memuat data dari hasil scan terakhir.", icon="💾")
-        except Exception:
-            pass
+    df_cache = load_latest_scan()
+    if not df_cache.empty:
+        st.session_state['data_final'] = df_cache
+        st.toast("✅ Memuat data dari database lokal (SQLite).", icon="💾")
 
 # --- BUSINESS/BACKEND DATA LOGIC ---
 def apply_business_logic(row):
@@ -125,8 +121,7 @@ with st.sidebar:
                     final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
                     
                     st.session_state['data_final'] = final_df
-                    os.makedirs("output", exist_ok=True)
-                    final_df.to_csv("output/last_scan_data.csv", index=False)
+                    save_scan_results(final_df)
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
     else:
@@ -588,8 +583,7 @@ if st.session_state['is_scanning']:
                 final_df['Nama/ID Pelanggan'] = final_df['Nama/ID Pelanggan'].str.strip().str.upper()
                 final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
                 st.session_state['data_final'] = final_df
-                os.makedirs("output", exist_ok=True)
-                final_df.to_csv("output/last_scan_data.csv", index=False)
+                save_scan_results(final_df)
         
         st.session_state['is_scanning'] = False
         st.session_state['stop_scanning'] = False
