@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import time
 import numpy as np
 import re
@@ -213,19 +214,34 @@ with st.expander("📈 Historical Problem Trend (LOS & BadRx)", expanded=False):
         # Highlight problematic categories
         cols_to_plot = [c for c in ['LOS', 'BadRx', 'Offline', 'Dyinggasp'] if c in df_pivot.columns]
         if cols_to_plot:
-            fig = px.line(
-                df_pivot, 
-                x="scan_timestamp", 
-                y=cols_to_plot,
-                color_discrete_map={
-                    "LOS": "#ff4b4b",       # Merah Streamlit
-                    "BadRx": "#f5a623",     # Orange/Kuning
-                    "Offline": "#8e8e93",   # Abu-abu
-                    "Dyinggasp": "#9c27b0"  # Ungu
-                }
-            )
+            fig = go.Figure()
             
-            # Premium Styling (Dark Mode)
+            color_map = {
+                "LOS": "rgba(255, 75, 75, 1)",        # Merah
+                "BadRx": "rgba(245, 166, 35, 1)",      # Orange/Kuning
+                "Offline": "rgba(142, 142, 147, 1)",   # Abu-abu
+                "Dyinggasp": "rgba(156, 39, 176, 1)"   # Ungu
+            }
+            fill_map = {
+                "LOS": "rgba(255, 75, 75, 0.15)",       
+                "BadRx": "rgba(245, 166, 35, 0.15)",     
+                "Offline": "rgba(142, 142, 147, 0.15)",  
+                "Dyinggasp": "rgba(156, 39, 176, 0.15)"  
+            }
+
+            for c in cols_to_plot:
+                fig.add_trace(go.Scatter(
+                    x=df_pivot["scan_timestamp"],
+                    y=df_pivot[c],
+                    name=c,
+                    mode='lines',
+                    line_shape='spline',
+                    line=dict(color=color_map.get(c, "rgba(255,255,255,1)"), width=3),
+                    fill='tozeroy',
+                    fillcolor=fill_map.get(c, "rgba(255,255,255,0.1)"),
+                ))
+            
+            # Premium Styling (Dark Mode & Glassmorphism)
             fig.update_layout(
                 plot_bgcolor="rgba(0,0,0,0)",
                 paper_bgcolor="rgba(0,0,0,0)",
