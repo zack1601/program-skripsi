@@ -205,7 +205,7 @@ render_metrics(df_filtered)
 
 # --- RENDER HISTORICAL TREND CHART ---
 df_trend = get_historical_trend()
-with st.expander("📈 Historical Problem Trend (LOS & BadRx)", expanded=False):
+with st.expander("📈 Historical Problem Trend", expanded=False):
     if not df_trend.empty:
         # Pivot the data
         df_pivot = df_trend.pivot(index='scan_timestamp', columns='Category', values='count').fillna(0)
@@ -243,12 +243,14 @@ with st.expander("📈 Historical Problem Trend (LOS & BadRx)", expanded=False):
             
             # Premium Styling (Dark Mode & Glassmorphism)
             fig.update_layout(
+                height=250,  # Memperkecil tinggi grafik sekitar 25-30%
                 plot_bgcolor="rgba(0,0,0,0)",
                 paper_bgcolor="rgba(0,0,0,0)",
                 font=dict(color="#c9d1d9"),
                 xaxis_title="",
                 yaxis_title="Jumlah Pelanggan",
                 legend_title="",
+                legend=dict(font=dict(color="white")), # Mengubah warna teks legend menjadi putih
                 hovermode="x unified",
                 margin=dict(l=0, r=0, t=30, b=0)
             )
