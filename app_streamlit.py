@@ -200,6 +200,23 @@ if not df_raw.empty:
 
 # --- RENDER METRICS & RISK SCORE GAUGE (STICKY HEADER) ---
 render_metrics(df_filtered)
+
+# --- RENDER HISTORICAL TREND CHART ---
+df_trend = get_historical_trend()
+with st.expander("📈 Historical Problem Trend (LOS & BadRx)", expanded=False):
+    if not df_trend.empty:
+        # Pivot the data for Streamlit line_chart
+        df_pivot = df_trend.pivot(index='scan_timestamp', columns='Category', values='count').fillna(0)
+        
+        # Highlight problematic categories
+        cols_to_plot = [c for c in ['LOS', 'BadRx', 'Offline', 'Dyinggasp'] if c in df_pivot.columns]
+        if cols_to_plot:
+            st.line_chart(df_pivot[cols_to_plot], height=250, use_container_width=True)
+        else:
+            st.info("Belum ada data masalah (LOS/BadRx) yang tersimpan di riwayat.")
+    else:
+        st.warning("📊 Database riwayat masih kosong. Silakan klik 'START SCAN' di menu kiri minimal satu kali untuk mulai merekam data grafik.")
+
 # Spacer to push content below the fixed Network Summary bar
 st.write("")
 st.write("")
