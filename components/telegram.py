@@ -3,6 +3,7 @@ import time
 import streamlit as st
 import json
 import os
+from typing import Optional
 
 ALARM_HISTORY_FILE = "output/alarm_history.json"
 
@@ -60,9 +61,15 @@ def should_send_alarm(sn, status):
             pass
         return True
 
-def send_telegram_alarm(record):
+def send_telegram_alarm(record) -> Optional[int]:
     """
     Sends a formatted alert message to the configured Telegram Bot channel.
+
+    Returns
+    -------
+    message_id : int atau None
+        ID pesan Telegram jika berhasil dikirim, None jika gagal.
+        message_id digunakan untuk mendeteksi reply dari teknisi lapangan.
     """
     # Kredensial Resmi User
     TOKEN = "8789834499:AAEeqHkPjSzlkr4egB0sMPvsMyoDUBkG2OU"
@@ -94,12 +101,21 @@ def send_telegram_alarm(record):
 🗺️ <b>Coordinate:</b> {coord_text}
 ⏰ <b>Time:</b> {time.strftime('%Y-%m-%d %H:%M:%S')}
 ━━━━━━━━━━━━━━━
-🛠️ Sent via NETWATCH OPS CENTER"""
+🛠️ Sent via NETWATCH OPS CENTER
+
+💬 <i>Reply pesan ini dengan:</i>
+  • <b>progress</b> — sedang ditangani
+  • <b>done</b>     — gangguan selesai
+  • <b>cancel</b>   — tidak bisa visit"""
 
     payload = {"chat_id": CHAT_ID, "text": template, "parse_mode": "HTML"}
     try:
         res = requests.post(url, json=payload, timeout=10)
-        return res.ok
+        if res.ok:
+            data = res.json()
+            # Telegram mengembalikan message_id di dalam result
+            return data.get("result", {}).get("message_id")
+        return None
     except Exception as e:
         st.sidebar.error(f"Telegram Error: {str(e)}")
-        return False
+        return None
