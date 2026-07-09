@@ -359,38 +359,30 @@ else:
         ra_short = ra[11:16] if len(ra) >= 16 else ra
         sent_short = str(r.get("sent_at", "-"))[11:16]
 
-        rows_html += f"""
-        <tr style='border-bottom:1px solid #21262d;'>
-            <td style='padding:6px 8px; font-family:monospace; font-size:0.78rem;
-                       color:#58a6ff;'>{r.get('sn', '-')[:14]}</td>
-            <td style='padding:6px 8px; font-size:0.8rem;'>{r.get('pelanggan', '-')}</td>
-            <td style='padding:6px 8px; font-size:0.8rem; color:#f5a623;'>{r.get('category', '-')}</td>
-            <td style='padding:6px 8px;'>{_badge(r.get('status', 'Sent'))}</td>
-            <td style='padding:6px 8px; font-size:0.78rem; color:#8b949e;'>{tech}</td>
-            <td style='padding:6px 8px; font-size:0.78rem; color:#8b949e;'>{reply}</td>
-            <td style='padding:6px 8px; font-size:0.75rem; color:#484f58; white-space:nowrap;'>
-                Sent {sent_short} | Upd {ra_short}
-            </td>
-        </tr>
-        """
+        rows_html += f"""<tr style='border-bottom:1px solid #21262d;'>
+<td style='padding:6px 8px; font-family:monospace; font-size:0.78rem; color:#58a6ff;'>{r.get('sn', '-')[:14]}</td>
+<td style='padding:6px 8px; font-size:0.8rem;'>{r.get('pelanggan', '-')}</td>
+<td style='padding:6px 8px; font-size:0.8rem; color:#f5a623;'>{r.get('category', '-')}</td>
+<td style='padding:6px 8px;'>{_badge(r.get('status', 'Sent'))}</td>
+<td style='padding:6px 8px; font-size:0.78rem; color:#8b949e;'>{tech}</td>
+<td style='padding:6px 8px; font-size:0.78rem; color:#8b949e;'>{reply}</td>
+<td style='padding:6px 8px; font-size:0.75rem; color:#484f58; white-space:nowrap;'>Sent {sent_short} | Upd {ra_short}</td>
+</tr>"""
 
-    st.markdown(f"""
-    <table style='width:100%; border-collapse:collapse; color:#c9d1d9;'>
-        <thead>
-            <tr style='border-bottom:1px solid #30363d; color:#8b949e;
-                       font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;'>
-                <th style='padding:6px 8px; text-align:left;'>Serial Number</th>
-                <th style='padding:6px 8px; text-align:left;'>Pelanggan</th>
-                <th style='padding:6px 8px; text-align:left;'>Category</th>
-                <th style='padding:6px 8px; text-align:left;'>Status</th>
-                <th style='padding:6px 8px; text-align:left;'>Teknisi</th>
-                <th style='padding:6px 8px; text-align:left;'>Reply</th>
-                <th style='padding:6px 8px; text-align:left;'>Waktu</th>
-            </tr>
-        </thead>
-        <tbody>{rows_html}</tbody>
-    </table>
-    """, unsafe_allow_html=True)
+    st.markdown(f"""<table style='width:100%; border-collapse:collapse; color:#c9d1d9;'>
+<thead>
+<tr style='border-bottom:1px solid #30363d; color:#8b949e; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;'>
+<th style='padding:6px 8px; text-align:left;'>Serial Number</th>
+<th style='padding:6px 8px; text-align:left;'>Pelanggan</th>
+<th style='padding:6px 8px; text-align:left;'>Category</th>
+<th style='padding:6px 8px; text-align:left;'>Status</th>
+<th style='padding:6px 8px; text-align:left;'>Teknisi</th>
+<th style='padding:6px 8px; text-align:left;'>Reply</th>
+<th style='padding:6px 8px; text-align:left;'>Waktu</th>
+</tr>
+</thead>
+<tbody>{rows_html}</tbody>
+</table>""", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
