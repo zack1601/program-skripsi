@@ -74,7 +74,7 @@ def standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
     df = df.rename(columns=_normalize_col)
 
-    rename_dict: dict[str, str] = {}
+    rename_dict: Dict[str, str] = {}
     for std_name, aliases in _ALIAS_MAP.items():
         for col in df.columns:
             # Hanya petakan bila kolom belum punya nama standar
@@ -110,13 +110,23 @@ def _is_valid_sn(val) -> bool:
     return bool(_SN_RE.fullmatch(val.strip()))
 
 
+_PORT_OLT_RE = re.compile(r"^\d+\s*/\s*\d+\s*/\s*\d+")
+
 def _is_valid_port(val) -> bool:
-    """Port harus berupa angka, rentang 0–48 (slot GPON OLT Huawei)."""
+    """
+    Port valid jika memenuhi salah satu kondisi:
+      - Angka bulat 0-48 (format lama/sederhana)
+      - Format OLT Huawei: frame/slot/port, mis. '0/1/1', '0/ 1/1 1', '0/ 1/2 0'
+    """
+    s = str(val).strip()
+    # Cek format angka sederhana
     try:
-        v = int(str(val).strip())
+        v = int(s)
         return 0 <= v <= 48
     except (ValueError, TypeError):
-        return False
+        pass
+    # Cek format OLT (frame/slot/port)
+    return bool(_PORT_OLT_RE.match(s))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
