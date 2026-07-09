@@ -680,10 +680,10 @@ if st.session_state['is_scanning']:
             simulated_records = []
             
             for idx, r in df_input.iterrows():
-                ip = str(r.get(ip_col_found, '')).strip()
+                ip = str(r.get('ip_olt', '')).strip()
                 name = str(r.get('olt', 'Unknown OLT')).strip()
                 port = str(r.get('port', '')).strip()
-                sn_clean = str(r.get(sn_col, '')).strip().upper()
+                sn_clean = str(r.get('serial_number', '')).strip().upper()
                 
                 if not ip or ip.lower() == 'nan': continue
                 
