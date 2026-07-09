@@ -13,7 +13,7 @@ Mencegah:
 
 import re
 import pandas as pd
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -21,7 +21,7 @@ from typing import Tuple, List
 #     key   = nama kolom STANDAR yang akan digunakan oleh kode selanjutnya
 #     value = semua variasi nama yang mungkin dikirim dari Sheets / Excel
 # ─────────────────────────────────────────────────────────────────────────────
-_ALIAS_MAP: dict[str, List[str]] = {
+_ALIAS_MAP: Dict[str, List[str]] = {
     "ip_olt": [
         "ip_olt", "ip olt", "ip", "olt ip", "olt_ip",
         "ip address", "ip_address", "ipaddress"
