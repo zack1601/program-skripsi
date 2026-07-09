@@ -6,6 +6,8 @@ import time
 import numpy as np
 import re
 import os
+import io
+import datetime as dt
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 from streamlit_gsheets import GSheetsConnection
@@ -22,7 +24,14 @@ from config import INPUT_FILE, MAX_WORKERS
 from components import inject_custom_css, render_metrics, render_filters, render_map, render_table, get_olt_coordinate
 from components.telegram import send_telegram_alarm, should_send_alarm, get_region_from_olt
 from components.auth import render_login_page
-from components.database import save_scan_results, load_latest_scan, get_historical_trend
+from components.database import (
+    save_scan_results, load_latest_scan, get_historical_trend,
+    save_alarm_sent, get_alarm_updates, init_db,
+    cache_input_from_gsheets, load_input_cache,
+    get_last_sync_time, load_scan_history_full,
+)
+from components.validation import validate_input_dataframe
+from components.telegram_listener import start_listener
 
 # --- SET PAGE CONFIG ---
 st.set_page_config(
@@ -55,6 +64,12 @@ if not st.session_state['logged_in']:
     st.stop()  # Lock access if not logged in
 
 # --- MAIN APP (Hanya berjalan jika sudah login) ---
+
+# --- INIT DB & START TELEGRAM LISTENER ---
+# Pastikan tabel alarm_sent sudah dibuat, lalu jalankan background thread
+# yang memonitor reply teknisi lapangan. Aman dipanggil berkali-kali.
+init_db()
+start_listener()
 
 # --- LAST SCAN CACHE LOADER (SQLite) ---
 if st.session_state['data_final'].empty and not st.session_state['is_scanning']:
@@ -136,6 +151,32 @@ with st.sidebar:
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
+    # ── SYNC DATA BUTTON ──────────────────────────────────────────────────────
+    st.markdown("---")
+    _last_sync = get_last_sync_time()
+    st.markdown(
+        f"<p style='margin:0 0 6px 0; font-size:0.75rem; color:#484f58;'>"
+        f"🗄️ Cache terakhir: <b style='color:#8b949e'>{_last_sync}</b></p>",
+        unsafe_allow_html=True
+    )
+    if st.button("🔄 SYNC GOOGLE SHEETS", use_container_width=True):
+        with st.spinner("Menarik data dari Google Sheets..."):
+            try:
+                _gconn = st.connection("gsheets", type=GSheetsConnection)
+                _SYNC_URL = "https://docs.google.com/spreadsheets/d/1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw/edit#gid=0"
+                from io import StringIO
+                from contextlib import redirect_stdout, redirect_stderr
+                with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
+                    _df_sync = _gconn.read(spreadsheet=_SYNC_URL)
+                if _df_sync is not None and not _df_sync.empty:
+                    cache_input_from_gsheets(_df_sync)
+                    st.success(f"✅ {len(_df_sync)} baris berhasil di-cache ke SQLite!")
+                else:
+                    st.warning("⚠️ Google Sheets tidak mengembalikan data.")
+            except Exception as _e:
+                st.error(f"❌ Gagal terhubung ke Google Sheets: {_e}")
+        st.rerun()
+
     # Alarm Region Selector
     st.markdown("---")
     region_options = ["Semua Wilayah", "Fatmawati", "Cipedak", "Pinang/Kalijati", "Lenteng Agung", "Cinere", "Senopati"]
@@ -169,9 +210,11 @@ with st.sidebar:
                 # Tampilkan notif di awal / bersamaan dengan pengiriman pertama
                 st.success(f"{len(to_send)} Alarms Sent to {selected_region_alarm}!")
                 
-                # Kirim ke Telegram
+                # Kirim ke Telegram + simpan message_id ke SQLite
                 for row in to_send:
-                    send_telegram_alarm(row)
+                    msg_id = send_telegram_alarm(row)
+                    if msg_id:  # Simpan hanya jika pengiriman berhasil
+                        save_alarm_sent(msg_id, row)
             else:
                 st.info("No new alarms to send (or already sent).")
     st.markdown('</div>', unsafe_allow_html=True)
@@ -263,6 +306,94 @@ with st.expander("📈 Historical Problem Trend", expanded=False):
     else:
         st.warning("📊 Database riwayat masih kosong. Silakan klik 'START SCAN' di menu kiri minimal satu kali untuk mulai merekam data grafik.")
 
+# ─────────────────────────────────────────────────────────────────────────────
+# PANEL: FIELD TECHNICIAN UPDATES
+# ─────────────────────────────────────────────────────────────────────────────
+df_field_updates = get_alarm_updates(limit=50)
+
+st.markdown("""
+<div style='
+    margin-top: 12px;
+    padding: 16px 20px 8px 20px;
+    border-radius: 10px;
+    border: 1px solid #30363D;
+    background: rgba(22,27,34,0.85);
+'>
+    <p style='margin:0 0 12px 0; font-size:1rem; font-weight:700;
+              letter-spacing:1px; color:#c9d1d9;'>
+        🛠️ FIELD TECHNICIAN UPDATES
+        <span style='font-size:0.75rem; font-weight:400; color:#484f58; margin-left:8px;'>
+            — auto-refresh tiap 30 detik
+        </span>
+    </p>
+""", unsafe_allow_html=True)
+
+if df_field_updates.empty:
+    st.info("Belum ada alarm yang dikirim. Klik SEND ALARM untuk mulai.")
+else:
+    # Badge berwarna sesuai status
+    _STATUS_BADGE = {
+        "Sent"       : ("📤 Sent",        "#484f58", "#c9d1d9"),
+        "In Progress": ("🔧 In Progress", "#7d4e00", "#f5a623"),
+        "Resolved"   : ("✅ Resolved",    "#0d4429", "#3fb950"),
+        "Cancelled"  : ("❌ Cancelled",   "#4d1919", "#f85149"),
+    }
+
+    def _badge(status):
+        label, bg, color = _STATUS_BADGE.get(
+            status, (status, "#333", "#fff")
+        )
+        return (
+            f"<span style='background:{bg}; color:{color}; "
+            f"padding:2px 8px; border-radius:12px; font-size:0.78rem; "
+            f"font-weight:600; white-space:nowrap;'>{label}</span>"
+        )
+
+    # Render tabel manual agar bisa pakai badge HTML
+    rows_html = ""
+    for _, r in df_field_updates.iterrows():
+        tech  = r.get("technician", "") or "-"
+        reply = r.get("reply_text",  "") or "-"
+        ra    = r.get("reply_at",    "") or "-"
+        # Potong reply_at menjadi HH:MM saja agar lebih ringkas
+        ra_short = ra[11:16] if len(ra) >= 16 else ra
+        sent_short = str(r.get("sent_at", "-"))[11:16]
+
+        rows_html += f"""
+        <tr style='border-bottom:1px solid #21262d;'>
+            <td style='padding:6px 8px; font-family:monospace; font-size:0.78rem;
+                       color:#58a6ff;'>{r.get('sn', '-')[:14]}</td>
+            <td style='padding:6px 8px; font-size:0.8rem;'>{r.get('pelanggan', '-')}</td>
+            <td style='padding:6px 8px; font-size:0.8rem; color:#f5a623;'>{r.get('category', '-')}</td>
+            <td style='padding:6px 8px;'>{_badge(r.get('status', 'Sent'))}</td>
+            <td style='padding:6px 8px; font-size:0.78rem; color:#8b949e;'>{tech}</td>
+            <td style='padding:6px 8px; font-size:0.78rem; color:#8b949e;'>{reply}</td>
+            <td style='padding:6px 8px; font-size:0.75rem; color:#484f58; white-space:nowrap;'>
+                Sent {sent_short} | Upd {ra_short}
+            </td>
+        </tr>
+        """
+
+    st.markdown(f"""
+    <table style='width:100%; border-collapse:collapse; color:#c9d1d9;'>
+        <thead>
+            <tr style='border-bottom:1px solid #30363d; color:#8b949e;
+                       font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;'>
+                <th style='padding:6px 8px; text-align:left;'>Serial Number</th>
+                <th style='padding:6px 8px; text-align:left;'>Pelanggan</th>
+                <th style='padding:6px 8px; text-align:left;'>Category</th>
+                <th style='padding:6px 8px; text-align:left;'>Status</th>
+                <th style='padding:6px 8px; text-align:left;'>Teknisi</th>
+                <th style='padding:6px 8px; text-align:left;'>Reply</th>
+                <th style='padding:6px 8px; text-align:left;'>Waktu</th>
+            </tr>
+        </thead>
+        <tbody>{rows_html}</tbody>
+    </table>
+    """, unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
+
 # Spacer to push content below the fixed Network Summary bar
 st.write("")
 st.write("")
@@ -280,45 +411,73 @@ if st.session_state['is_scanning']:
     start_time = time.time()
     
     try:
-        # 1. READ INPUT SPREADSHEET (Google Sheets as primary, Local Excel as fallback)
+        # ── 1. BACA INPUT (PRIORITAS: SQLite Cache → Google Sheets → Excel Lokal) ──
+        # Arsitektur: SQLite sebagai pusat data lokal (caching layer).
+        # Scanning tidak wajib terhubung ke Google Sheets jika cache tersedia.
         df_input = None
-        
-        # Coba baca dari Google Sheets sebagai data utama (suppress output)
-        try:
-            conn = st.connection("gsheets", type=GSheetsConnection)
-            CLEAN_URL = "https://docs.google.com/spreadsheets/d/1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw/edit#gid=0"
-            
-            # Suppress output dari library streamlit_gsheets
-            with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
-                df_input = conn.read(spreadsheet=CLEAN_URL)
-        except Exception as ex_gsheet:
-            pass
-            
-        # Jika Google Sheets gagal/tidak dapat diakses, gunakan data_noc.xlsx lokal sebagai fallback offline
+        data_source = "SQLite Cache"
+
+        # Langkah 1: Baca dari SQLite cache (paling cepat, tidak butuh internet)
+        df_input = load_input_cache()
+
         if df_input is None or df_input.empty:
+            # Langkah 2: Cache kosong → tarik dari Google Sheets dan cache hasilnya
+            data_source = "Google Sheets"
+            try:
+                conn = st.connection("gsheets", type=GSheetsConnection)
+                CLEAN_URL = "https://docs.google.com/spreadsheets/d/1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw/edit#gid=0"
+                with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
+                    df_input = conn.read(spreadsheet=CLEAN_URL)
+                if df_input is not None and not df_input.empty:
+                    cache_input_from_gsheets(df_input)   # ← Simpan ke SQLite
+                    st.toast("✅ Data Google Sheets otomatis di-cache ke SQLite", icon="🗄️")
+            except Exception:
+                pass
+
+        if df_input is None or df_input.empty:
+            # Langkah 3: Fallback Excel Lokal jika semua gagal
+            data_source = "Excel Lokal"
             if os.path.exists(INPUT_FILE):
                 try:
                     df_input = pd.read_excel(INPUT_FILE)
                 except Exception as ex_excel:
-                    st.error(f"❌ Gagal memuat data dari Google Sheets maupun Excel lokal: {ex_excel}")
+                    st.error(f"❌ Gagal memuat data: {ex_excel}")
                     st.session_state['is_scanning'] = False
                     st.stop()
             else:
-                st.error("❌ Gagal memuat data dari Google Sheets dan file Excel lokal tidak ditemukan.")
+                st.error(
+                    "❌ Tidak ada sumber data tersedia.\n\n"
+                    "SQLite cache kosong, Google Sheets tidak terjangkau, "
+                    "dan file Excel lokal tidak ditemukan.\n\n"
+                    "→ Klik **🔄 SYNC GOOGLE SHEETS** di sidebar untuk mengisi cache."
+                )
                 st.session_state['is_scanning'] = False
                 st.stop()
-                
-        df_input.columns = [str(c).strip().lower() for c in df_input.columns]
-        
-        # VALIDATION: Check for required columns
-        found_ip = next((c for c in ['ip_olt', 'ip olt', 'ip'] if c in df_input.columns), None)
-        found_sn = next((c for c in ['serial number', 'sn', 'serial_number'] if c in df_input.columns), None)
-        found_port = next((c for c in ['port'] if c in df_input.columns), None)
-        
-        if not found_ip or not found_sn:
-            st.error(f"❌ Kolom Wajib Tidak Ditemukan! Pastikan Excel/Google Sheet memiliki kolom: IP OLT, SERIAL NUMBER, dan PORT. (Ditemukan: {list(df_input.columns)})")
+
+        # ── 2. VALIDASI & NORMALISASI (validation.py) ───────────────────────
+        # Menstandarkan nama kolom (alias → standar) dan memvalidasi isi:
+        # format IP, panjang SN, nilai PORT, duplikasi SN.
+        df_input, validation_errors = validate_input_dataframe(df_input)
+
+        # Pisahkan warning (⚠️) dari error (❌) agar pengguna tahu mana
+        # yang fatal (proses berhenti) dan mana yang hanya informasi.
+        fatal_errors   = [e for e in validation_errors if e.startswith("❌")]
+        warnings_only  = [e for e in validation_errors if e.startswith("⚠️")]
+
+        for warn in warnings_only:
+            st.warning(warn)          # tampilkan warning, tapi tetap lanjut
+
+        if fatal_errors:
+            for err in fatal_errors:
+                st.error(err)         # tampilkan semua error sekaligus
+            st.info(
+                f"💡 Data dibaca dari **{data_source}**. "
+                "Perbaiki kolom / nilai yang bermasalah lalu klik START SCAN ulang."
+            )
             st.session_state['is_scanning'] = False
             st.stop()
+
+        st.toast(f"✅ Data berhasil dimuat dari {data_source} ({len(df_input)} baris)", icon="📋")
 
         if 'olt' in df_input.columns:
             df_input['olt'] = df_input['olt'].ffill()
@@ -339,10 +498,9 @@ if st.session_state['is_scanning']:
                 pass
         
         olt_map = {}
-        ip_col_found = found_ip
         
         for _, r in df_input.iterrows():
-            ip = str(r.get(ip_col_found, '')).strip()
+            ip = str(r.get('ip_olt', '')).strip()
             name = str(r.get('olt', 'Unknown OLT')).strip()
             port = str(r.get('port', '')).strip()
             if not ip or ip.lower() == 'nan': continue
@@ -350,8 +508,8 @@ if st.session_state['is_scanning']:
             match = re.search(r'(\d+)\s*/\s*(\d+)\s*/\s*(\d+)', port)
             if match: olt_map[ip]["slots"].add(f"{match.group(1)}/{match.group(2)}")
         
-        sn_col = next((c for c in ['serial number', 'sn', 'serial_number'] if c in df_input.columns), 'serial number')
-        sn_map_input = {str(r.get(sn_col, '')).strip().upper(): r for _, r in df_input.iterrows()}
+        # Gunakan 'serial_number' — nama standar setelah normalisasi oleh validation.py
+        sn_map_input = {str(r.get('serial_number', '')).strip().upper(): r for _, r in df_input.iterrows()}
         st.session_state['temp_results'] = []
         
         total_olt_count = len(olt_map)
@@ -663,10 +821,53 @@ if st.session_state['is_scanning']:
 # --- RENDER GEOGRAPHIC TOPOLOGY (MODULAR MAP) ---
 render_map(df_filtered)
 
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top: -2rem; height: 12px;'></div>", unsafe_allow_html=True)
 
 # --- RENDER LANDSCAPE DATA TABLE ---
 render_table(df_filtered)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DOWNLOAD LAPORAN EXCEL (dari SQLite — Single Source of Truth)
+# ─────────────────────────────────────────────────────────────────────────────
+st.markdown("---")
+with st.expander("📥 Download Laporan Excel", expanded=False):
+    col_dl1, col_dl2 = st.columns(2)
+
+    with col_dl1:
+        df_latest_dl = load_latest_scan()
+        if not df_latest_dl.empty:
+            _buf1 = io.BytesIO()
+            with pd.ExcelWriter(_buf1, engine='openpyxl') as _w:
+                df_latest_dl.to_excel(_w, index=False, sheet_name='Hasil Scan Terakhir')
+            _buf1.seek(0)
+            st.download_button(
+                label="⬇️ Hasil Scan Terakhir",
+                data=_buf1,
+                file_name=f"scan_terakhir_{dt.datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True,
+                key="dl_latest"
+            )
+        else:
+            st.info("⚠️ Belum ada data scan. Klik START SCAN terlebih dahulu.")
+
+    with col_dl2:
+        df_history_dl = load_scan_history_full()
+        if not df_history_dl.empty:
+            _buf2 = io.BytesIO()
+            with pd.ExcelWriter(_buf2, engine='openpyxl') as _w:
+                df_history_dl.to_excel(_w, index=False, sheet_name='Riwayat Lengkap')
+            _buf2.seek(0)
+            st.download_button(
+                label="⬇️ Riwayat Semua Scan",
+                data=_buf2,
+                file_name=f"riwayat_scan_{dt.datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True,
+                key="dl_history"
+            )
+        else:
+            st.info("⚠️ Belum ada riwayat scan tersimpan.")
 
 # --- FOOTER ---
 st.markdown("---")

@@ -5,15 +5,44 @@ import datetime
 
 DB_PATH = "noc_database.db"
 
+# Kata kunci reply dari teknisi lapangan
+FIELD_KEYWORDS = {
+    "progress" : "In Progress",   # Sedang ditangani
+    "done"     : "Resolved",      # Gangguan selesai diperbaiki
+    "selesai"  : "Resolved",      # Alias "done"
+    "cancel"   : "Cancelled",     # Teknisi tidak bisa visit
+    "batal"    : "Cancelled",     # Alias "cancel"
+}
+
 def get_connection():
     """Create and return a database connection."""
     return sqlite3.connect(DB_PATH, check_same_thread=False)
 
 def init_db():
-    """Initialize the database (optional, as pandas to_sql creates tables automatically)"""
-    # Just to ensure the DB file is created if it doesn't exist
+    """
+    Initialize the database — buat tabel alarm_sent jika belum ada.
+    Dipanggil sekali saat aplikasi pertama kali start.
+    """
     conn = get_connection()
-    conn.close()
+    try:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alarm_sent (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                message_id  INTEGER UNIQUE,          -- ID pesan Telegram
+                sn          TEXT,                    -- Serial Number ONT
+                olt         TEXT,                    -- Nama OLT
+                pelanggan   TEXT,                    -- Nama/ID Pelanggan
+                category    TEXT,                    -- LOS / BadRx
+                sent_at     TEXT,                    -- Waktu alarm dikirim
+                status      TEXT DEFAULT 'Sent',     -- Sent / In Progress / Resolved / Cancelled
+                technician  TEXT DEFAULT '',         -- Username Telegram teknisi
+                reply_text  TEXT DEFAULT '',         -- Isi reply teknisi
+                reply_at    TEXT DEFAULT ''          -- Waktu reply masuk
+            )
+        """)
+        conn.commit()
+    finally:
+        conn.close()
 
 def save_scan_results(df):
     """
@@ -79,6 +108,232 @@ def get_historical_trend():
         return df
     except Exception as e:
         print(f"Error loading historical trend: {e}")
+        return pd.DataFrame()
+    finally:
+        conn.close()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# FIELD TECHNICIAN UPDATE FUNCTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+
+def save_alarm_sent(message_id: int, record: dict):
+    """
+    Simpan alarm yang sudah berhasil dikirim ke Telegram ke tabel alarm_sent.
+    Dipanggil langsung setelah send_telegram_alarm() berhasil.
+
+    Parameters
+    ----------
+    message_id : int   ID pesan dari response Telegram API
+    record     : dict  Data alarm (SN, OLT, Pelanggan, Category, dst.)
+    """
+    conn = get_connection()
+    try:
+        conn.execute("""
+            INSERT OR IGNORE INTO alarm_sent
+                (message_id, sn, olt, pelanggan, category, sent_at, status)
+            VALUES (?, ?, ?, ?, ?, ?, 'Sent')
+        """, (
+            message_id,
+            str(record.get('Serial Number', record.get('sn', ''))).strip().upper(),
+            str(record.get('OLT', '')).strip(),
+            str(record.get('Nama/ID Pelanggan', '')).strip(),
+            str(record.get('Category', '')).strip(),
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        ))
+        conn.commit()
+    except Exception as e:
+        print(f"[DB] Error saving alarm_sent: {e}")
+    finally:
+        conn.close()
+
+
+def update_alarm_status(
+    message_id: int,
+    status: str,
+    technician: str = "",
+    reply_text: str = "",
+    reply_at: str = "",
+):
+    """
+    Update status alarm berdasarkan reply teknisi.
+    Dipanggil oleh telegram_listener saat mendeteksi reply ke message_id.
+
+    Parameters
+    ----------
+    message_id  : int  ID pesan Telegram yang di-reply
+    status      : str  'In Progress' | 'Resolved' | 'Cancelled'
+    technician  : str  Username Telegram teknisi (mis. @budi_tech)
+    reply_text  : str  Isi teks reply dari teknisi
+    reply_at    : str  Waktu reply (format YYYY-MM-DD HH:MM:SS)
+    """
+    if not reply_at:
+        reply_at = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    conn = get_connection()
+    try:
+        conn.execute("""
+            UPDATE alarm_sent
+            SET status     = ?,
+                technician = ?,
+                reply_text = ?,
+                reply_at   = ?
+            WHERE message_id = ?
+        """, (status, technician, reply_text, reply_at, message_id))
+        conn.commit()
+    except Exception as e:
+        print(f"[DB] Error updating alarm_status: {e}")
+    finally:
+        conn.close()
+
+
+def get_alarm_updates(limit: int = 50) -> pd.DataFrame:
+    """
+    Ambil daftar alarm yang pernah dikirim beserta status terakhirnya.
+    Digunakan oleh dashboard NOC untuk panel 'Field Technician Updates'.
+
+    Returns DataFrame berkolom:
+        sn, olt, pelanggan, category, sent_at,
+        status, technician, reply_text, reply_at
+    """
+    if not os.path.exists(DB_PATH):
+        return pd.DataFrame()
+    conn = get_connection()
+    try:
+        df = pd.read_sql_query(
+            """
+            SELECT
+                sn, olt, pelanggan, category,
+                sent_at, status, technician, reply_text, reply_at
+            FROM alarm_sent
+            ORDER BY sent_at DESC
+            LIMIT ?
+            """,
+            conn,
+            params=(limit,),
+        )
+        return df
+    except Exception as e:
+        print(f"[DB] Error loading alarm_updates: {e}")
+        return pd.DataFrame()
+    finally:
+        conn.close()
+
+
+def get_last_telegram_update_id() -> int:
+    """
+    Simpan dan baca offset 'update_id' terakhir yang sudah diproses
+    agar getUpdates tidak memproses pesan yang sama dua kali.
+    Disimpan di tabel kecil 'meta'.
+    """
+    conn = get_connection()
+    try:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS meta (
+                key   TEXT PRIMARY KEY,
+                value TEXT
+            )
+        """)
+        row = conn.execute(
+            "SELECT value FROM meta WHERE key = 'last_update_id'"
+        ).fetchone()
+        return int(row[0]) if row else 0
+    except Exception:
+        return 0
+    finally:
+        conn.close()
+
+
+def set_last_telegram_update_id(update_id: int):
+    """Perbarui offset update_id terakhir di SQLite."""
+    conn = get_connection()
+    try:
+        conn.execute("""
+            INSERT INTO meta (key, value) VALUES ('last_update_id', ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value
+        """, (str(update_id),))
+        conn.commit()
+    except Exception as e:
+        print(f"[DB] Error saving last_update_id: {e}")
+    finally:
+        conn.close()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# INPUT CACHE  —  Google Sheets → SQLite  (Master Data Caching)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def cache_input_from_gsheets(df: pd.DataFrame):
+    """
+    Simpan data master input dari Google Sheets ke tabel 'input_cache' di SQLite.
+    Tabel di-REPLACE setiap sinkronisasi agar selalu mencerminkan data terbaru.
+    Waktu sinkronisasi dicatat di tabel meta dengan key 'last_sync'.
+    """
+    if df is None or df.empty:
+        return
+    conn = get_connection()
+    try:
+        df.to_sql('input_cache', conn, if_exists='replace', index=False)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT)
+        """)
+        conn.execute("""
+            INSERT INTO meta (key, value) VALUES ('last_sync', ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value
+        """, (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),))
+        conn.commit()
+    except Exception as e:
+        print(f"[DB] Error caching input_cache: {e}")
+    finally:
+        conn.close()
+
+
+def load_input_cache() -> pd.DataFrame:
+    """
+    Baca data master input (daftar pelanggan & OLT) dari SQLite cache.
+    Digunakan sebagai sumber data utama saat START SCAN — tanpa koneksi Google Sheets.
+    """
+    if not os.path.exists(DB_PATH):
+        return pd.DataFrame()
+    conn = get_connection()
+    try:
+        return pd.read_sql_query("SELECT * FROM input_cache", conn)
+    except Exception:
+        return pd.DataFrame()
+    finally:
+        conn.close()
+
+
+def get_last_sync_time() -> str:
+    """Kembalikan string waktu terakhir kali Google Sheets di-sync ke SQLite."""
+    if not os.path.exists(DB_PATH):
+        return "Belum pernah"
+    conn = get_connection()
+    try:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT)
+        """)
+        row = conn.execute(
+            "SELECT value FROM meta WHERE key = 'last_sync'"
+        ).fetchone()
+        return row[0] if row else "Belum pernah"
+    except Exception:
+        return "Belum pernah"
+    finally:
+        conn.close()
+
+
+def load_scan_history_full() -> pd.DataFrame:
+    """
+    Ambil seluruh baris riwayat scan (bukan agregasi) untuk ekspor laporan Excel.
+    """
+    if not os.path.exists(DB_PATH):
+        return pd.DataFrame()
+    conn = get_connection()
+    try:
+        return pd.read_sql_query(
+            "SELECT * FROM scan_history ORDER BY scan_timestamp DESC", conn
+        )
+    except Exception:
         return pd.DataFrame()
     finally:
         conn.close()
