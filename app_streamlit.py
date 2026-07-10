@@ -330,6 +330,31 @@ import math
 def confirm_action_dialog(sn, action):
     _icon   = "✅" if action == "Resolved" else "❌"
     _color  = "#3fb950" if action == "Resolved" else "#f85149"
+    st.markdown("""
+    <style>
+    /* Tombol YA (Kiri) */
+    div[data-testid="stDialog"] div[data-testid="column"]:nth-child(1) button {
+        background-color: #238636 !important;
+        border-color: #2ea043 !important;
+        color: white !important;
+    }
+    div[data-testid="stDialog"] div[data-testid="column"]:nth-child(1) button:hover {
+        background-color: #2ea043 !important;
+        border-color: #3fb950 !important;
+    }
+    /* Tombol TIDAK (Kanan) */
+    div[data-testid="stDialog"] div[data-testid="column"]:nth-child(2) button {
+        background-color: #da3633 !important;
+        border-color: #f85149 !important;
+        color: white !important;
+    }
+    div[data-testid="stDialog"] div[data-testid="column"]:nth-child(2) button:hover {
+        background-color: #f85149 !important;
+        border-color: #ff7b72 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     st.markdown(f"""
     <div style='padding:15px; border-left:4px solid {_color}; background:rgba(22,27,34,0.5);'>
         Anda yakin ingin menandai alarm <b>{sn}</b> sebagai <span style='color:{_color}; font-weight:bold;'>{action}</span>?
@@ -337,11 +362,11 @@ def confirm_action_dialog(sn, action):
     """, unsafe_allow_html=True)
     
     c1, c2 = st.columns(2)
-    if c1.button(f"{_icon} Ya, eksekusi", use_container_width=True):
+    if c1.button("YA", use_container_width=True):
         update_alarm_status_by_sn(sn, action)
         st.toast(f"{_icon} {sn[:12]} → {action}!", icon=_icon)
         st.rerun()
-    if c2.button("🚫 Batal", use_container_width=True):
+    if c2.button("TIDAK", use_container_width=True):
         st.rerun()
 
 df_field_updates = get_alarm_updates(limit=200)
