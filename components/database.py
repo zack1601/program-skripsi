@@ -22,8 +22,14 @@ FIELD_KEYWORDS = {
 }
 
 def get_connection():
-    """Create and return a database connection."""
-    return sqlite3.connect(DB_PATH, check_same_thread=False)
+    """Create and return a database connection with timeout and WAL mode.
+    
+    timeout=15: tunggu hingga 15 detik jika DB sedang dipakai thread lain.
+    WAL mode: izinkan 1 writer + banyak reader sekaligus (fix 'database is locked').
+    """
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=15)
+    conn.execute("PRAGMA journal_mode=WAL")
+    return conn
 
 def init_db():
     """
