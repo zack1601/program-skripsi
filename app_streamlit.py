@@ -58,9 +58,8 @@ if 'temp_results' not in st.session_state:
     st.session_state['temp_results'] = []
 if 'filter_mode' not in st.session_state:
     st.session_state['filter_mode'] = 'All'
-if 'confirm_action' not in st.session_state:
-    # Simpan aksi yang menunggu konfirmasi: {sn, action} atau None
-    st.session_state['confirm_action'] = None
+if 'tech_page' not in st.session_state:
+    st.session_state['tech_page'] = 0
 
 # --- SESSION TIMEOUT (30 menit) ---
 _SESSION_TIMEOUT = 30 * 60  # detik
@@ -325,7 +324,27 @@ with st.expander("📈 Historical Problem Trend", expanded=False):
 # ─────────────────────────────────────────────────────────────────────────────
 # PANEL: FIELD TECHNICIAN UPDATES
 # ─────────────────────────────────────────────────────────────────────────────
-df_field_updates = get_alarm_updates(limit=50)
+import math
+
+@st.dialog("Konfirmasi Aksi Teknisi")
+def confirm_action_dialog(sn, action):
+    _icon   = "✅" if action == "Resolved" else "❌"
+    _color  = "#3fb950" if action == "Resolved" else "#f85149"
+    st.markdown(f"""
+    <div style='padding:15px; border-left:4px solid {_color}; background:rgba(22,27,34,0.5);'>
+        Anda yakin ingin menandai alarm <b>{sn}</b> sebagai <span style='color:{_color}; font-weight:bold;'>{action}</span>?
+    </div><br>
+    """, unsafe_allow_html=True)
+    
+    c1, c2 = st.columns(2)
+    if c1.button(f"{_icon} Ya, eksekusi", use_container_width=True):
+        update_alarm_status_by_sn(sn, action)
+        st.toast(f"{_icon} {sn[:12]} → {action}!", icon=_icon)
+        st.rerun()
+    if c2.button("🚫 Batal", use_container_width=True):
+        st.rerun()
+
+df_field_updates = get_alarm_updates(limit=200)
 
 st.markdown("""<div style='
     margin-top: 12px;
@@ -346,6 +365,19 @@ st.markdown("""<div style='
 if df_field_updates.empty:
     st.info("🟢 Tidak ada alarm aktif. Semua gangguan sudah ditangani atau belum ada alarm yang dikirim.")
 else:
+    # --- PAGINATION LOGIC ---
+    items_per_page = 5
+    total_pages = max(1, math.ceil(len(df_field_updates) / items_per_page))
+
+    if st.session_state['tech_page'] >= total_pages:
+        st.session_state['tech_page'] = total_pages - 1
+    if st.session_state['tech_page'] < 0:
+        st.session_state['tech_page'] = 0
+
+    start_idx = st.session_state['tech_page'] * items_per_page
+    end_idx = start_idx + items_per_page
+    df_page = df_field_updates.iloc[start_idx:end_idx]
+
     # Badge berwarna sesuai status
     _STATUS_BADGE = {
         "Sent"       : ("📤 Sent",        "#484f58", "#c9d1d9"),
@@ -378,7 +410,7 @@ else:
     st.markdown("<hr style='margin:4px 0 6px 0; border-color:#30363d;'>", unsafe_allow_html=True)
 
     # --- BARIS DATA ---
-    for idx, r in df_field_updates.iterrows():
+    for idx, r in df_page.iterrows():
         sn     = r.get("sn", "-") or "-"
         tech   = r.get("technician", "") or "-"
         reply  = r.get("reply_text",  "") or "-"
@@ -418,57 +450,29 @@ else:
         with row_cols[7]:
             btn_col1, btn_col2 = st.columns(2)
             with btn_col1:
-                if st.button("✅", key=f"resolve_{sn}_{idx}",
-                             help="Tandai Selesai (Resolved)"):
-                    st.session_state['confirm_action'] = {"sn": sn, "action": "Resolved"}
-                    st.rerun()
+                if st.button("✅", key=f"resolve_{sn}_{idx}", help="Tandai Selesai (Resolved)"):
+                    confirm_action_dialog(sn, "Resolved")
             with btn_col2:
-                if st.button("❌", key=f"cancel_{sn}_{idx}",
-                             help="Batalkan Kunjungan (Cancelled)"):
-                    st.session_state['confirm_action'] = {"sn": sn, "action": "Cancelled"}
-                    st.rerun()
+                if st.button("❌", key=f"cancel_{sn}_{idx}", help="Batalkan Kunjungan (Cancelled)"):
+                    confirm_action_dialog(sn, "Cancelled")
 
         st.markdown("<hr style='margin:2px 0; border-color:#21262d;'>", unsafe_allow_html=True)
+        
+    # --- PAGINATION CONTROLS ---
+    st.markdown("<br>", unsafe_allow_html=True)
+    p_col1, p_col2, p_col3, _ = st.columns([1, 1, 2, 4])
+    with p_col1:
+        if st.button("⬅️ Prev", disabled=(st.session_state['tech_page'] == 0), use_container_width=True):
+            st.session_state['tech_page'] -= 1
+            st.rerun()
+    with p_col2:
+        if st.button("Next ➡️", disabled=(st.session_state['tech_page'] >= total_pages - 1), use_container_width=True):
+            st.session_state['tech_page'] += 1
+            st.rerun()
+    with p_col3:
+        st.markdown(f"<div style='padding-top:8px; color:#8b949e; font-size:0.85rem;'>Page {st.session_state['tech_page'] + 1} of {total_pages} (Total: {len(df_field_updates)})</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
-
-# ─────────────────────────────────────────────────────────────────────────────
-# DIALOG KONFIRMASI AKSI TEKNISI
-# ─────────────────────────────────────────────────────────────────────────────
-_pending = st.session_state.get('confirm_action')
-if _pending:
-    _sn     = _pending['sn']
-    _act    = _pending['action']
-    _icon   = "✅" if _act == "Resolved" else "❌"
-    _color  = "#3fb950" if _act == "Resolved" else "#f85149"
-    _label  = "SELESAI DITANGANI" if _act == "Resolved" else "BATALKAN KUNJUNGAN"
-
-    st.markdown(f"""
-<div style='margin:8px 0; padding:16px 20px; border-radius:10px;
-     border:2px solid {_color}; background:rgba(22,27,34,0.95);'>
-  <p style='margin:0 0 8px 0; font-size:0.95rem; font-weight:700; color:{_color};'>
-    {_icon} Konfirmasi: {_label}
-  </p>
-  <p style='margin:0 0 14px 0; font-size:0.85rem; color:#c9d1d9;'>
-    Anda yakin ingin menandai alarm
-    <code style='background:#161b22; padding:2px 6px; border-radius:4px; color:#58a6ff;'>{_sn[:16]}</code>
-    sebagai <b style='color:{_color};'>{_act}</b>?
-  </p>
-</div>""", unsafe_allow_html=True)
-
-    _cfg1, _cfg2, _ = st.columns([1, 1, 4])
-    with _cfg1:
-        if st.button(f"{_icon} Ya, {_act}!", key="confirm_yes",
-                     use_container_width=True):
-            update_alarm_status_by_sn(_sn, _act)
-            st.session_state['confirm_action'] = None
-            st.toast(f"{_icon} {_sn[:12]} → {_act}!", icon=_icon)
-            st.rerun()
-    with _cfg2:
-        if st.button("🚫 Batal", key="confirm_no",
-                     use_container_width=True):
-            st.session_state['confirm_action'] = None
-            st.rerun()
 
 # Spacer to push content below the fixed Network Summary bar
 st.write("")
