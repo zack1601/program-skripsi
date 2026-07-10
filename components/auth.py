@@ -65,6 +65,7 @@ def render_login_page():
                     if submitted:
                         if user.lower() == "noc.fm" and password == "noc123":
                             st.session_state['logged_in'] = True
+                            st.session_state['login_time'] = __import__('time').time()
                             st.rerun()
                         else:
                             st.error("Username atau Password salah!")

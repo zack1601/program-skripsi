@@ -29,6 +29,7 @@ from components.database import (
     save_alarm_sent, get_alarm_updates, init_db,
     cache_input_from_gsheets, load_input_cache,
     get_last_sync_time, load_scan_history_full,
+    update_alarm_status_by_sn, get_all_alarm_history,
 )
 from components.validation import validate_input_dataframe
 from components.telegram_listener import start_listener
@@ -57,6 +58,18 @@ if 'temp_results' not in st.session_state:
     st.session_state['temp_results'] = []
 if 'filter_mode' not in st.session_state:
     st.session_state['filter_mode'] = 'All'
+
+# --- SESSION TIMEOUT (30 menit) ---
+_SESSION_TIMEOUT = 30 * 60  # detik
+if 'login_time' not in st.session_state:
+    st.session_state['login_time'] = None
+
+if st.session_state.get('logged_in') and st.session_state.get('login_time'):
+    _elapsed = time.time() - st.session_state['login_time']
+    if _elapsed > _SESSION_TIMEOUT:
+        st.session_state['logged_in'] = False
+        st.session_state['login_time'] = None
+        st.toast("⏰ Sesi habis (30 menit idle). Silakan login kembali.", icon="🔒")
 
 # --- LOGIN FORM ---
 if not st.session_state['logged_in']:
@@ -311,8 +324,7 @@ with st.expander("📈 Historical Problem Trend", expanded=False):
 # ─────────────────────────────────────────────────────────────────────────────
 df_field_updates = get_alarm_updates(limit=50)
 
-st.markdown("""
-<div style='
+st.markdown("""<div style='
     margin-top: 12px;
     padding: 16px 20px 8px 20px;
     border-radius: 10px;
@@ -323,13 +335,13 @@ st.markdown("""
               letter-spacing:1px; color:#c9d1d9;'>
         🛠️ FIELD TECHNICIAN UPDATES
         <span style='font-size:0.75rem; font-weight:400; color:#484f58; margin-left:8px;'>
-            — auto-refresh tiap 30 detik
+            — hanya menampilkan alarm aktif (Sent / In Progress)
         </span>
     </p>
 """, unsafe_allow_html=True)
 
 if df_field_updates.empty:
-    st.info("Belum ada alarm yang dikirim. Klik SEND ALARM untuk mulai.")
+    st.info("🟢 Tidak ada alarm aktif. Semua gangguan sudah ditangani atau belum ada alarm yang dikirim.")
 else:
     # Badge berwarna sesuai status
     _STATUS_BADGE = {
@@ -349,40 +361,73 @@ else:
             f"font-weight:600; white-space:nowrap;'>{label}</span>"
         )
 
-    # Render tabel manual agar bisa pakai badge HTML
-    rows_html = ""
-    for _, r in df_field_updates.iterrows():
-        tech  = r.get("technician", "") or "-"
-        reply = r.get("reply_text",  "") or "-"
-        ra    = r.get("reply_at",    "") or "-"
-        # Potong reply_at menjadi HH:MM saja agar lebih ringkas
-        ra_short = ra[11:16] if len(ra) >= 16 else ra
+    # --- HEADER TABEL ---
+    h_cols = st.columns([2, 2, 1.2, 1.5, 1.5, 1.5, 1.8, 1.3])
+    headers = ["Serial Number", "Pelanggan", "Category", "Status",
+               "Teknisi", "Reply", "Waktu", "Aksi"]
+    for hc, ht in zip(h_cols, headers):
+        hc.markdown(
+            f"<span style='font-size:0.72rem; color:#8b949e; text-transform:uppercase; "
+            f"letter-spacing:0.5px; font-weight:600;'>{ht}</span>",
+            unsafe_allow_html=True
+        )
+
+    st.markdown("<hr style='margin:4px 0 6px 0; border-color:#30363d;'>", unsafe_allow_html=True)
+
+    # --- BARIS DATA ---
+    for idx, r in df_field_updates.iterrows():
+        sn     = r.get("sn", "-") or "-"
+        tech   = r.get("technician", "") or "-"
+        reply  = r.get("reply_text",  "") or "-"
+        ra     = r.get("reply_at",    "") or "-"
+        status = r.get("status", "Sent")
+        ra_short   = ra[11:16] if len(ra) >= 16 else ra
         sent_short = str(r.get("sent_at", "-"))[11:16]
 
-        rows_html += f"""<tr style='border-bottom:1px solid #21262d;'>
-<td style='padding:6px 8px; font-family:monospace; font-size:0.78rem; color:#58a6ff;'>{r.get('sn', '-')[:14]}</td>
-<td style='padding:6px 8px; font-size:0.8rem;'>{r.get('pelanggan', '-')}</td>
-<td style='padding:6px 8px; font-size:0.8rem; color:#f5a623;'>{r.get('category', '-')}</td>
-<td style='padding:6px 8px;'>{_badge(r.get('status', 'Sent'))}</td>
-<td style='padding:6px 8px; font-size:0.78rem; color:#8b949e;'>{tech}</td>
-<td style='padding:6px 8px; font-size:0.78rem; color:#8b949e;'>{reply}</td>
-<td style='padding:6px 8px; font-size:0.75rem; color:#484f58; white-space:nowrap;'>Sent {sent_short} | Upd {ra_short}</td>
-</tr>"""
+        row_cols = st.columns([2, 2, 1.2, 1.5, 1.5, 1.5, 1.8, 1.3])
+        row_cols[0].markdown(
+            f"<span style='font-family:monospace; font-size:0.78rem; color:#58a6ff;'>{sn[:14]}</span>",
+            unsafe_allow_html=True
+        )
+        row_cols[1].markdown(
+            f"<span style='font-size:0.8rem;'>{r.get('pelanggan', '-')}</span>",
+            unsafe_allow_html=True
+        )
+        row_cols[2].markdown(
+            f"<span style='font-size:0.8rem; color:#f5a623;'>{r.get('category', '-')}</span>",
+            unsafe_allow_html=True
+        )
+        row_cols[3].markdown(_badge(status), unsafe_allow_html=True)
+        row_cols[4].markdown(
+            f"<span style='font-size:0.78rem; color:#8b949e;'>{tech}</span>",
+            unsafe_allow_html=True
+        )
+        row_cols[5].markdown(
+            f"<span style='font-size:0.78rem; color:#8b949e;'>{reply}</span>",
+            unsafe_allow_html=True
+        )
+        row_cols[6].markdown(
+            f"<span style='font-size:0.72rem; color:#484f58;'>Sent {sent_short}<br>Upd {ra_short}</span>",
+            unsafe_allow_html=True
+        )
 
-    st.markdown(f"""<table style='width:100%; border-collapse:collapse; color:#c9d1d9;'>
-<thead>
-<tr style='border-bottom:1px solid #30363d; color:#8b949e; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;'>
-<th style='padding:6px 8px; text-align:left;'>Serial Number</th>
-<th style='padding:6px 8px; text-align:left;'>Pelanggan</th>
-<th style='padding:6px 8px; text-align:left;'>Category</th>
-<th style='padding:6px 8px; text-align:left;'>Status</th>
-<th style='padding:6px 8px; text-align:left;'>Teknisi</th>
-<th style='padding:6px 8px; text-align:left;'>Reply</th>
-<th style='padding:6px 8px; text-align:left;'>Waktu</th>
-</tr>
-</thead>
-<tbody>{rows_html}</tbody>
-</table>""", unsafe_allow_html=True)
+        # --- TOMBOL AKSI (hanya muncul jika status masih aktif) ---
+        with row_cols[7]:
+            btn_col1, btn_col2 = st.columns(2)
+            with btn_col1:
+                if st.button("✅", key=f"resolve_{sn}_{idx}",
+                             help="Tandai Selesai (Resolved)"):
+                    update_alarm_status_by_sn(sn, "Resolved")
+                    st.toast(f"✅ {sn[:10]} ditandai Resolved!", icon="✅")
+                    st.rerun()
+            with btn_col2:
+                if st.button("❌", key=f"cancel_{sn}_{idx}",
+                             help="Batalkan Kunjungan (Cancelled)"):
+                    update_alarm_status_by_sn(sn, "Cancelled")
+                    st.toast(f"❌ {sn[:10]} dibatalkan!", icon="❌")
+                    st.rerun()
+
+        st.markdown("<hr style='margin:2px 0; border-color:#21262d;'>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -819,9 +864,13 @@ st.markdown("<div style='margin-top: -2rem; height: 12px;'></div>", unsafe_allow
 render_table(df_filtered)
 
 # ─────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
 # DOWNLOAD LAPORAN EXCEL (dari SQLite — Single Source of Truth)
 # ─────────────────────────────────────────────────────────────────────────────
 st.markdown("---")
+_WIB = dt.timezone(dt.timedelta(hours=7))
+_ts  = dt.datetime.now(_WIB).strftime('%Y%m%d_%H%M')
+
 with st.expander("📥 Download Laporan Excel", expanded=False):
     col_dl1, col_dl2 = st.columns(2)
 
@@ -835,7 +884,7 @@ with st.expander("📥 Download Laporan Excel", expanded=False):
             st.download_button(
                 label="⬇️ Hasil Scan Terakhir",
                 data=_buf1,
-                file_name=f"scan_terakhir_{dt.datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                file_name=f"scan_terakhir_{_ts}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True,
                 key="dl_latest"
@@ -844,16 +893,19 @@ with st.expander("📥 Download Laporan Excel", expanded=False):
             st.info("⚠️ Belum ada data scan. Klik START SCAN terlebih dahulu.")
 
     with col_dl2:
-        df_history_dl = load_scan_history_full()
+        df_history_dl    = load_scan_history_full()
+        df_alarm_hist_dl = get_all_alarm_history()
         if not df_history_dl.empty:
             _buf2 = io.BytesIO()
             with pd.ExcelWriter(_buf2, engine='openpyxl') as _w:
                 df_history_dl.to_excel(_w, index=False, sheet_name='Riwayat Lengkap')
+                if not df_alarm_hist_dl.empty:
+                    df_alarm_hist_dl.to_excel(_w, index=False, sheet_name='Status Gangguan')
             _buf2.seek(0)
             st.download_button(
                 label="⬇️ Riwayat Semua Scan",
                 data=_buf2,
-                file_name=f"riwayat_scan_{dt.datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+                file_name=f"riwayat_scan_{_ts}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True,
                 key="dl_history"

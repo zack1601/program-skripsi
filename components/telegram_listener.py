@@ -123,7 +123,8 @@ def poll_telegram_replies():
                 continue   # Bukan reply dengan kata kunci yang dikenali
 
             technician = _parse_technician(upd)
-            reply_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            _WIB = datetime.timezone(datetime.timedelta(hours=7))
+            reply_time = datetime.datetime.now(_WIB).strftime("%Y-%m-%d %H:%M:%S")
 
             # Update status di SQLite
             update_alarm_status(

@@ -3,6 +3,13 @@ import pandas as pd
 import os
 import datetime
 
+# Timezone Jakarta (WIB = UTC+7)
+_WIB = datetime.timezone(datetime.timedelta(hours=7))
+
+def _now_wib() -> str:
+    """Return timestamp saat ini dalam format WIB (YYYY-MM-DD HH:MM:SS)."""
+    return datetime.datetime.now(_WIB).strftime("%Y-%m-%d %H:%M:%S")
+
 DB_PATH = "noc_database.db"
 
 # Kata kunci reply dari teknisi lapangan
@@ -60,7 +67,7 @@ def save_scan_results(df):
         
         # Prepare for history (add timestamp)
         df_history = df.copy()
-        df_history['scan_timestamp'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        df_history['scan_timestamp'] = _now_wib()
         
         # Append to history
         df_history.to_sql('scan_history', conn, if_exists='append', index=False)
@@ -139,7 +146,7 @@ def save_alarm_sent(message_id: int, record: dict):
             str(record.get('OLT', '')).strip(),
             str(record.get('Nama/ID Pelanggan', '')).strip(),
             str(record.get('Category', '')).strip(),
-            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            _now_wib(),
         ))
         conn.commit()
     except Exception as e:
@@ -168,7 +175,7 @@ def update_alarm_status(
     reply_at    : str  Waktu reply (format YYYY-MM-DD HH:MM:SS)
     """
     if not reply_at:
-        reply_at = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        reply_at = _now_wib()
     conn = get_connection()
     try:
         conn.execute("""
@@ -188,8 +195,8 @@ def update_alarm_status(
 
 def get_alarm_updates(limit: int = 50) -> pd.DataFrame:
     """
-    Ambil daftar alarm yang pernah dikirim beserta status terakhirnya.
-    Digunakan oleh dashboard NOC untuk panel 'Field Technician Updates'.
+    Ambil daftar alarm yang AKTIF (Sent / In Progress) untuk panel dashboard.
+    Alarm yang sudah Resolved atau Cancelled TIDAK ditampilkan (dianggap selesai).
 
     Returns DataFrame berkolom:
         sn, olt, pelanggan, category, sent_at,
@@ -202,9 +209,10 @@ def get_alarm_updates(limit: int = 50) -> pd.DataFrame:
         df = pd.read_sql_query(
             """
             SELECT
-                sn, olt, pelanggan, category,
+                message_id, sn, olt, pelanggan, category,
                 sent_at, status, technician, reply_text, reply_at
             FROM alarm_sent
+            WHERE status IN ('Sent', 'In Progress')
             ORDER BY sent_at DESC
             LIMIT ?
             """,
@@ -214,6 +222,67 @@ def get_alarm_updates(limit: int = 50) -> pd.DataFrame:
         return df
     except Exception as e:
         print(f"[DB] Error loading alarm_updates: {e}")
+        return pd.DataFrame()
+    finally:
+        conn.close()
+
+
+def update_alarm_status_by_sn(sn: str, status: str, technician: str = "NOC Dashboard"):
+    """
+    Update status alarm berdasarkan Serial Number (SN) — dipakai oleh tombol
+    ✅ Resolved / ❌ Cancel pada dashboard NOC (bukan dari reply Telegram).
+
+    Parameters
+    ----------
+    sn         : str  Serial Number ONT
+    status     : str  'Resolved' | 'Cancelled'
+    technician : str  Identitas yang melakukan update (default: 'NOC Dashboard')
+    """
+    conn = get_connection()
+    try:
+        conn.execute("""
+            UPDATE alarm_sent
+            SET status     = ?,
+                technician = ?,
+                reply_text = ?,
+                reply_at   = ?
+            WHERE sn = ? AND status IN ('Sent', 'In Progress')
+        """, (status, technician, f"Updated via Dashboard → {status}", _now_wib(), sn.strip().upper()))
+        conn.commit()
+    except Exception as e:
+        print(f"[DB] Error updating alarm_status by SN: {e}")
+    finally:
+        conn.close()
+
+
+def get_all_alarm_history() -> pd.DataFrame:
+    """
+    Ambil SEMUA riwayat alarm (Sent, In Progress, Resolved, Cancelled) untuk
+    diekspor ke sheet 'Status Gangguan' pada laporan Excel.
+    """
+    if not os.path.exists(DB_PATH):
+        return pd.DataFrame()
+    conn = get_connection()
+    try:
+        return pd.read_sql_query(
+            """
+            SELECT
+                sn          AS "Serial Number",
+                olt         AS "OLT",
+                pelanggan   AS "Pelanggan",
+                category    AS "Category",
+                status      AS "Status Penanganan",
+                technician  AS "Teknisi",
+                reply_text  AS "Reply Teknisi",
+                sent_at     AS "Waktu Alarm Dikirim",
+                reply_at    AS "Waktu Update Status"
+            FROM alarm_sent
+            ORDER BY sent_at DESC
+            """,
+            conn,
+        )
+    except Exception as e:
+        print(f"[DB] Error loading alarm history: {e}")
         return pd.DataFrame()
     finally:
         conn.close()
@@ -279,7 +348,7 @@ def cache_input_from_gsheets(df: pd.DataFrame):
         conn.execute("""
             INSERT INTO meta (key, value) VALUES ('last_sync', ?)
             ON CONFLICT(key) DO UPDATE SET value = excluded.value
-        """, (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),))
+        """, (_now_wib(),))
         conn.commit()
     except Exception as e:
         print(f"[DB] Error caching input_cache: {e}")
