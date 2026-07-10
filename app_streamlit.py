@@ -914,19 +914,36 @@ st.markdown("---")
 _WIB = dt.timezone(dt.timedelta(hours=7))
 _ts  = dt.datetime.now(_WIB).strftime('%Y%m%d_%H%M')
 
+@st.cache_data(ttl=60, show_spinner=False)
+def _generate_latest_excel_cache():
+    df = load_latest_scan()
+    if df.empty: return None
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine='openpyxl') as w:
+        df.to_excel(w, index=False, sheet_name='Hasil Scan Terakhir')
+    return buf.getvalue()
+
+@st.cache_data(ttl=60, show_spinner=False)
+def _generate_history_excel_cache():
+    df_h = load_scan_history_full()
+    df_a = get_all_alarm_history()
+    if df_h.empty: return None
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine='openpyxl') as w:
+        df_h.to_excel(w, index=False, sheet_name='Riwayat Lengkap')
+        if not df_a.empty:
+            df_a.to_excel(w, index=False, sheet_name='Status Gangguan')
+    return buf.getvalue()
+
 with st.expander("📥 Download Laporan Excel", expanded=False):
     col_dl1, col_dl2 = st.columns(2)
 
     with col_dl1:
-        df_latest_dl = load_latest_scan()
-        if not df_latest_dl.empty:
-            _buf1 = io.BytesIO()
-            with pd.ExcelWriter(_buf1, engine='openpyxl') as _w:
-                df_latest_dl.to_excel(_w, index=False, sheet_name='Hasil Scan Terakhir')
-            _buf1.seek(0)
+        data_latest = _generate_latest_excel_cache()
+        if data_latest:
             st.download_button(
                 label="⬇️ Hasil Scan Terakhir",
-                data=_buf1,
+                data=data_latest,
                 file_name=f"scan_terakhir_{_ts}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True,
@@ -936,18 +953,11 @@ with st.expander("📥 Download Laporan Excel", expanded=False):
             st.info("⚠️ Belum ada data scan. Klik START SCAN terlebih dahulu.")
 
     with col_dl2:
-        df_history_dl    = load_scan_history_full()
-        df_alarm_hist_dl = get_all_alarm_history()
-        if not df_history_dl.empty:
-            _buf2 = io.BytesIO()
-            with pd.ExcelWriter(_buf2, engine='openpyxl') as _w:
-                df_history_dl.to_excel(_w, index=False, sheet_name='Riwayat Lengkap')
-                if not df_alarm_hist_dl.empty:
-                    df_alarm_hist_dl.to_excel(_w, index=False, sheet_name='Status Gangguan')
-            _buf2.seek(0)
+        data_history = _generate_history_excel_cache()
+        if data_history:
             st.download_button(
                 label="⬇️ Riwayat Semua Scan",
-                data=_buf2,
+                data=data_history,
                 file_name=f"riwayat_scan_{_ts}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True,
