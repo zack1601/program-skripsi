@@ -331,102 +331,6 @@ if 'confirm_action' not in st.session_state:
 
 df_field_updates = get_alarm_updates(limit=200)
 
-if st.session_state['confirm_action']:
-    ca = st.session_state['confirm_action']
-    _sn = ca['sn']
-    _act = ca['action']
-    _icon = "✅" if _act == "Resolved" else "❌"
-    _col = "#3fb950" if _act == "Resolved" else "#f85149"
-    
-    with st.container():
-        st.markdown("<div id='custom-modal-anchor'></div>", unsafe_allow_html=True)
-        st.markdown(f"""
-        <div style='padding:15px; border-left:4px solid {_col}; background:rgba(22,27,34,0.95); border-radius:8px; margin-bottom:15px; border:1px solid #30363D;'>
-            <b>Konfirmasi:</b> Anda yakin ingin menandai alarm <b>{_sn}</b> sebagai <span style='color:{_col}; font-weight:bold;'>{_act}</span>?
-        </div>
-        """, unsafe_allow_html=True)
-        
-        c1, c2 = st.columns(2)
-        with c1:
-            if st.button("YA", use_container_width=True):
-                update_alarm_status_by_sn(_sn, _act)
-                st.toast(f"{_icon} {_sn[:12]} → {_act}!", icon=_icon)
-                st.session_state['confirm_action'] = None
-                st.rerun()
-        with c2:
-            if st.button("TIDAK", use_container_width=True):
-                st.session_state['confirm_action'] = None
-                st.rerun()
-                
-        import streamlit.components.v1 as components
-        components.html("""
-        <script>
-        const doc = window.parent.document;
-        const colorizeAndModalize = () => {
-            // Warnai tombol
-            doc.querySelectorAll('button').forEach(btn => {
-                const text = btn.innerText.trim();
-                if(text === 'YA') {
-                    btn.style.setProperty('background-color', '#238636', 'important');
-                    btn.style.setProperty('border-color', '#2ea043', 'important');
-                    btn.style.setProperty('color', 'white', 'important');
-                } else if(text === 'TIDAK') {
-                    btn.style.setProperty('background-color', '#da3633', 'important');
-                    btn.style.setProperty('border-color', '#f85149', 'important');
-                    btn.style.setProperty('color', 'white', 'important');
-                }
-            });
-            
-            // Buat jadi popup melayang
-            const anchor = doc.getElementById('custom-modal-anchor');
-            if (anchor) {
-                let container = anchor.closest('div[data-testid="stVerticalBlock"]');
-                if (!container) container = anchor.parentElement.parentElement;
-                
-                if (container) {
-                    container.style.setProperty('position', 'fixed', 'important');
-                    container.style.setProperty('top', '50%', 'important');
-                    container.style.setProperty('left', '50%', 'important');
-                    container.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-                    container.style.setProperty('z-index', '999999', 'important');
-                    container.style.setProperty('width', '400px', 'important');
-                    container.style.setProperty('background-color', '#0d1117', 'important');
-                    container.style.setProperty('padding', '20px', 'important');
-                    container.style.setProperty('border-radius', '12px', 'important');
-                    container.style.setProperty('border', '1px solid #30363d', 'important');
-                    container.style.setProperty('box-shadow', '0 10px 30px rgba(0,0,0,0.8)', 'important');
-                }
-                
-                // Backdrop gelap
-                let backdrop = doc.getElementById('custom-modal-backdrop');
-                if (!backdrop) {
-                    backdrop = doc.createElement('div');
-                    backdrop.id = 'custom-modal-backdrop';
-                    backdrop.style.position = 'fixed';
-                    backdrop.style.top = '0';
-                    backdrop.style.left = '0';
-                    backdrop.style.width = '100vw';
-                    backdrop.style.height = '100vh';
-                    backdrop.style.backgroundColor = 'rgba(0,0,0,0.6)';
-                    backdrop.style.zIndex = '999998';
-                    doc.body.appendChild(backdrop);
-                }
-            }
-        };
-        colorizeAndModalize(); setTimeout(colorizeAndModalize, 50); setTimeout(colorizeAndModalize, 150);
-        </script>
-        """, height=0, width=0)
-else:
-    # Hapus backdrop jika konfirmasi ditutup
-    import streamlit.components.v1 as components
-    components.html("""
-    <script>
-    const b = window.parent.document.getElementById('custom-modal-backdrop');
-    if(b) b.remove();
-    </script>
-    """, height=0, width=0)
-
-
 st.markdown("""<div style='
     margin-top: 12px;
     padding: 16px 20px 8px 20px;
@@ -442,6 +346,39 @@ st.markdown("""<div style='
         </span>
     </p>
 """, unsafe_allow_html=True)
+
+# --- KONFIRMASI INLINE (di dalam panel, tepat di bawah header) ---
+if st.session_state['confirm_action']:
+    ca = st.session_state['confirm_action']
+    _sn = ca['sn']
+    _act = ca['action']
+    _icon = "✅" if _act == "Resolved" else "❌"
+    _col = "#3fb950" if _act == "Resolved" else "#f85149"
+    _bg  = "rgba(35,134,54,0.15)" if _act == "Resolved" else "rgba(218,54,51,0.15)"
+
+    st.markdown(f"""
+    <div style='padding:12px 16px; border:1px solid {_col}; border-radius:8px;
+                background:{_bg}; margin-bottom:12px;'>
+        <b style='color:#c9d1d9;'>Konfirmasi:</b>
+        Tandai <b style='color:#58a6ff;'>{_sn}</b> sebagai
+        <span style='color:{_col}; font-weight:700;'>{_act}</span> ?
+    </div>
+    """, unsafe_allow_html=True)
+
+    bc1, bc2, bc3 = st.columns([2, 1, 1])
+    with bc2:
+        ya_clicked = st.button("✅ YA", key="confirm_ya", use_container_width=True)
+    with bc3:
+        tidak_clicked = st.button("❌ TIDAK", key="confirm_tidak", use_container_width=True)
+
+    if ya_clicked:
+        update_alarm_status_by_sn(_sn, _act)
+        st.toast(f"{_icon} {_sn[:12]} → {_act}!", icon=_icon)
+        st.session_state['confirm_action'] = None
+        st.rerun()
+    if tidak_clicked:
+        st.session_state['confirm_action'] = None
+        st.rerun()
 
 if df_field_updates.empty:
     st.info("🟢 Tidak ada alarm aktif. Semua gangguan sudah ditangani atau belum ada alarm yang dikirim.")
