@@ -158,7 +158,7 @@ with st.sidebar:
                 for sheet_name in target_sheets:
                     try:
                         with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
-                            df_sheet = _gconn.read(spreadsheet=_SYNC_URL, worksheet=sheet_name)
+                            df_sheet = _gconn.read(spreadsheet=_SYNC_URL, worksheet=sheet_name, show_spinner=False)
                         if df_sheet is not None and not df_sheet.empty:
                             all_data.append(df_sheet)
                     except Exception as e_sheet:
