@@ -326,50 +326,58 @@ with st.expander("📈 Historical Problem Trend", expanded=False):
 # ─────────────────────────────────────────────────────────────────────────────
 import math
 
-@st.dialog("Konfirmasi Aksi Teknisi")
-def confirm_action_dialog(sn, action):
-    _icon   = "✅" if action == "Resolved" else "❌"
-    _color  = "#3fb950" if action == "Resolved" else "#f85149"
+if 'confirm_action' not in st.session_state:
+    st.session_state['confirm_action'] = None
+
+df_field_updates = get_alarm_updates(limit=200)
+
+if st.session_state['confirm_action']:
+    ca = st.session_state['confirm_action']
+    _sn = ca['sn']
+    _act = ca['action']
+    _icon = "✅" if _act == "Resolved" else "❌"
+    _col = "#3fb950" if _act == "Resolved" else "#f85149"
+    
+    st.markdown(f"""
+    <div style='padding:15px; border-left:4px solid {_col}; background:rgba(22,27,34,0.85); border-radius:8px; margin-bottom:15px; border:1px solid #30363D;'>
+        <b>Konfirmasi:</b> Anda yakin ingin menandai alarm <b>{_sn}</b> sebagai <span style='color:{_col}; font-weight:bold;'>{_act}</span>?
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<div id='confirm-btns-anchor'></div>", unsafe_allow_html=True)
     st.markdown("""
     <style>
-    /* Tombol YA (Kiri) */
-    div[data-testid="stDialog"] div[data-testid="column"]:nth-child(1) button {
+    #confirm-btns-anchor + div div[data-testid="column"]:nth-child(1) button {
         background-color: #238636 !important;
         border-color: #2ea043 !important;
         color: white !important;
     }
-    div[data-testid="stDialog"] div[data-testid="column"]:nth-child(1) button:hover {
+    #confirm-btns-anchor + div div[data-testid="column"]:nth-child(1) button:hover {
         background-color: #2ea043 !important;
-        border-color: #3fb950 !important;
     }
-    /* Tombol TIDAK (Kanan) */
-    div[data-testid="stDialog"] div[data-testid="column"]:nth-child(2) button {
+    #confirm-btns-anchor + div div[data-testid="column"]:nth-child(2) button {
         background-color: #da3633 !important;
         border-color: #f85149 !important;
         color: white !important;
     }
-    div[data-testid="stDialog"] div[data-testid="column"]:nth-child(2) button:hover {
-        background-color: #f85149 !important;
-        border-color: #ff7b72 !important;
+    #confirm-btns-anchor + div div[data-testid="column"]:nth-child(2) button:hover {
+        background-color: #ff7b72 !important;
     }
     </style>
     """, unsafe_allow_html=True)
-
-    st.markdown(f"""
-    <div style='padding:15px; border-left:4px solid {_color}; background:rgba(22,27,34,0.5);'>
-        Anda yakin ingin menandai alarm <b>{sn}</b> sebagai <span style='color:{_color}; font-weight:bold;'>{action}</span>?
-    </div><br>
-    """, unsafe_allow_html=True)
     
     c1, c2 = st.columns(2)
-    if c1.button("YA", use_container_width=True):
-        update_alarm_status_by_sn(sn, action)
-        st.toast(f"{_icon} {sn[:12]} → {action}!", icon=_icon)
-        st.rerun()
-    if c2.button("TIDAK", use_container_width=True):
-        st.rerun()
+    with c1:
+        if st.button("YA", use_container_width=True):
+            update_alarm_status_by_sn(_sn, _act)
+            st.toast(f"{_icon} {_sn[:12]} → {_act}!", icon=_icon)
+            st.session_state['confirm_action'] = None
+            st.rerun()
+    with c2:
+        if st.button("TIDAK", use_container_width=True):
+            st.session_state['confirm_action'] = None
+            st.rerun()
 
-df_field_updates = get_alarm_updates(limit=200)
 
 st.markdown("""<div style='
     margin-top: 12px;
@@ -476,10 +484,12 @@ else:
             btn_col1, btn_col2 = st.columns(2)
             with btn_col1:
                 if st.button("✅", key=f"resolve_{sn}_{idx}", help="Tandai Selesai (Resolved)"):
-                    confirm_action_dialog(sn, "Resolved")
+                    st.session_state['confirm_action'] = {'sn': sn, 'action': 'Resolved'}
+                    st.rerun()
             with btn_col2:
-                if st.button("❌", key=f"cancel_{sn}_{idx}", help="Batalkan Kunjungan (Cancelled)"):
-                    confirm_action_dialog(sn, "Cancelled")
+                if st.button("❌", key=f"cancel_{sn}_{idx}", help="Batalkan (Cancelled)"):
+                    st.session_state['confirm_action'] = {'sn': sn, 'action': 'Cancelled'}
+                    st.rerun()
 
         st.markdown("<hr style='margin:2px 0; border-color:#21262d;'>", unsafe_allow_html=True)
         
