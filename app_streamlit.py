@@ -338,45 +338,48 @@ if st.session_state['confirm_action']:
     _icon = "✅" if _act == "Resolved" else "❌"
     _col = "#3fb950" if _act == "Resolved" else "#f85149"
     
-    st.markdown(f"""
-    <div style='padding:15px; border-left:4px solid {_col}; background:rgba(22,27,34,0.85); border-radius:8px; margin-bottom:15px; border:1px solid #30363D;'>
-        <b>Konfirmasi:</b> Anda yakin ingin menandai alarm <b>{_sn}</b> sebagai <span style='color:{_col}; font-weight:bold;'>{_act}</span>?
-    </div>
-    """, unsafe_allow_html=True)
+    _, col_center, _ = st.columns([1, 2, 1])
     
-    st.markdown("<div id='confirm-btns-anchor'></div>", unsafe_allow_html=True)
-    st.markdown("""
-    <style>
-    #confirm-btns-anchor + div div[data-testid="column"]:nth-child(1) button {
-        background-color: #238636 !important;
-        border-color: #2ea043 !important;
-        color: white !important;
-    }
-    #confirm-btns-anchor + div div[data-testid="column"]:nth-child(1) button:hover {
-        background-color: #2ea043 !important;
-    }
-    #confirm-btns-anchor + div div[data-testid="column"]:nth-child(2) button {
-        background-color: #da3633 !important;
-        border-color: #f85149 !important;
-        color: white !important;
-    }
-    #confirm-btns-anchor + div div[data-testid="column"]:nth-child(2) button:hover {
-        background-color: #ff7b72 !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button("YA", use_container_width=True):
-            update_alarm_status_by_sn(_sn, _act)
-            st.toast(f"{_icon} {_sn[:12]} → {_act}!", icon=_icon)
-            st.session_state['confirm_action'] = None
-            st.rerun()
-    with c2:
-        if st.button("TIDAK", use_container_width=True):
-            st.session_state['confirm_action'] = None
-            st.rerun()
+    with col_center:
+        st.markdown(f"""
+        <div style='padding:15px; border-left:4px solid {_col}; background:rgba(22,27,34,0.85); border-radius:8px; margin-bottom:15px; border:1px solid #30363D;'>
+            <b>Konfirmasi:</b> Anda yakin ingin menandai alarm <b>{_sn}</b> sebagai <span style='color:{_col}; font-weight:bold;'>{_act}</span>?
+        </div>
+        """, unsafe_allow_html=True)
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("YA", use_container_width=True):
+                update_alarm_status_by_sn(_sn, _act)
+                st.toast(f"{_icon} {_sn[:12]} → {_act}!", icon=_icon)
+                st.session_state['confirm_action'] = None
+                st.rerun()
+        with c2:
+            if st.button("TIDAK", use_container_width=True):
+                st.session_state['confirm_action'] = None
+                st.rerun()
+                
+        import streamlit.components.v1 as components
+        components.html("""
+        <script>
+        const doc = window.parent.document;
+        const colorize = () => {
+            doc.querySelectorAll('button').forEach(btn => {
+                const text = btn.innerText.trim();
+                if(text === 'YA') {
+                    btn.style.setProperty('background-color', '#238636', 'important');
+                    btn.style.setProperty('border-color', '#2ea043', 'important');
+                    btn.style.setProperty('color', 'white', 'important');
+                } else if(text === 'TIDAK') {
+                    btn.style.setProperty('background-color', '#da3633', 'important');
+                    btn.style.setProperty('border-color', '#f85149', 'important');
+                    btn.style.setProperty('color', 'white', 'important');
+                }
+            });
+        };
+        colorize(); setTimeout(colorize, 50); setTimeout(colorize, 150); setTimeout(colorize, 400);
+        </script>
+        """, height=0, width=0)
 
 
 st.markdown("""<div style='
