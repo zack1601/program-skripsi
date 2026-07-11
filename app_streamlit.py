@@ -133,41 +133,7 @@ with st.sidebar:
     st.markdown('<div class="sidebar-btn active"><i class="fa-solid fa-chart-line" style="margin-right:10px;opacity:0.7;"></i>Monitoring Dashboard</div>', unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Dynamic Scan/Stop Toggle Button
-    is_running = st.session_state.get('is_scanning', False)
-    if is_running:
-        st.markdown('<div class="stop-btn">', unsafe_allow_html=True)
-        if st.button("STOP SCANNING", use_container_width=True):
-            st.session_state['is_scanning'] = False
-            st.session_state['stop_scanning'] = True
-            
-            # Pindahkan data yang sudah terkumpul sejauh ini ke data_final agar tidak kosong
-            if 'temp_results' in st.session_state and st.session_state['temp_results']:
-                final_df = pd.DataFrame(st.session_state['temp_results'])
-                if not final_df.empty:
-                    # Bersihkan SN untuk deduplikasi terpercaya
-                    final_df['Serial Number'] = final_df['Serial Number'].astype(str).str.strip().str.upper()
-                    final_df['Nama/ID Pelanggan'] = final_df['Nama/ID Pelanggan'].astype(str).str.strip().str.upper()
-                    
-                    # Deduplikasi ketat hanya berdasarkan SN
-                    final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
-                    
-                    st.session_state['data_final'] = final_df
-                    save_scan_results(final_df)
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-    else:
-        st.markdown('<div class="start-btn">', unsafe_allow_html=True)
-        if st.button("START SCAN", use_container_width=True):
-            st.session_state['is_scanning'] = True
-            st.session_state['stop_scanning'] = False
-            st.session_state['temp_results'] = []
-            st.session_state['data_final'] = pd.DataFrame()
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-
     # ── SYNC DATA BUTTON ──────────────────────────────────────────────────────
-    st.markdown("---")
     _last_sync = get_last_sync_time()
     st.markdown(
         f"<p style='margin:0 0 6px 0; font-size:0.75rem; color:#484f58;'>"
@@ -205,6 +171,41 @@ with st.sidebar:
             except Exception as _e:
                 st.error(f"❌ Gagal terhubung ke Google Sheets: {_e}")
         st.rerun()
+
+    st.markdown("---")
+
+    # Dynamic Scan/Stop Toggle Button
+    is_running = st.session_state.get('is_scanning', False)
+    if is_running:
+        st.markdown('<div class="stop-btn">', unsafe_allow_html=True)
+        if st.button("STOP SCANNING", use_container_width=True):
+            st.session_state['is_scanning'] = False
+            st.session_state['stop_scanning'] = True
+            
+            # Pindahkan data yang sudah terkumpul sejauh ini ke data_final agar tidak kosong
+            if 'temp_results' in st.session_state and st.session_state['temp_results']:
+                final_df = pd.DataFrame(st.session_state['temp_results'])
+                if not final_df.empty:
+                    # Bersihkan SN untuk deduplikasi terpercaya
+                    final_df['Serial Number'] = final_df['Serial Number'].astype(str).str.strip().str.upper()
+                    final_df['Nama/ID Pelanggan'] = final_df['Nama/ID Pelanggan'].astype(str).str.strip().str.upper()
+                    
+                    # Deduplikasi ketat hanya berdasarkan SN
+                    final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
+                    
+                    st.session_state['data_final'] = final_df
+                    save_scan_results(final_df)
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    else:
+        st.markdown('<div class="start-btn">', unsafe_allow_html=True)
+        if st.button("START SCAN", use_container_width=True):
+            st.session_state['is_scanning'] = True
+            st.session_state['stop_scanning'] = False
+            st.session_state['temp_results'] = []
+            st.session_state['data_final'] = pd.DataFrame()
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # Alarm Region Selector
     st.markdown("---")
