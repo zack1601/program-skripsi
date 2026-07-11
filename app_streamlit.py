@@ -338,11 +338,10 @@ if st.session_state['confirm_action']:
     _icon = "✅" if _act == "Resolved" else "❌"
     _col = "#3fb950" if _act == "Resolved" else "#f85149"
     
-    _, col_center, _ = st.columns([1, 2, 1])
-    
-    with col_center:
+    with st.container():
+        st.markdown("<div id='custom-modal-anchor'></div>", unsafe_allow_html=True)
         st.markdown(f"""
-        <div style='padding:15px; border-left:4px solid {_col}; background:rgba(22,27,34,0.85); border-radius:8px; margin-bottom:15px; border:1px solid #30363D;'>
+        <div style='padding:15px; border-left:4px solid {_col}; background:rgba(22,27,34,0.95); border-radius:8px; margin-bottom:15px; border:1px solid #30363D;'>
             <b>Konfirmasi:</b> Anda yakin ingin menandai alarm <b>{_sn}</b> sebagai <span style='color:{_col}; font-weight:bold;'>{_act}</span>?
         </div>
         """, unsafe_allow_html=True)
@@ -363,7 +362,8 @@ if st.session_state['confirm_action']:
         components.html("""
         <script>
         const doc = window.parent.document;
-        const colorize = () => {
+        const colorizeAndModalize = () => {
+            // Warnai tombol
             doc.querySelectorAll('button').forEach(btn => {
                 const text = btn.innerText.trim();
                 if(text === 'YA') {
@@ -376,10 +376,55 @@ if st.session_state['confirm_action']:
                     btn.style.setProperty('color', 'white', 'important');
                 }
             });
+            
+            // Buat jadi popup melayang
+            const anchor = doc.getElementById('custom-modal-anchor');
+            if (anchor) {
+                let container = anchor.closest('div[data-testid="stVerticalBlock"]');
+                if (!container) container = anchor.parentElement.parentElement;
+                
+                if (container) {
+                    container.style.setProperty('position', 'fixed', 'important');
+                    container.style.setProperty('top', '50%', 'important');
+                    container.style.setProperty('left', '50%', 'important');
+                    container.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+                    container.style.setProperty('z-index', '999999', 'important');
+                    container.style.setProperty('width', '400px', 'important');
+                    container.style.setProperty('background-color', '#0d1117', 'important');
+                    container.style.setProperty('padding', '20px', 'important');
+                    container.style.setProperty('border-radius', '12px', 'important');
+                    container.style.setProperty('border', '1px solid #30363d', 'important');
+                    container.style.setProperty('box-shadow', '0 10px 30px rgba(0,0,0,0.8)', 'important');
+                }
+                
+                // Backdrop gelap
+                let backdrop = doc.getElementById('custom-modal-backdrop');
+                if (!backdrop) {
+                    backdrop = doc.createElement('div');
+                    backdrop.id = 'custom-modal-backdrop';
+                    backdrop.style.position = 'fixed';
+                    backdrop.style.top = '0';
+                    backdrop.style.left = '0';
+                    backdrop.style.width = '100vw';
+                    backdrop.style.height = '100vh';
+                    backdrop.style.backgroundColor = 'rgba(0,0,0,0.6)';
+                    backdrop.style.zIndex = '999998';
+                    doc.body.appendChild(backdrop);
+                }
+            }
         };
-        colorize(); setTimeout(colorize, 50); setTimeout(colorize, 150); setTimeout(colorize, 400);
+        colorizeAndModalize(); setTimeout(colorizeAndModalize, 50); setTimeout(colorizeAndModalize, 150);
         </script>
         """, height=0, width=0)
+else:
+    # Hapus backdrop jika konfirmasi ditutup
+    import streamlit.components.v1 as components
+    components.html("""
+    <script>
+    const b = window.parent.document.getElementById('custom-modal-backdrop');
+    if(b) b.remove();
+    </script>
+    """, height=0, width=0)
 
 
 st.markdown("""<div style='
