@@ -154,14 +154,19 @@ with st.sidebar:
                 target_sheets = ["Fatmawati", "Senopati", "Cinere", "Lenteng Agung", "Cipedak", "Pinang/kalijati"]
                 all_data = []
                 
-                with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
-                    for sheet_name in target_sheets:
-                        try:
+                _sheet_errors = {}
+                for sheet_name in target_sheets:
+                    try:
+                        with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
                             df_sheet = _gconn.read(spreadsheet=_SYNC_URL, worksheet=sheet_name)
-                            if df_sheet is not None and not df_sheet.empty:
-                                all_data.append(df_sheet)
-                        except Exception as e_sheet:
-                            st.toast(f"Gagal membaca tab {sheet_name}")
+                        if df_sheet is not None and not df_sheet.empty:
+                            all_data.append(df_sheet)
+                    except Exception as e_sheet:
+                        _sheet_errors[sheet_name] = str(e_sheet)
+
+                if _sheet_errors:
+                    for _sn, _se in _sheet_errors.items():
+                        st.error(f"❌ Tab '{_sn}': {_se}")
 
                 if all_data:
                     _df_sync_combined = pd.concat(all_data, ignore_index=True)
