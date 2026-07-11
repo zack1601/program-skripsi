@@ -172,7 +172,7 @@ with st.sidebar:
                 st.error(f"❌ Gagal terhubung ke Google Sheets: {_e}")
         st.rerun()
 
-    st.markdown("---")
+    st.markdown("<hr style='margin: 1.5em 0; border: none; border-top: 1px solid #30363D;'>", unsafe_allow_html=True)
 
     # Dynamic Scan/Stop Toggle Button
     is_running = st.session_state.get('is_scanning', False)
@@ -208,7 +208,7 @@ with st.sidebar:
         st.markdown('</div>', unsafe_allow_html=True)
 
     # Alarm Region Selector
-    st.markdown("---")
+    st.markdown("<hr style='margin: 1.5em 0; border: none; border-top: 1px solid #30363D;'>", unsafe_allow_html=True)
     region_options = ["Semua Wilayah", "Fatmawati", "Cipedak", "Pinang/Kalijati", "Lenteng Agung", "Cinere", "Senopati"]
     selected_region_alarm = st.selectbox("🎯 Target Alarm Region:", region_options)
     
