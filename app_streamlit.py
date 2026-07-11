@@ -333,18 +333,19 @@ df_field_updates = get_alarm_updates(limit=200)
 
 st.markdown("""<div style='
     margin-top: 12px;
-    padding: 16px 20px 8px 20px;
+    padding: 16px 20px 12px 20px;
     border-radius: 10px;
     border: 1px solid #30363D;
     background: rgba(22,27,34,0.85);
 '>
-    <p style='margin:0 0 12px 0; font-size:1rem; font-weight:700;
+    <p style='margin:0; font-size:1rem; font-weight:700;
               letter-spacing:1px; color:#c9d1d9;'>
         🛠️ FIELD TECHNICIAN UPDATES
         <span style='font-size:0.75rem; font-weight:400; color:#484f58; margin-left:8px;'>
             — hanya menampilkan alarm aktif (Sent / In Progress)
         </span>
     </p>
+</div>
 """, unsafe_allow_html=True)
 
 # --- KONFIRMASI INLINE (di dalam panel, tepat di bawah header) ---
@@ -492,7 +493,7 @@ else:
     with p_col3:
         st.markdown(f"<div style='padding-top:8px; color:#8b949e; font-size:0.85rem;'>Page {st.session_state['tech_page'] + 1} of {total_pages} (Total: {len(df_field_updates)})</div>", unsafe_allow_html=True)
 
-st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("<hr style='border-color:#21262d; margin-top:8px;'>", unsafe_allow_html=True)
 
 # Spacer to push content below the fixed Network Summary bar
 st.write("")
