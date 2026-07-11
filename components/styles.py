@@ -27,6 +27,10 @@ def inject_custom_css():
     [data-testid="stToolbar"] {
         display: none !important;
     }
+    [data-testid="stStatusWidget"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
     
     [data-testid="stSidebar"] {
         background-color: #161B22 !important;
