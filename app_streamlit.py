@@ -175,19 +175,33 @@ with st.sidebar:
         unsafe_allow_html=True
     )
     if st.button("🔄 SYNC GOOGLE SHEETS", use_container_width=True):
-        with st.spinner("Menarik data dari Google Sheets..."):
+        with st.spinner("Menarik data dari seluruh tab Google Sheets..."):
             try:
                 _gconn = st.connection("gsheets", type=GSheetsConnection)
                 _SYNC_URL = "https://docs.google.com/spreadsheets/d/1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw/edit#gid=0"
                 from io import StringIO
                 from contextlib import redirect_stdout, redirect_stderr
+                import pandas as pd
+                
+                # Daftar nama sheet persis seperti yang Anda buat
+                target_sheets = ["Fatmawati", "Senopati", "Cinere", "Lenteng Agung", "Cipedak", "Pinang/kalijati"]
+                all_data = []
+                
                 with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
-                    _df_sync = _gconn.read(spreadsheet=_SYNC_URL)
-                if _df_sync is not None and not _df_sync.empty:
-                    cache_input_from_gsheets(_df_sync)
-                    st.success(f"✅ {len(_df_sync)} baris berhasil di-cache ke SQLite!")
+                    for sheet_name in target_sheets:
+                        try:
+                            df_sheet = _gconn.read(spreadsheet=_SYNC_URL, worksheet=sheet_name)
+                            if df_sheet is not None and not df_sheet.empty:
+                                all_data.append(df_sheet)
+                        except Exception as e_sheet:
+                            st.toast(f"Gagal membaca tab {sheet_name}")
+
+                if all_data:
+                    _df_sync_combined = pd.concat(all_data, ignore_index=True)
+                    cache_input_from_gsheets(_df_sync_combined)
+                    st.success(f"✅ {len(_df_sync_combined)} baris dari {len(all_data)} wilayah berhasil di-cache ke SQLite!")
                 else:
-                    st.warning("⚠️ Google Sheets tidak mengembalikan data.")
+                    st.warning("⚠️ Google Sheets tidak mengembalikan data apapun dari semua tab.")
             except Exception as _e:
                 st.error(f"❌ Gagal terhubung ke Google Sheets: {_e}")
         st.rerun()
