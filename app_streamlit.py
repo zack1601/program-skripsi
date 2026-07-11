@@ -144,7 +144,8 @@ with st.sidebar:
         with st.spinner("Menarik data dari seluruh tab Google Sheets..."):
             try:
                 _gconn = st.connection("gsheets", type=GSheetsConnection)
-                _SYNC_URL = "https://docs.google.com/spreadsheets/d/1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw/edit#gid=0"
+                # Gunakan ID spreadsheet saja tanpa #gid=0 agar tidak bentrok dengan pencarian nama tab
+                _SYNC_URL = "1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw"
                 from io import StringIO
                 from contextlib import redirect_stdout, redirect_stderr
                 import pandas as pd
