@@ -46,16 +46,58 @@ st.set_page_config(
 inject_custom_css()
 
 # --- INITIALIZE SESSION STATE ---
-import extra_streamlit_components as stx
+import json
+import uuid
 
-@st.cache_resource
-def get_cookie_manager():
-    return stx.CookieManager()
+# --- File-based Session Store (tidak butuh library eksternal) ---
+_SESSION_FILE = ".session_store.json"
+_SESSION_TIMEOUT = 30 * 60  # 30 menit dalam detik
 
-cookie_manager = get_cookie_manager()
+def _load_sessions():
+    try:
+        if os.path.exists(_SESSION_FILE):
+            with open(_SESSION_FILE, "r") as f:
+                return json.load(f)
+    except:
+        pass
+    return {}
+
+def _save_sessions(sessions):
+    try:
+        with open(_SESSION_FILE, "w") as f:
+            json.dump(sessions, f)
+    except:
+        pass
+
+def _create_session():
+    token = str(uuid.uuid4())
+    sessions = _load_sessions()
+    sessions[token] = time.time()
+    _save_sessions(sessions)
+    return token
+
+def _validate_session(token):
+    if not token:
+        return False
+    sessions = _load_sessions()
+    if token in sessions:
+        if time.time() - sessions[token] < _SESSION_TIMEOUT:
+            return True
+        else:
+            del sessions[token]
+            _save_sessions(sessions)
+    return False
+
+def _delete_session(token):
+    sessions = _load_sessions()
+    if token in sessions:
+        del sessions[token]
+        _save_sessions(sessions)
 
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
+if 'session_token' not in st.session_state:
+    st.session_state['session_token'] = None
 if 'data_final' not in st.session_state:
     st.session_state['data_final'] = pd.DataFrame()
 if 'is_scanning' not in st.session_state:
@@ -68,31 +110,32 @@ if 'filter_mode' not in st.session_state:
     st.session_state['filter_mode'] = 'All'
 if 'tech_page' not in st.session_state:
     st.session_state['tech_page'] = 0
-
-# --- SESSION TIMEOUT (30 menit) ---
-_SESSION_TIMEOUT = 30 * 60  # detik
 if 'login_time' not in st.session_state:
     st.session_state['login_time'] = None
 
-# Cek cookie login terlebih dahulu
-auth_token = cookie_manager.get(cookie="auth_token")
-if auth_token == "logged_in":
-    st.session_state['logged_in'] = True
-    if st.session_state['login_time'] is None:
-        st.session_state['login_time'] = time.time() # Refresh login time saat refresh browser
+# Cek query param untuk session persistence (token dikirim via URL)
+_qp = st.query_params
+_url_token = _qp.get("t", None)
+if _url_token and not st.session_state['logged_in']:
+    if _validate_session(_url_token):
+        st.session_state['logged_in'] = True
+        st.session_state['session_token'] = _url_token
+        st.session_state['login_time'] = time.time()
 
+# Cek timeout
 if st.session_state.get('logged_in') and st.session_state.get('login_time'):
     _elapsed = time.time() - st.session_state['login_time']
     if _elapsed > _SESSION_TIMEOUT:
+        _delete_session(st.session_state.get('session_token', ''))
         st.session_state['logged_in'] = False
+        st.session_state['session_token'] = None
         st.session_state['login_time'] = None
-        cookie_manager.delete("auth_token")
-        st.toast("⏰ Sesi habis (30 menit idle). Silakan login kembali.", icon="🔒")
+        st.query_params.clear()
+        st.toast("⏰ Sesi habis (30 menit). Silakan login kembali.", icon="🔒")
 
 # --- LOGIN FORM ---
 if not st.session_state['logged_in']:
-    # Kirim cookie_manager ke fungsi render_login_page agar bisa nge-set cookie
-    render_login_page(cookie_manager)
+    render_login_page(_create_session)
     st.stop()  # Lock access if not logged in
 
 
@@ -281,8 +324,11 @@ with st.sidebar:
     # Logout button di area paling bawah sidebar
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🚪 LOGOUT", key="logout_btn", use_container_width=True):
+        _delete_session(st.session_state.get('session_token', ''))
         st.session_state['logged_in'] = False
-        cookie_manager.delete("auth_token")
+        st.session_state['session_token'] = None
+        st.session_state['login_time'] = None
+        st.query_params.clear()
         st.rerun()
 
 # --- FILTER DATA FOR DISPLAY ---
