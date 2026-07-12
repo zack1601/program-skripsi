@@ -279,13 +279,15 @@ if not df_raw.empty:
         s_term = st.session_state.get('search_sn_sidebar')
         df_filtered = df_filtered[df_filtered.astype(str).apply(lambda x: x.str.contains(s_term, case=False)).any(axis=1)]
 
-# --- RENDER METRICS & RISK SCORE GAUGE (STICKY HEADER) ---
-render_metrics(df_filtered)
+# --- RENDER DASHBOARD (Hanya tampil jika TIDAK sedang proses scan) ---
+if not st.session_state.get('is_scanning', False):
+    # --- RENDER METRICS & RISK SCORE GAUGE (STICKY HEADER) ---
+    render_metrics(df_filtered)
 
-# --- RENDER HISTORICAL TREND CHART ---
-df_trend = get_historical_trend()
-with st.expander("📈 Historical Problem Trend", expanded=False):
-    if not df_trend.empty:
+    # --- RENDER HISTORICAL TREND CHART ---
+    df_trend = get_historical_trend()
+    with st.expander("📈 Historical Problem Trend", expanded=False):
+        if not df_trend.empty:
         # Pivot the data
         df_pivot = df_trend.pivot(index='scan_timestamp', columns='Category', values='count').fillna(0)
         df_pivot = df_pivot.reset_index()
@@ -514,13 +516,13 @@ else:
     with p_col3:
         st.markdown(f"<div style='padding-top:8px; color:#8b949e; font-size:0.85rem;'>Page {st.session_state['tech_page'] + 1} of {total_pages} (Total: {len(df_field_updates)})</div>", unsafe_allow_html=True)
 
-st.markdown("<hr style='border-color:#21262d; margin-top:8px;'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color:#21262d; margin-top:8px;'>", unsafe_allow_html=True)
 
-# Spacer to push content below the fixed Network Summary bar
-st.write("")
-st.write("")
-st.write("")
-st.write("")
+    # Spacer to push content below the fixed Network Summary bar
+    st.write("")
+    st.write("")
+    st.write("")
+    st.write("")
 
 # --- SCANNING ENGINE ---
 if st.session_state['is_scanning']:
@@ -941,60 +943,61 @@ if st.session_state['is_scanning']:
         st.session_state['stop_scanning'] = False
 
 # --- RENDER GEOGRAPHIC TOPOLOGY (MODULAR MAP) ---
-render_map(df_filtered)
+if not st.session_state.get('is_scanning', False):
+    render_map(df_filtered)
 
-st.markdown("<div style='margin-top: -2rem; height: 12px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: -2rem; height: 12px;'></div>", unsafe_allow_html=True)
 
-# --- RENDER LANDSCAPE DATA TABLE ---
-render_table(df_filtered)
+    # --- RENDER LANDSCAPE DATA TABLE ---
+    render_table(df_filtered)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# ─────────────────────────────────────────────────────────────────────────────
-# DOWNLOAD LAPORAN EXCEL (dari SQLite — Single Source of Truth)
-# ─────────────────────────────────────────────────────────────────────────────
-st.markdown("---")
-_WIB = dt.timezone(dt.timedelta(hours=7))
-_ts  = dt.datetime.now(_WIB).strftime('%Y%m%d_%H%M')
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ─────────────────────────────────────────────────────────────────────────────
+    # DOWNLOAD LAPORAN EXCEL (dari SQLite — Single Source of Truth)
+    # ─────────────────────────────────────────────────────────────────────────────
+    st.markdown("---")
+    _WIB = dt.timezone(dt.timedelta(hours=7))
+    _ts  = dt.datetime.now(_WIB).strftime('%Y%m%d_%H%M')
 
-@st.cache_data(ttl=60, show_spinner=False)
-def _generate_latest_excel_cache():
-    df = load_latest_scan()
-    if df.empty: return None
-    buf = io.BytesIO()
-    with pd.ExcelWriter(buf, engine='openpyxl') as w:
-        df.to_excel(w, index=False, sheet_name='Hasil Scan Terakhir')
-    return buf.getvalue()
+    @st.cache_data(ttl=60, show_spinner=False)
+    def _generate_latest_excel_cache():
+        df = load_latest_scan()
+        if df.empty: return None
+        buf = io.BytesIO()
+        with pd.ExcelWriter(buf, engine='openpyxl') as w:
+            df.to_excel(w, index=False, sheet_name='Hasil Scan Terakhir')
+        return buf.getvalue()
 
-@st.cache_data(ttl=60, show_spinner=False)
-def _generate_history_excel_cache():
-    df_h = load_scan_history_full()
-    df_a = get_all_alarm_history()
-    if df_h.empty: return None
-    buf = io.BytesIO()
-    with pd.ExcelWriter(buf, engine='openpyxl') as w:
-        df_h.to_excel(w, index=False, sheet_name='Riwayat Lengkap')
-        if not df_a.empty:
-            df_a.to_excel(w, index=False, sheet_name='Status Gangguan')
-    return buf.getvalue()
+    @st.cache_data(ttl=60, show_spinner=False)
+    def _generate_history_excel_cache():
+        df_h = load_scan_history_full()
+        df_a = get_all_alarm_history()
+        if df_h.empty: return None
+        buf = io.BytesIO()
+        with pd.ExcelWriter(buf, engine='openpyxl') as w:
+            df_h.to_excel(w, index=False, sheet_name='Riwayat Lengkap')
+            if not df_a.empty:
+                df_a.to_excel(w, index=False, sheet_name='Status Gangguan')
+        return buf.getvalue()
 
-with st.expander("📥 Download Laporan Excel", expanded=False):
-    col_dl1, col_dl2 = st.columns(2)
+    with st.expander("📥 Download Laporan Excel", expanded=False):
+        col_dl1, col_dl2 = st.columns(2)
 
-    with col_dl1:
-        data_latest = _generate_latest_excel_cache()
-        if data_latest:
-            st.download_button(
-                label="⬇️ Hasil Scan Terakhir",
-                data=data_latest,
-                file_name=f"scan_terakhir_{_ts}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True,
-                key="dl_latest"
-            )
-        else:
-            st.info("⚠️ Belum ada data scan. Klik START SCAN terlebih dahulu.")
+        with col_dl1:
+            data_latest = _generate_latest_excel_cache()
+            if data_latest:
+                st.download_button(
+                    label="⬇️ Hasil Scan Terakhir",
+                    data=data_latest,
+                    file_name=f"scan_terakhir_{_ts}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True,
+                    key="dl_latest"
+                )
+            else:
+                st.info("⚠️ Belum ada data scan. Klik START SCAN terlebih dahulu.")
 
-    with col_dl2:
+        with col_dl2:
         data_history = _generate_history_excel_cache()
         if data_history:
             st.download_button(
