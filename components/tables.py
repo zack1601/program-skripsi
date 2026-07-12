@@ -37,13 +37,19 @@ def render_table(df_filtered):
         st.markdown("<p style='font-size:0.8rem; font-weight:800; color:#8B949E; margin-bottom:10px;'>LIVE MONITORING TABLE (RESUME GANGGUAN)</p>", unsafe_allow_html=True)
     
     if not df_filtered.empty:
-        # Agregasi data
-        summary_rows = []
         # Gunakan 'Category' atau 'Power/Cause' sesuai struktur df_filtered
         target_col = 'Category' if 'Category' in df_filtered.columns else 'Power/Cause'
         
-        for olt, group in df_filtered.groupby('OLT'):
-            region = get_region_from_olt(olt)
+        # Tambahkan kolom Region ke dataframe
+        df_work = df_filtered.copy()
+        df_work['Region'] = df_work['OLT'].apply(get_region_from_olt)
+        
+        # Agregasi per REGION (bukan per OLT individual)
+        summary_rows = []
+        for region, group in df_work.groupby('Region'):
+            # Kumpulkan nama OLT unik di region ini
+            olt_list = group['OLT'].unique()
+            olt_display = ", ".join(sorted(set(olt_list)))
             
             # Hitung jumlah tiap status (case-insensitive & clean)
             status_counts = group[target_col].astype(str).str.strip().str.lower().value_counts()
@@ -51,11 +57,10 @@ def render_table(df_filtered):
             badrx = status_counts.get('badrx', 0)
             los = status_counts.get('los', 0)
             dying = status_counts.get('dyinggasp', 0)
-            # Menghitung suspend (bisa Suspend atau Suspend/Isolir)
             suspend = sum(v for k, v in status_counts.items() if 'suspend' in k)
             
             summary_rows.append({
-                "OLT": olt,
+                "OLT": olt_display,
                 "Region": region,
                 "Bad Rx": badrx,
                 "LOS": los,
@@ -64,7 +69,7 @@ def render_table(df_filtered):
             })
             
         df_summary = pd.DataFrame(summary_rows)
-        # Filter: hanya tampilkan OLT yang punya gangguan (total > 0)
+        # Filter: hanya tampilkan Region yang punya gangguan (total > 0)
         df_summary = df_summary[
             (df_summary['Bad Rx'] + df_summary['LOS'] + df_summary['Dying Gasp'] + df_summary['Suspend']) > 0
         ].reset_index(drop=True)
