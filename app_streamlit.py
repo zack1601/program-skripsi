@@ -793,7 +793,7 @@ if st.session_state['is_scanning']:
                 <div class="stopwatch-complete">⏱️ {t_str}</div>
             </div>
             """, unsafe_allow_html=True)
-            time.sleep(1)
+            time.sleep(0.2)
         
         # --- SMART OFFLINE SIMULATION FALLBACK ---
         if not st.session_state['temp_results']:
@@ -918,7 +918,7 @@ if st.session_state['is_scanning']:
                 <div class="stopwatch-complete-sim">⏱️ {t_str}</div>
             </div>
             """, unsafe_allow_html=True)
-            time.sleep(1)
+            time.sleep(0.2)
 
         # Final Deduplication & Data Cleaning (Strict Multi-key)
         if st.session_state['temp_results']:
