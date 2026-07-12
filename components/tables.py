@@ -82,7 +82,21 @@ def render_table(df_filtered):
                 use_container_width=True
             )
             
-        st.dataframe(df_summary, use_container_width=True, height=540, hide_index=True)
+        st.dataframe(
+            df_summary,
+            use_container_width=True,
+            height=540,
+            hide_index=True,
+            column_config={
+                "No": st.column_config.NumberColumn("No", width="small"),
+                "OLT": st.column_config.TextColumn("OLT", width="large"),
+                "Region": st.column_config.TextColumn("Region", width="medium"),
+                "Bad Rx": st.column_config.NumberColumn("Bad Rx", width="small"),
+                "LOS": st.column_config.NumberColumn("LOS", width="small"),
+                "Dying Gasp": st.column_config.NumberColumn("Dying Gasp", width="small"),
+                "Suspend": st.column_config.NumberColumn("Suspend", width="small"),
+            }
+        )
     else:
         st.info("Click 'SCAN' to populate data.")
 
