@@ -2,6 +2,7 @@ import streamlit as st
 
 import io
 import pandas as pd
+from components.telegram import get_region_from_olt
 
 def to_excel_with_autofit(df: pd.DataFrame) -> bytes:
     """Generates Excel file in memory with auto-adjusting column widths."""
@@ -36,25 +37,13 @@ def render_table(df_filtered):
         st.markdown("<p style='font-size:0.8rem; font-weight:800; color:#8B949E; margin-bottom:10px;'>LIVE MONITORING TABLE (RESUME GANGGUAN)</p>", unsafe_allow_html=True)
     
     if not df_filtered.empty:
-        # Helper untuk ekstrak Region dari nama OLT
-        def get_region(olt_name):
-            try:
-                parts = str(olt_name).split('-')
-                if len(parts) >= 2:
-                    sub_parts = parts[1].split('.')
-                    if len(sub_parts) > 1:
-                        return "/".join(sub_parts[1:]).title()
-            except:
-                pass
-            return str(olt_name)
-        
         # Agregasi data
         summary_rows = []
         # Gunakan 'Category' atau 'Power/Cause' sesuai struktur df_filtered
         target_col = 'Category' if 'Category' in df_filtered.columns else 'Power/Cause'
         
         for olt, group in df_filtered.groupby('OLT'):
-            region = get_region(olt)
+            region = get_region_from_olt(olt)
             
             # Hitung jumlah tiap status (case-insensitive & clean)
             status_counts = group[target_col].astype(str).str.strip().str.lower().value_counts()
