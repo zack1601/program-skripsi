@@ -1,6 +1,6 @@
 import streamlit as st
 
-def render_login_page():
+def render_login_page(cookie_manager=None):
     st.markdown("""
         <style>
         /* Sembunyikan elemen sidebar dan header bawaan saat login */
@@ -57,7 +57,7 @@ def render_login_page():
                     password = st.text_input("Password |", type="password", placeholder="Password")
                     
                     # Checkbox
-                    st.checkbox("Remember Me")
+                    remember_me = st.checkbox("Remember Me")
                     
                     # Button
                     submitted = st.form_submit_button("LOGIN")
@@ -66,6 +66,14 @@ def render_login_page():
                         if user.lower() == "noc.fm" and password == "noc123":
                             st.session_state['logged_in'] = True
                             st.session_state['login_time'] = __import__('time').time()
+                            
+                            # Set Cookie untuk persistensi login
+                            if cookie_manager is not None:
+                                import datetime
+                                # Beri waktu kadaluarsa cookie 30 menit (jika remember_me bisa lebih lama, tapi kita set 30 mnt default)
+                                exp = datetime.datetime.now() + datetime.timedelta(minutes=30)
+                                cookie_manager.set("auth_token", "logged_in", expires_at=exp)
+                                
                             st.rerun()
                         else:
                             st.error("Username atau Password salah!")

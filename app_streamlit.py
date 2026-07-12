@@ -46,6 +46,14 @@ st.set_page_config(
 inject_custom_css()
 
 # --- INITIALIZE SESSION STATE ---
+import extra_streamlit_components as stx
+
+@st.cache_resource
+def get_cookie_manager():
+    return stx.CookieManager()
+
+cookie_manager = get_cookie_manager()
+
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 if 'data_final' not in st.session_state:
@@ -66,17 +74,27 @@ _SESSION_TIMEOUT = 30 * 60  # detik
 if 'login_time' not in st.session_state:
     st.session_state['login_time'] = None
 
+# Cek cookie login terlebih dahulu
+auth_token = cookie_manager.get(cookie="auth_token")
+if auth_token == "logged_in":
+    st.session_state['logged_in'] = True
+    if st.session_state['login_time'] is None:
+        st.session_state['login_time'] = time.time() # Refresh login time saat refresh browser
+
 if st.session_state.get('logged_in') and st.session_state.get('login_time'):
     _elapsed = time.time() - st.session_state['login_time']
     if _elapsed > _SESSION_TIMEOUT:
         st.session_state['logged_in'] = False
         st.session_state['login_time'] = None
+        cookie_manager.delete("auth_token")
         st.toast("⏰ Sesi habis (30 menit idle). Silakan login kembali.", icon="🔒")
 
 # --- LOGIN FORM ---
 if not st.session_state['logged_in']:
-    render_login_page()
+    # Kirim cookie_manager ke fungsi render_login_page agar bisa nge-set cookie
+    render_login_page(cookie_manager)
     st.stop()  # Lock access if not logged in
+
 
 # --- MAIN APP (Hanya berjalan jika sudah login) ---
 
@@ -264,6 +282,7 @@ with st.sidebar:
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🚪 LOGOUT", key="logout_btn", use_container_width=True):
         st.session_state['logged_in'] = False
+        cookie_manager.delete("auth_token")
         st.rerun()
 
 # --- FILTER DATA FOR DISPLAY ---
