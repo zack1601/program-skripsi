@@ -288,241 +288,241 @@ if not st.session_state.get('is_scanning', False):
     df_trend = get_historical_trend()
     with st.expander("📈 Historical Problem Trend", expanded=False):
         if not df_trend.empty:
-        # Pivot the data
-        df_pivot = df_trend.pivot(index='scan_timestamp', columns='Category', values='count').fillna(0)
-        df_pivot = df_pivot.reset_index()
+            # Pivot the data
+            df_pivot = df_trend.pivot(index='scan_timestamp', columns='Category', values='count').fillna(0)
+            df_pivot = df_pivot.reset_index()
         
-        # Highlight problematic categories
-        cols_to_plot = [c for c in ['LOS', 'BadRx', 'Offline', 'Dyinggasp'] if c in df_pivot.columns]
-        if cols_to_plot:
-            fig = go.Figure()
+            # Highlight problematic categories
+            cols_to_plot = [c for c in ['LOS', 'BadRx', 'Offline', 'Dyinggasp'] if c in df_pivot.columns]
+            if cols_to_plot:
+                fig = go.Figure()
             
-            color_map = {
-                "LOS": "rgba(255, 75, 75, 1)",        # Merah
-                "BadRx": "rgba(245, 166, 35, 1)",      # Orange/Kuning
-                "Offline": "rgba(142, 142, 147, 1)",   # Abu-abu
-                "Dyinggasp": "rgba(156, 39, 176, 1)"   # Ungu
-            }
-            fill_map = {
-                "LOS": "rgba(255, 75, 75, 0.15)",       
-                "BadRx": "rgba(245, 166, 35, 0.15)",     
-                "Offline": "rgba(142, 142, 147, 0.15)",  
-                "Dyinggasp": "rgba(156, 39, 176, 0.15)"  
-            }
+                color_map = {
+                    "LOS": "rgba(255, 75, 75, 1)",        # Merah
+                    "BadRx": "rgba(245, 166, 35, 1)",      # Orange/Kuning
+                    "Offline": "rgba(142, 142, 147, 1)",   # Abu-abu
+                    "Dyinggasp": "rgba(156, 39, 176, 1)"   # Ungu
+                }
+                fill_map = {
+                    "LOS": "rgba(255, 75, 75, 0.15)",       
+                    "BadRx": "rgba(245, 166, 35, 0.15)",     
+                    "Offline": "rgba(142, 142, 147, 0.15)",  
+                    "Dyinggasp": "rgba(156, 39, 176, 0.15)"  
+                }
 
-            for c in cols_to_plot:
-                fig.add_trace(go.Scatter(
-                    x=df_pivot["scan_timestamp"],
-                    y=df_pivot[c],
-                    name=c,
-                    mode='lines',
-                    line_shape='spline',
-                    line=dict(color=color_map.get(c, "rgba(255,255,255,1)"), width=3),
-                    fill='tozeroy',
-                    fillcolor=fill_map.get(c, "rgba(255,255,255,0.1)"),
-                ))
+                for c in cols_to_plot:
+                    fig.add_trace(go.Scatter(
+                        x=df_pivot["scan_timestamp"],
+                        y=df_pivot[c],
+                        name=c,
+                        mode='lines',
+                        line_shape='spline',
+                        line=dict(color=color_map.get(c, "rgba(255,255,255,1)"), width=3),
+                        fill='tozeroy',
+                        fillcolor=fill_map.get(c, "rgba(255,255,255,0.1)"),
+                    ))
             
-            # Premium Styling (Dark Mode & Glassmorphism)
-            fig.update_layout(
-                height=250,  # Memperkecil tinggi grafik sekitar 25-30%
-                plot_bgcolor="rgba(0,0,0,0)",
-                paper_bgcolor="rgba(0,0,0,0)",
-                font=dict(color="#c9d1d9"),
-                xaxis_title="",
-                yaxis_title="Jumlah Pelanggan",
-                legend_title="",
-                legend=dict(font=dict(color="white")), # Mengubah warna teks legend menjadi putih
-                hovermode="x unified",
-                margin=dict(l=0, r=0, t=30, b=0)
-            )
-            fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#30363d')
-            fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#30363d')
+                # Premium Styling (Dark Mode & Glassmorphism)
+                fig.update_layout(
+                    height=250,  # Memperkecil tinggi grafik sekitar 25-30%
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    font=dict(color="#c9d1d9"),
+                    xaxis_title="",
+                    yaxis_title="Jumlah Pelanggan",
+                    legend_title="",
+                    legend=dict(font=dict(color="white")), # Mengubah warna teks legend menjadi putih
+                    hovermode="x unified",
+                    margin=dict(l=0, r=0, t=30, b=0)
+                )
+                fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#30363d')
+                fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#30363d')
             
-            st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("Belum ada data masalah (LOS/BadRx) yang tersimpan di riwayat.")
         else:
-            st.info("Belum ada data masalah (LOS/BadRx) yang tersimpan di riwayat.")
-    else:
-        st.warning("📊 Database riwayat masih kosong. Silakan klik 'START SCAN' di menu kiri minimal satu kali untuk mulai merekam data grafik.")
+            st.warning("📊 Database riwayat masih kosong. Silakan klik 'START SCAN' di menu kiri minimal satu kali untuk mulai merekam data grafik.")
 
-# ─────────────────────────────────────────────────────────────────────────────
-# PANEL: FIELD TECHNICIAN UPDATES
-# ─────────────────────────────────────────────────────────────────────────────
-import math
+    # ─────────────────────────────────────────────────────────────────────────────
+    # PANEL: FIELD TECHNICIAN UPDATES
+    # ─────────────────────────────────────────────────────────────────────────────
+    import math
 
-if 'confirm_action' not in st.session_state:
-    st.session_state['confirm_action'] = None
+    if 'confirm_action' not in st.session_state:
+        st.session_state['confirm_action'] = None
 
-df_field_updates = get_alarm_updates(limit=200)
+    df_field_updates = get_alarm_updates(limit=200)
 
-st.markdown("""<div style='
-    margin-top: 12px;
-    padding: 16px 20px 12px 20px;
-    border-radius: 10px;
-    border: 1px solid #30363D;
-    background: rgba(22,27,34,0.85);
-'>
-    <p style='margin:0; font-size:1rem; font-weight:700;
-              letter-spacing:1px; color:#c9d1d9;'>
-        🛠️ FIELD TECHNICIAN UPDATES
-        <span style='font-size:0.75rem; font-weight:400; color:#484f58; margin-left:8px;'>
-            — hanya menampilkan alarm aktif (Sent / In Progress)
-        </span>
-    </p>
-</div>
-""", unsafe_allow_html=True)
-
-# --- KONFIRMASI INLINE (di dalam panel, tepat di bawah header) ---
-if st.session_state['confirm_action']:
-    ca = st.session_state['confirm_action']
-    _sn = ca['sn']
-    _act = ca['action']
-    _icon = "✅" if _act == "Resolved" else "❌"
-    _col = "#3fb950" if _act == "Resolved" else "#f85149"
-    _bg  = "rgba(35,134,54,0.15)" if _act == "Resolved" else "rgba(218,54,51,0.15)"
-
-    st.markdown(f"""
-    <div style='padding:12px 16px; border:1px solid {_col}; border-radius:8px;
-                background:{_bg}; margin-bottom:12px;'>
-        <b style='color:#c9d1d9;'>Konfirmasi:</b>
-        Tandai <b style='color:#58a6ff;'>{_sn}</b> sebagai
-        <span style='color:{_col}; font-weight:700;'>{_act}</span> ?
+    st.markdown("""<div style='
+        margin-top: 12px;
+        padding: 16px 20px 12px 20px;
+        border-radius: 10px;
+        border: 1px solid #30363D;
+        background: rgba(22,27,34,0.85);
+    '>
+        <p style='margin:0; font-size:1rem; font-weight:700;
+                  letter-spacing:1px; color:#c9d1d9;'>
+            🛠️ FIELD TECHNICIAN UPDATES
+            <span style='font-size:0.75rem; font-weight:400; color:#484f58; margin-left:8px;'>
+                — hanya menampilkan alarm aktif (Sent / In Progress)
+            </span>
+        </p>
     </div>
     """, unsafe_allow_html=True)
 
-    bc1, bc2, bc3 = st.columns([2, 1, 1])
-    with bc2:
-        ya_clicked = st.button("✅ YA", key="confirm_ya", use_container_width=True)
-    with bc3:
-        tidak_clicked = st.button("❌ TIDAK", key="confirm_tidak", use_container_width=True)
+    # --- KONFIRMASI INLINE (di dalam panel, tepat di bawah header) ---
+    if st.session_state['confirm_action']:
+        ca = st.session_state['confirm_action']
+        _sn = ca['sn']
+        _act = ca['action']
+        _icon = "✅" if _act == "Resolved" else "❌"
+        _col = "#3fb950" if _act == "Resolved" else "#f85149"
+        _bg  = "rgba(35,134,54,0.15)" if _act == "Resolved" else "rgba(218,54,51,0.15)"
 
-    if ya_clicked:
-        update_alarm_status_by_sn(_sn, _act)
-        st.toast(f"{_icon} {_sn[:12]} → {_act}!", icon=_icon)
-        st.session_state['confirm_action'] = None
-        st.rerun()
-    if tidak_clicked:
-        st.session_state['confirm_action'] = None
-        st.rerun()
+        st.markdown(f"""
+        <div style='padding:12px 16px; border:1px solid {_col}; border-radius:8px;
+                    background:{_bg}; margin-bottom:12px;'>
+            <b style='color:#c9d1d9;'>Konfirmasi:</b>
+            Tandai <b style='color:#58a6ff;'>{_sn}</b> sebagai
+            <span style='color:{_col}; font-weight:700;'>{_act}</span> ?
+        </div>
+        """, unsafe_allow_html=True)
 
-if df_field_updates.empty:
-    st.info("🟢 Tidak ada alarm aktif. Semua gangguan sudah ditangani atau belum ada alarm yang dikirim.")
-else:
-    # --- PAGINATION LOGIC ---
-    items_per_page = 5
-    total_pages = max(1, math.ceil(len(df_field_updates) / items_per_page))
+        bc1, bc2, bc3 = st.columns([2, 1, 1])
+        with bc2:
+            ya_clicked = st.button("✅ YA", key="confirm_ya", use_container_width=True)
+        with bc3:
+            tidak_clicked = st.button("❌ TIDAK", key="confirm_tidak", use_container_width=True)
 
-    if st.session_state['tech_page'] >= total_pages:
-        st.session_state['tech_page'] = total_pages - 1
-    if st.session_state['tech_page'] < 0:
-        st.session_state['tech_page'] = 0
+        if ya_clicked:
+            update_alarm_status_by_sn(_sn, _act)
+            st.toast(f"{_icon} {_sn[:12]} → {_act}!", icon=_icon)
+            st.session_state['confirm_action'] = None
+            st.rerun()
+        if tidak_clicked:
+            st.session_state['confirm_action'] = None
+            st.rerun()
 
-    start_idx = st.session_state['tech_page'] * items_per_page
-    end_idx = start_idx + items_per_page
-    df_page = df_field_updates.iloc[start_idx:end_idx]
+    if df_field_updates.empty:
+        st.info("🟢 Tidak ada alarm aktif. Semua gangguan sudah ditangani atau belum ada alarm yang dikirim.")
+    else:
+        # --- PAGINATION LOGIC ---
+        items_per_page = 5
+        total_pages = max(1, math.ceil(len(df_field_updates) / items_per_page))
 
-    # Badge berwarna sesuai status
-    _STATUS_BADGE = {
-        "Sent"       : ("📤 Sent",        "#484f58", "#c9d1d9"),
-        "In Progress": ("🔧 In Progress", "#7d4e00", "#f5a623"),
-        "Resolved"   : ("✅ Resolved",    "#0d4429", "#3fb950"),
-        "Cancelled"  : ("❌ Cancelled",   "#4d1919", "#f85149"),
-    }
+        if st.session_state['tech_page'] >= total_pages:
+            st.session_state['tech_page'] = total_pages - 1
+        if st.session_state['tech_page'] < 0:
+            st.session_state['tech_page'] = 0
 
-    def _badge(status):
-        label, bg, color = _STATUS_BADGE.get(
-            status, (status, "#333", "#fff")
-        )
-        return (
-            f"<span style='background:{bg}; color:{color}; "
-            f"padding:2px 8px; border-radius:12px; font-size:0.78rem; "
-            f"font-weight:600; white-space:nowrap;'>{label}</span>"
-        )
+        start_idx = st.session_state['tech_page'] * items_per_page
+        end_idx = start_idx + items_per_page
+        df_page = df_field_updates.iloc[start_idx:end_idx]
 
-    # --- HEADER TABEL ---
-    h_cols = st.columns([2, 2, 1.2, 1.5, 1.5, 1.5, 1.8, 1.3])
-    headers = ["Serial Number", "Pelanggan", "Category", "Status",
-               "Teknisi", "Reply", "Waktu", "Aksi"]
-    for hc, ht in zip(h_cols, headers):
-        hc.markdown(
-            f"<span style='font-size:0.72rem; color:#8b949e; text-transform:uppercase; "
-            f"letter-spacing:0.5px; font-weight:600;'>{ht}</span>",
-            unsafe_allow_html=True
-        )
+        # Badge berwarna sesuai status
+        _STATUS_BADGE = {
+            "Sent"       : ("📤 Sent",        "#484f58", "#c9d1d9"),
+            "In Progress": ("🔧 In Progress", "#7d4e00", "#f5a623"),
+            "Resolved"   : ("✅ Resolved",    "#0d4429", "#3fb950"),
+            "Cancelled"  : ("❌ Cancelled",   "#4d1919", "#f85149"),
+        }
 
-    st.markdown("<hr style='margin:4px 0 6px 0; border-color:#30363d;'>", unsafe_allow_html=True)
+        def _badge(status):
+            label, bg, color = _STATUS_BADGE.get(
+                status, (status, "#333", "#fff")
+            )
+            return (
+                f"<span style='background:{bg}; color:{color}; "
+                f"padding:2px 8px; border-radius:12px; font-size:0.78rem; "
+                f"font-weight:600; white-space:nowrap;'>{label}</span>"
+            )
 
-    # --- BARIS DATA ---
-    for idx, r in df_page.iterrows():
-        sn     = r.get("sn", "-") or "-"
-        tech   = r.get("technician", "") or "-"
-        reply  = r.get("reply_text",  "") or "-"
-        ra     = r.get("reply_at",    "") or "-"
-        status = r.get("status", "Sent")
-        ra_short   = ra[11:16] if len(ra) >= 16 else ra
-        sent_short = str(r.get("sent_at", "-"))[11:16]
+        # --- HEADER TABEL ---
+        h_cols = st.columns([2, 2, 1.2, 1.5, 1.5, 1.5, 1.8, 1.3])
+        headers = ["Serial Number", "Pelanggan", "Category", "Status",
+                   "Teknisi", "Reply", "Waktu", "Aksi"]
+        for hc, ht in zip(h_cols, headers):
+            hc.markdown(
+                f"<span style='font-size:0.72rem; color:#8b949e; text-transform:uppercase; "
+                f"letter-spacing:0.5px; font-weight:600;'>{ht}</span>",
+                unsafe_allow_html=True
+            )
 
-        row_cols = st.columns([2, 2, 1.2, 1.5, 1.5, 1.5, 1.8, 1.3])
-        row_cols[0].markdown(
-            f"<span style='font-family:monospace; font-size:0.78rem; color:#58a6ff;'>{sn[:14]}</span>",
-            unsafe_allow_html=True
-        )
-        row_cols[1].markdown(
-            f"<span style='font-size:0.8rem;'>{r.get('pelanggan', '-')}</span>",
-            unsafe_allow_html=True
-        )
-        row_cols[2].markdown(
-            f"<span style='font-size:0.8rem; color:#f5a623;'>{r.get('category', '-')}</span>",
-            unsafe_allow_html=True
-        )
-        row_cols[3].markdown(_badge(status), unsafe_allow_html=True)
-        row_cols[4].markdown(
-            f"<span style='font-size:0.78rem; color:#8b949e;'>{tech}</span>",
-            unsafe_allow_html=True
-        )
-        row_cols[5].markdown(
-            f"<span style='font-size:0.78rem; color:#8b949e;'>{reply}</span>",
-            unsafe_allow_html=True
-        )
-        row_cols[6].markdown(
-            f"<span style='font-size:0.72rem; color:#484f58;'>Sent {sent_short}<br>Upd {ra_short}</span>",
-            unsafe_allow_html=True
-        )
+        st.markdown("<hr style='margin:4px 0 6px 0; border-color:#30363d;'>", unsafe_allow_html=True)
 
-        # --- TOMBOL AKSI (hanya muncul jika status masih aktif) ---
-        with row_cols[7]:
-            btn_col1, btn_col2 = st.columns(2)
-            with btn_col1:
-                if st.button("✅", key=f"resolve_{sn}_{idx}", help="Tandai Selesai (Resolved)"):
-                    st.session_state['confirm_action'] = {'sn': sn, 'action': 'Resolved'}
-                    st.rerun()
-            with btn_col2:
-                if st.button("❌", key=f"cancel_{sn}_{idx}", help="Batalkan (Cancelled)"):
-                    st.session_state['confirm_action'] = {'sn': sn, 'action': 'Cancelled'}
-                    st.rerun()
+        # --- BARIS DATA ---
+        for idx, r in df_page.iterrows():
+            sn     = r.get("sn", "-") or "-"
+            tech   = r.get("technician", "") or "-"
+            reply  = r.get("reply_text",  "") or "-"
+            ra     = r.get("reply_at",    "") or "-"
+            status = r.get("status", "Sent")
+            ra_short   = ra[11:16] if len(ra) >= 16 else ra
+            sent_short = str(r.get("sent_at", "-"))[11:16]
 
-        st.markdown("<hr style='margin:2px 0; border-color:#21262d;'>", unsafe_allow_html=True)
+            row_cols = st.columns([2, 2, 1.2, 1.5, 1.5, 1.5, 1.8, 1.3])
+            row_cols[0].markdown(
+                f"<span style='font-family:monospace; font-size:0.78rem; color:#58a6ff;'>{sn[:14]}</span>",
+                unsafe_allow_html=True
+            )
+            row_cols[1].markdown(
+                f"<span style='font-size:0.8rem;'>{r.get('pelanggan', '-')}</span>",
+                unsafe_allow_html=True
+            )
+            row_cols[2].markdown(
+                f"<span style='font-size:0.8rem; color:#f5a623;'>{r.get('category', '-')}</span>",
+                unsafe_allow_html=True
+            )
+            row_cols[3].markdown(_badge(status), unsafe_allow_html=True)
+            row_cols[4].markdown(
+                f"<span style='font-size:0.78rem; color:#8b949e;'>{tech}</span>",
+                unsafe_allow_html=True
+            )
+            row_cols[5].markdown(
+                f"<span style='font-size:0.78rem; color:#8b949e;'>{reply}</span>",
+                unsafe_allow_html=True
+            )
+            row_cols[6].markdown(
+                f"<span style='font-size:0.72rem; color:#484f58;'>Sent {sent_short}<br>Upd {ra_short}</span>",
+                unsafe_allow_html=True
+            )
+
+            # --- TOMBOL AKSI (hanya muncul jika status masih aktif) ---
+            with row_cols[7]:
+                btn_col1, btn_col2 = st.columns(2)
+                with btn_col1:
+                    if st.button("✅", key=f"resolve_{sn}_{idx}", help="Tandai Selesai (Resolved)"):
+                        st.session_state['confirm_action'] = {'sn': sn, 'action': 'Resolved'}
+                        st.rerun()
+                with btn_col2:
+                    if st.button("❌", key=f"cancel_{sn}_{idx}", help="Batalkan (Cancelled)"):
+                        st.session_state['confirm_action'] = {'sn': sn, 'action': 'Cancelled'}
+                        st.rerun()
+
+            st.markdown("<hr style='margin:2px 0; border-color:#21262d;'>", unsafe_allow_html=True)
         
-    # --- PAGINATION CONTROLS ---
-    st.markdown("<br>", unsafe_allow_html=True)
-    p_col1, p_col2, p_col3, _ = st.columns([1, 1, 2, 4])
-    with p_col1:
-        if st.button("⬅️ Prev", disabled=(st.session_state['tech_page'] == 0), use_container_width=True):
-            st.session_state['tech_page'] -= 1
-            st.rerun()
-    with p_col2:
-        if st.button("Next ➡️", disabled=(st.session_state['tech_page'] >= total_pages - 1), use_container_width=True):
-            st.session_state['tech_page'] += 1
-            st.rerun()
-    with p_col3:
-        st.markdown(f"<div style='padding-top:8px; color:#8b949e; font-size:0.85rem;'>Page {st.session_state['tech_page'] + 1} of {total_pages} (Total: {len(df_field_updates)})</div>", unsafe_allow_html=True)
+        # --- PAGINATION CONTROLS ---
+        st.markdown("<br>", unsafe_allow_html=True)
+        p_col1, p_col2, p_col3, _ = st.columns([1, 1, 2, 4])
+        with p_col1:
+            if st.button("⬅️ Prev", disabled=(st.session_state['tech_page'] == 0), use_container_width=True):
+                st.session_state['tech_page'] -= 1
+                st.rerun()
+        with p_col2:
+            if st.button("Next ➡️", disabled=(st.session_state['tech_page'] >= total_pages - 1), use_container_width=True):
+                st.session_state['tech_page'] += 1
+                st.rerun()
+        with p_col3:
+            st.markdown(f"<div style='padding-top:8px; color:#8b949e; font-size:0.85rem;'>Page {st.session_state['tech_page'] + 1} of {total_pages} (Total: {len(df_field_updates)})</div>", unsafe_allow_html=True)
 
-    st.markdown("<hr style='border-color:#21262d; margin-top:8px;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='border-color:#21262d; margin-top:8px;'>", unsafe_allow_html=True)
 
-    # Spacer to push content below the fixed Network Summary bar
-    st.write("")
-    st.write("")
-    st.write("")
-    st.write("")
+        # Spacer to push content below the fixed Network Summary bar
+        st.write("")
+        st.write("")
+        st.write("")
+        st.write("")
 
 # --- SCANNING ENGINE ---
 if st.session_state['is_scanning']:
@@ -944,72 +944,72 @@ if st.session_state['is_scanning']:
 
 # --- RENDER GEOGRAPHIC TOPOLOGY (MODULAR MAP) ---
 if not st.session_state.get('is_scanning', False):
-    render_map(df_filtered)
+        render_map(df_filtered)
 
-    st.markdown("<div style='margin-top: -2rem; height: 12px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: -2rem; height: 12px;'></div>", unsafe_allow_html=True)
 
-    # --- RENDER LANDSCAPE DATA TABLE ---
-    render_table(df_filtered)
+        # --- RENDER LANDSCAPE DATA TABLE ---
+        render_table(df_filtered)
 
-    # ─────────────────────────────────────────────────────────────────────────────
-    # ─────────────────────────────────────────────────────────────────────────────
-    # DOWNLOAD LAPORAN EXCEL (dari SQLite — Single Source of Truth)
-    # ─────────────────────────────────────────────────────────────────────────────
-    st.markdown("---")
-    _WIB = dt.timezone(dt.timedelta(hours=7))
-    _ts  = dt.datetime.now(_WIB).strftime('%Y%m%d_%H%M')
+        # ─────────────────────────────────────────────────────────────────────────────
+        # ─────────────────────────────────────────────────────────────────────────────
+        # DOWNLOAD LAPORAN EXCEL (dari SQLite — Single Source of Truth)
+        # ─────────────────────────────────────────────────────────────────────────────
+        st.markdown("---")
+        _WIB = dt.timezone(dt.timedelta(hours=7))
+        _ts  = dt.datetime.now(_WIB).strftime('%Y%m%d_%H%M')
 
-    @st.cache_data(ttl=60, show_spinner=False)
-    def _generate_latest_excel_cache():
-        df = load_latest_scan()
-        if df.empty: return None
-        buf = io.BytesIO()
-        with pd.ExcelWriter(buf, engine='openpyxl') as w:
-            df.to_excel(w, index=False, sheet_name='Hasil Scan Terakhir')
-        return buf.getvalue()
+        @st.cache_data(ttl=60, show_spinner=False)
+        def _generate_latest_excel_cache():
+            df = load_latest_scan()
+            if df.empty: return None
+            buf = io.BytesIO()
+            with pd.ExcelWriter(buf, engine='openpyxl') as w:
+                df.to_excel(w, index=False, sheet_name='Hasil Scan Terakhir')
+            return buf.getvalue()
 
-    @st.cache_data(ttl=60, show_spinner=False)
-    def _generate_history_excel_cache():
-        df_h = load_scan_history_full()
-        df_a = get_all_alarm_history()
-        if df_h.empty: return None
-        buf = io.BytesIO()
-        with pd.ExcelWriter(buf, engine='openpyxl') as w:
-            df_h.to_excel(w, index=False, sheet_name='Riwayat Lengkap')
-            if not df_a.empty:
-                df_a.to_excel(w, index=False, sheet_name='Status Gangguan')
-        return buf.getvalue()
+        @st.cache_data(ttl=60, show_spinner=False)
+        def _generate_history_excel_cache():
+            df_h = load_scan_history_full()
+            df_a = get_all_alarm_history()
+            if df_h.empty: return None
+            buf = io.BytesIO()
+            with pd.ExcelWriter(buf, engine='openpyxl') as w:
+                df_h.to_excel(w, index=False, sheet_name='Riwayat Lengkap')
+                if not df_a.empty:
+                    df_a.to_excel(w, index=False, sheet_name='Status Gangguan')
+            return buf.getvalue()
 
-    with st.expander("📥 Download Laporan Excel", expanded=False):
-        col_dl1, col_dl2 = st.columns(2)
+        with st.expander("📥 Download Laporan Excel", expanded=False):
+            col_dl1, col_dl2 = st.columns(2)
 
-        with col_dl1:
-            data_latest = _generate_latest_excel_cache()
-            if data_latest:
-                st.download_button(
-                    label="⬇️ Hasil Scan Terakhir",
-                    data=data_latest,
-                    file_name=f"scan_terakhir_{_ts}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True,
-                    key="dl_latest"
-                )
-            else:
-                st.info("⚠️ Belum ada data scan. Klik START SCAN terlebih dahulu.")
+            with col_dl1:
+                data_latest = _generate_latest_excel_cache()
+                if data_latest:
+                    st.download_button(
+                        label="⬇️ Hasil Scan Terakhir",
+                        data=data_latest,
+                        file_name=f"scan_terakhir_{_ts}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        use_container_width=True,
+                        key="dl_latest"
+                    )
+                else:
+                    st.info("⚠️ Belum ada data scan. Klik START SCAN terlebih dahulu.")
 
-        with col_dl2:
-        data_history = _generate_history_excel_cache()
-        if data_history:
-            st.download_button(
-                label="⬇️ Riwayat Semua Scan",
-                data=data_history,
-                file_name=f"riwayat_scan_{_ts}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True,
-                key="dl_history"
-            )
-        else:
-            st.info("⚠️ Belum ada riwayat scan tersimpan.")
+            with col_dl2:
+                data_history = _generate_history_excel_cache()
+                if data_history:
+                    st.download_button(
+                        label="⬇️ Riwayat Semua Scan",
+                        data=data_history,
+                        file_name=f"riwayat_scan_{_ts}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        use_container_width=True,
+                        key="dl_history"
+                    )
+                else:
+                    st.info("⚠️ Belum ada riwayat scan tersimpan.")
 
 # --- FOOTER ---
 st.markdown("---")
