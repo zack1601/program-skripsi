@@ -64,6 +64,10 @@ def render_table(df_filtered):
             })
             
         df_summary = pd.DataFrame(summary_rows)
+        # Filter: hanya tampilkan OLT yang punya gangguan (total > 0)
+        df_summary = df_summary[
+            (df_summary['Bad Rx'] + df_summary['LOS'] + df_summary['Dying Gasp'] + df_summary['Suspend']) > 0
+        ].reset_index(drop=True)
         # Tambahkan Nomor Urut (No)
         df_summary.insert(0, 'No', range(1, len(df_summary) + 1))
         
