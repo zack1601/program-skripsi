@@ -218,7 +218,6 @@ def get_alarm_updates(limit: int = 50) -> pd.DataFrame:
                 message_id, sn, olt, pelanggan, category,
                 sent_at, status, technician, reply_text, reply_at
             FROM alarm_sent
-            WHERE status IN ('Sent', 'In Progress')
             ORDER BY sent_at DESC
             LIMIT ?
             """,

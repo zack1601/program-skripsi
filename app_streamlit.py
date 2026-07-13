@@ -430,7 +430,7 @@ if not st.session_state.get('is_scanning', False):
                   letter-spacing:1px; color:#c9d1d9;'>
             🛠️ FIELD TECHNICIAN UPDATES
             <span style='font-size:0.75rem; font-weight:400; color:#484f58; margin-left:8px;'>
-                — hanya menampilkan alarm aktif (Sent / In Progress)
+                — menampilkan riwayat update alarm terbaru
             </span>
         </p>
     </div>
@@ -470,7 +470,7 @@ if not st.session_state.get('is_scanning', False):
             st.rerun()
 
     if df_field_updates.empty:
-        st.info("🟢 Tidak ada alarm aktif. Semua gangguan sudah ditangani atau belum ada alarm yang dikirim.")
+        st.info("🟢 Belum ada riwayat update alarm yang tersimpan.")
     else:
         # --- PAGINATION LOGIC ---
         items_per_page = 5
