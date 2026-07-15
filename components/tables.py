@@ -87,8 +87,22 @@ def render_table(df_filtered):
                 use_container_width=True
             )
             
+        def style_los(val):
+            return 'background-color: rgba(244,63,94,0.15); color: #F43F5E; font-weight: 800;' if val > 0 else 'color: rgba(255,255,255,0.2);'
+        def style_badrx(val):
+            return 'background-color: rgba(245,158,11,0.15); color: #F59E0B; font-weight: 800;' if val > 0 else 'color: rgba(255,255,255,0.2);'
+        def style_dying(val):
+            return 'background-color: rgba(168,85,247,0.15); color: #A855F7; font-weight: 800;' if val > 0 else 'color: rgba(255,255,255,0.2);'
+        def style_suspend(val):
+            return 'background-color: rgba(100,116,139,0.15); color: #94A3B8; font-weight: 800;' if val > 0 else 'color: rgba(255,255,255,0.2);'
+
+        styled_df = df_summary.style.applymap(style_los, subset=['LOS']) \
+                                    .applymap(style_badrx, subset=['Bad Rx']) \
+                                    .applymap(style_dying, subset=['Dying Gasp']) \
+                                    .applymap(style_suspend, subset=['Suspend'])
+
         st.dataframe(
-            df_summary,
+            styled_df,
             use_container_width=True,
             height=540,
             hide_index=True,

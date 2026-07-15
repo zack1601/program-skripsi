@@ -39,6 +39,9 @@ def render_metrics(df_filtered):
 <text x="50" y="60" text-anchor="middle" font-size="7.5" font-weight="700" fill="{gauge_color}" font-family="Share Tech Mono, monospace">{risk_label}</text>
 </svg>"""
 
+    pulse_los = " pulse-los" if los > 0 else ""
+    pulse_badrx = " pulse-badrx" if badrx > 0 else ""
+
     # ── Full sticky HTML block ────────────────────────────────────
     st.markdown(f"""
 <div class="nw-sticky-bar">
@@ -48,8 +51,8 @@ def render_metrics(df_filtered):
 <div class="nw-cards-row">
 <div class="nw-card nw-total"><div class="nw-card-label">TOTAL</div><div class="nw-card-val">{total_ont}</div></div>
 <div class="nw-card nw-online"><div class="nw-card-label">ONLINE</div><div class="nw-card-val" style="color:#10B981;">{online}</div></div>
-<div class="nw-card nw-los"><div class="nw-card-label">LOS</div><div class="nw-card-val" style="color:#F43F5E;">{los}</div></div>
-<div class="nw-card nw-badrx"><div class="nw-card-label">BADRX</div><div class="nw-card-val" style="color:#F59E0B;">{badrx}</div></div>
+<div class="nw-card nw-los{pulse_los}"><div class="nw-card-label">LOS</div><div class="nw-card-val" style="color:#F43F5E;">{los}</div></div>
+<div class="nw-card nw-badrx{pulse_badrx}"><div class="nw-card-label">BADRX</div><div class="nw-card-val" style="color:#F59E0B;">{badrx}</div></div>
 <div class="nw-card nw-dying"><div class="nw-card-label">DYING</div><div class="nw-card-val" style="color:#A855F7;">{dying}</div></div>
 <div class="nw-card nw-suspend"><div class="nw-card-label">SUSPEND</div><div class="nw-card-val" style="color:#64748B;">{suspend}</div></div>
 </div>

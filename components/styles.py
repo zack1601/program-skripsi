@@ -552,5 +552,49 @@ def inject_custom_css():
         max-height: 350px !important;
         margin-bottom: 1.5rem !important; /* 1.5 spasi dari bawah maps ke table */
     }
+    /* ── ANIMATIONS ── */
+    @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(244,63,94, 0.4); border-color: rgba(244,63,94,0.5); }
+        70% { box-shadow: 0 0 0 10px rgba(244,63,94, 0); border-color: rgba(244,63,94,1); }
+        100% { box-shadow: 0 0 0 0 rgba(244,63,94, 0); border-color: rgba(244,63,94,0.5); }
+    }
+    @keyframes pulse-orange {
+        0% { box-shadow: 0 0 0 0 rgba(245,158,11, 0.4); border-color: rgba(245,158,11,0.5); }
+        70% { box-shadow: 0 0 0 10px rgba(245,158,11, 0); border-color: rgba(245,158,11,1); }
+        100% { box-shadow: 0 0 0 0 rgba(245,158,11, 0); border-color: rgba(245,158,11,0.5); }
+    }
+    .pulse-los {
+        animation: pulse-red 2s infinite !important;
+    }
+    .pulse-badrx {
+        animation: pulse-orange 2s infinite !important;
+    }
+
+    /* ── TERMINAL PROGRESS BAR ── */
+    .terminal-scanner {
+        font-family: 'JetBrains Mono', monospace;
+        background: #0d1117;
+        color: #00F0FF;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #30363d;
+        height: 180px;
+        overflow-y: auto;
+        font-size: 0.85rem;
+        box-shadow: inset 0 0 15px rgba(0,240,255,0.05);
+        margin-bottom: 20px;
+    }
+    .terminal-line { margin: 2px 0; }
+    .term-ok { color: #3fb950; font-weight: bold; }
+    .term-warn { color: #d29922; font-weight: bold; }
+    .term-err { color: #f85149; font-weight: bold; }
+    .term-info { color: #8b949e; }
+    .term-blink {
+        animation: blink 1s step-end infinite;
+    }
+    @keyframes blink {
+        50% { opacity: 0; }
+    }
+
 </style>
 """, unsafe_allow_html=True)

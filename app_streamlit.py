@@ -582,7 +582,9 @@ if st.session_state['is_scanning']:
     
     # Header for Stopwatch & Status
     status_placeholder = st.empty()
+    terminal_placeholder = st.empty()
     loader = st.progress(0)
+    term_lines = []
     
     start_time = time.time()
     
@@ -709,8 +711,19 @@ if st.session_state['is_scanning']:
                 # Wait for at least one to complete, or timeout for clock update
                 done, pending = concurrent.futures.wait(futures, timeout=1, return_when=concurrent.futures.FIRST_COMPLETED)
                 
+                active_olts = [olt_map[futures_to_ip[f]]["name"] for f in pending][:3]
+                running_text = "<br>".join([f"<div class='terminal-line'><span class='term-warn term-blink'>[RUNNING]</span> Pinging {name}...</div>" for name in active_olts])
+                
+                term_content = "".join(term_lines) + running_text
+                terminal_placeholder.markdown(f"<div class='terminal-scanner'>{term_content}</div>", unsafe_allow_html=True)
+                
                 for f in done:
+                    ip_done = futures_to_ip[f]
+                    name_done = olt_map[ip_done]['name']
                     scan_results = f.result()
+                    term_lines.append(f"<div class='terminal-line'><span class='term-ok'>[OK]</span> {name_done}: Scanned {len(scan_results)} ONT endpoints.</div>")
+                    if len(term_lines) > 20: term_lines.pop(0)
+                    
                     for s in scan_results:
                         sn_scan = str(s.get('sn', "")).strip().upper()
                         
