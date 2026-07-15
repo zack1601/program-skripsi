@@ -48,9 +48,19 @@ def render_table(df_filtered):
         summary_rows = []
         for region, group in df_work.groupby('Region'):
             # Kumpulkan nama OLT unik di region ini
-            olt_list = sorted(set(group['OLT'].unique()))
-            olt_count = len(olt_list)
-            olt_display = ", ".join(olt_list)  # Untuk Excel saja
+            # Normalisasi: hapus suffix " OLT XX" / " OLT-XX" di belakang nama
+            import re
+            def normalize_olt(name):
+                # Hapus suffix angka/port di belakang, contoh: "...OLT 01" → "...OLT"
+                name = re.sub(r'\s+OLT[-\s]+\d+\s*$', '', str(name), flags=re.IGNORECASE).strip()
+                name = re.sub(r'\s*-\s*OLT-\d+\s*$', '', name, flags=re.IGNORECASE).strip()
+                return name
+            
+            olt_list_raw  = sorted(set(group['OLT'].unique()))
+            olt_list_norm = sorted(set(normalize_olt(o) for o in olt_list_raw))
+            olt_count = len(olt_list_norm)
+            olt_display = ", ".join(olt_list_norm)  # Untuk Excel saja
+
             
             # Hitung jumlah tiap status (case-insensitive & clean)
             status_counts = group[target_col].astype(str).str.strip().str.lower().value_counts()
@@ -62,8 +72,8 @@ def render_table(df_filtered):
             
             summary_rows.append({
                 "Region": region,
-                "Jumlah OLT": olt_count,
-                "OLT (Detail)": olt_display,  # Kolom Excel
+                "Total User": len(group),
+                "OLT (Detail)": olt_display,  # Kolom Excel saja
                 "Bad Rx": badrx,
                 "LOS": los,
                 "Dying Gasp": dying,
@@ -97,7 +107,7 @@ def render_table(df_filtered):
 
         # --- TABLE HEADER ---
         h_cols = st.columns([0.3, 2.0, 0.8, 1, 1, 1, 1])
-        headers = ["No", "Region", "OLT", "Bad Rx", "LOS", "Dying Gasp", "Suspend"]
+        headers = ["No", "Region", "Total User", "Bad Rx", "LOS", "Dying Gasp", "Suspend"]
         for hc, ht in zip(h_cols, headers):
             hc.markdown(
                 f"<span style='font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase; letter-spacing:1px;'>{ht}</span>",
@@ -120,9 +130,9 @@ def render_table(df_filtered):
                 f"<span style='font-size:1rem; color:#e6edf3; font-weight:700; letter-spacing:0.3px;'>{r['Region']}</span>",
                 unsafe_allow_html=True
             )
-            # Jumlah OLT - badge kecil
+            # Total User - badge hijau
             row_cols[2].markdown(
-                f"<span style='background:rgba(88,166,255,0.12); color:#58a6ff; padding:2px 8px; border-radius:8px; font-size:0.82rem; font-weight:600;'>{r['Jumlah OLT']} OLT</span>",
+                f"<span style='background:rgba(63,185,80,0.12); color:#3fb950; padding:2px 10px; border-radius:8px; font-size:0.9rem; font-weight:700;'>{r['Total User']}</span>",
                 unsafe_allow_html=True
             )
             # Metrics
