@@ -367,7 +367,7 @@ if not st.session_state.get('is_scanning', False):
 
     # --- RENDER HISTORICAL TREND CHART ---
     df_trend = get_historical_trend()
-    with st.expander("📈 Historical Problem Trend", expanded=False):
+    with st.expander("📈 Historical Problem Trend", expanded=True):
         if not df_trend.empty:
             # Pivot the data
             df_pivot = df_trend.pivot(index='scan_timestamp', columns='Category', values='count').fillna(0)
