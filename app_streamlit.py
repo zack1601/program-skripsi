@@ -367,6 +367,7 @@ if not st.session_state.get('is_scanning', False):
 
     # --- RENDER HISTORICAL TREND CHART ---
     df_trend = get_historical_trend()
+    st.markdown("<div style='margin-top: 80px;'></div>", unsafe_allow_html=True)
     with st.expander("📈 Historical Problem Trend", expanded=True):
         if not df_trend.empty:
             # Pivot the data
