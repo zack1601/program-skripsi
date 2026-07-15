@@ -414,6 +414,8 @@ if not st.session_state.get('is_scanning', False):
     # ─────────────────────────────────────────────────────────────────────────────
     import math
 
+    df_field_updates = get_alarm_updates(limit=200)
+
     col_h1, col_h2 = st.columns([5, 1])
     with col_h1:
         st.markdown("""<div style='
