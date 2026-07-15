@@ -107,7 +107,7 @@ def render_table(df_filtered):
             height=540,
             hide_index=True,
             column_config={
-                "No": st.column_config.NumberColumn("No", width="small"),
+                "No": st.column_config.NumberColumn("No", width=40),
                 "OLT": st.column_config.TextColumn("OLT", width="large"),
                 "Region": st.column_config.TextColumn("Region", width="medium"),
                 "Bad Rx": st.column_config.NumberColumn("Bad Rx", width="small"),
