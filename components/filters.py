@@ -6,11 +6,13 @@ def render_filters(data_final):
     """
     # 1. OLT SELECT FILTER
     if not data_final.empty:
-        olt_options = ["All OLT"] + sorted(data_final['OLT'].unique().tolist())
-        selected_olt = st.selectbox("Select OLT Node:", options=olt_options, key="olt_select_sidebar")
+        from components.telegram import get_region_from_olt
+        regions = sorted(list(set(data_final['OLT'].apply(get_region_from_olt))))
+        olt_options = ["All OLT"] + regions
+        selected_olt = st.selectbox("Select Region:", options=olt_options, key="olt_select_sidebar")
         st.session_state['selected_olt'] = selected_olt
     else:
-        st.selectbox("Select OLT Node:", options=["Waiting for Scan..."], disabled=True, key="olt_select_sidebar_disabled")
+        st.selectbox("Select Region:", options=["Waiting for Scan..."], disabled=True, key="olt_select_sidebar_disabled")
 
     # 2. SEARCH INPUT
     st.text_input("Search SN / Name:", placeholder="Input data...", key="search_sn_sidebar")

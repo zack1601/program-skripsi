@@ -229,7 +229,13 @@ with st.sidebar:
                     try:
                         _csv_url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/export?format=csv&gid={_gid}"
                         df_sheet = pd.read_csv(_csv_url)
+                        
                         if df_sheet is not None and not df_sheet.empty:
+                            if sheet_name == "Senopati" and str(df_sheet.columns[0]).startswith("Unnamed:"):
+                                # Bypass missing headers in Senopati tab
+                                expected_cols = ['OLT', 'IP_OLT', 'SN', 'PORT', 'NAMA_ID PELANGGAN', 'Unnamed: 5', 'NAMA PELANGGAN', 'ID_PELANGGAN', 'ID SPLITTER', 'ALAMAT', 'Latitude', 'Longitude', 'Link Maps']
+                                df_sheet.columns = expected_cols[:len(df_sheet.columns)]
+                            
                             all_data.append(df_sheet)
                     except Exception as e_sheet:
                         _sheet_errors[sheet_name] = str(e_sheet)
@@ -348,7 +354,8 @@ if not df_raw.empty:
     if st.session_state.get('filter_mode', 'All') != "All":
         df_filtered = df_filtered[df_filtered['Category'] == st.session_state.get('filter_mode', 'All')]
     if st.session_state.get('selected_olt', 'All OLT') != "All OLT":
-        df_filtered = df_filtered[df_filtered['OLT'] == st.session_state.get('selected_olt')]
+        from components.telegram import get_region_from_olt
+        df_filtered = df_filtered[df_filtered['OLT'].apply(get_region_from_olt) == st.session_state.get('selected_olt')]
     if st.session_state.get('search_sn_sidebar'):
         s_term = st.session_state.get('search_sn_sidebar')
         df_filtered = df_filtered[df_filtered.astype(str).apply(lambda x: x.str.contains(s_term, case=False)).any(axis=1)]

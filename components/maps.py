@@ -300,7 +300,7 @@ def render_map(df_filtered):
             if coordinates_list: m.fit_bounds(coordinates_list, padding=(30, 30))
             import hashlib
             df_hash = hashlib.md5(pd.util.hash_pandas_object(df_filtered).values).hexdigest()
-            st_folium(m, width="100%", height=350, key=f"ftth_map_{df_hash}")
+            st_folium(m, width="100%", height=350, key=f"ftth_map_{df_hash}", returned_objects=[])
         else:
             st.info("Waiting for GPS Data... (Map will appear here)")
     else:
