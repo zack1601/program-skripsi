@@ -87,35 +87,40 @@ def render_table(df_filtered):
                 use_container_width=True
             )
             
-        def style_los(val):
-            return 'background-color: rgba(244,63,94,0.15); color: #F43F5E; font-weight: 800;' if val > 0 else 'color: rgba(255,255,255,0.2);'
-        def style_badrx(val):
-            return 'background-color: rgba(245,158,11,0.15); color: #F59E0B; font-weight: 800;' if val > 0 else 'color: rgba(255,255,255,0.2);'
-        def style_dying(val):
-            return 'background-color: rgba(168,85,247,0.15); color: #A855F7; font-weight: 800;' if val > 0 else 'color: rgba(255,255,255,0.2);'
-        def style_suspend(val):
-            return 'background-color: rgba(100,116,139,0.15); color: #94A3B8; font-weight: 800;' if val > 0 else 'color: rgba(255,255,255,0.2);'
-
-        styled_df = df_summary.style.applymap(style_los, subset=['LOS']) \
-                                    .applymap(style_badrx, subset=['Bad Rx']) \
-                                    .applymap(style_dying, subset=['Dying Gasp']) \
-                                    .applymap(style_suspend, subset=['Suspend'])
-
-        st.dataframe(
-            styled_df,
-            use_container_width=True,
-            height=540,
-            hide_index=True,
-            column_config={
-                "No": st.column_config.NumberColumn("No", width=40),
-                "OLT": st.column_config.TextColumn("OLT", width="large"),
-                "Region": st.column_config.TextColumn("Region", width="medium"),
-                "Bad Rx": st.column_config.NumberColumn("Bad Rx", width="small"),
-                "LOS": st.column_config.NumberColumn("LOS", width="small"),
-                "Dying Gasp": st.column_config.NumberColumn("Dying Gasp", width="small"),
-                "Suspend": st.column_config.NumberColumn("Suspend", width="small"),
-            }
-        )
+        # --- TABLE HEADER ---
+        h_cols = st.columns([0.4, 3.5, 1.5, 1, 1, 1, 1])
+        headers = ["No", "OLT", "Region", "Bad Rx", "LOS", "Dying Gasp", "Suspend"]
+        for hc, ht in zip(h_cols, headers):
+            hc.markdown(f"<span style='font-size:0.75rem; color:#c9d1d9; font-weight:800; text-transform:uppercase;'>{ht}</span>", unsafe_allow_html=True)
+            
+        st.markdown("<hr style='margin:4px 0 6px 0; border-color:#30363d;'>", unsafe_allow_html=True)
+        
+        # --- TABLE ROWS ---
+        for idx, r in df_summary.iterrows():
+            row_cols = st.columns([0.4, 3.5, 1.5, 1, 1, 1, 1])
+            
+            # No
+            row_cols[0].markdown(f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.95rem; color:#8b949e;'>{idx+1}</span>", unsafe_allow_html=True)
+            
+            # OLT (Bisa sangat panjang, kita biarkan text-wrap normal atau truncate jika mau, tapi OLT nama penting)
+            row_cols[1].markdown(f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.85rem; color:#ffffff; font-weight:600;'>{r['OLT']}</span>", unsafe_allow_html=True)
+            
+            # Region
+            row_cols[2].markdown(f"<span style='font-size:0.95rem; color:#a5d6ff; font-weight:500;'>{r['Region']}</span>", unsafe_allow_html=True)
+            
+            # Helper for metric badges
+            def format_metric(val, color, bg_color):
+                if val > 0:
+                    return f"<span style='background-color:{bg_color}; color:{color}; padding:2px 8px; border-radius:12px; font-size:0.85rem; font-weight:800;'>{val}</span>"
+                return f"<span style='color:rgba(255,255,255,0.2); font-size:0.85rem;'>0</span>"
+            
+            # Metrics
+            row_cols[3].markdown(format_metric(r['Bad Rx'], "#F59E0B", "rgba(245,158,11,0.15)"), unsafe_allow_html=True)
+            row_cols[4].markdown(format_metric(r['LOS'], "#F43F5E", "rgba(244,63,94,0.15)"), unsafe_allow_html=True)
+            row_cols[5].markdown(format_metric(r['Dying Gasp'], "#A855F7", "rgba(168,85,247,0.15)"), unsafe_allow_html=True)
+            row_cols[6].markdown(format_metric(r['Suspend'], "#94A3B8", "rgba(100,116,139,0.15)"), unsafe_allow_html=True)
+            
+            st.markdown("<hr style='margin:2px 0; border-color:#21262d;'>", unsafe_allow_html=True)
     else:
         st.info("Click 'SCAN' to populate data.")
 

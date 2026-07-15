@@ -430,6 +430,12 @@ if not st.session_state.get('is_scanning', False):
     # ─────────────────────────────────────────────────────────────────────────────
     import math
 
+    def _resolve_alarm_cb(sn_val):
+        update_alarm_status_by_sn(sn_val, 'Resolved')
+        
+    def _cancel_alarm_cb(sn_val):
+        update_alarm_status_by_sn(sn_val, 'Cancelled')
+
     df_field_updates = get_alarm_updates(limit=200)
 
     col_h1, col_h2 = st.columns([5, 1])
@@ -542,15 +548,9 @@ if not st.session_state.get('is_scanning', False):
             with row_cols[7]:
                 btn_col1, btn_col2 = st.columns(2)
                 with btn_col1:
-                    if st.button("✅", key=f"resolve_{sn}_{idx}", help="Tandai Selesai (Resolved)"):
-                        update_alarm_status_by_sn(sn, 'Resolved')
-                        st.toast(f"✅ {sn[:12]} → Resolved!", icon="✅")
-                        st.rerun()
+                    st.button("✅", key=f"resolve_{sn}_{idx}", help="Tandai Selesai (Resolved)", on_click=_resolve_alarm_cb, args=(sn,))
                 with btn_col2:
-                    if st.button("❌", key=f"cancel_{sn}_{idx}", help="Batalkan (Cancelled)"):
-                        update_alarm_status_by_sn(sn, 'Cancelled')
-                        st.toast(f"❌ {sn[:12]} → Cancelled!", icon="❌")
-                        st.rerun()
+                    st.button("❌", key=f"cancel_{sn}_{idx}", help="Batalkan (Cancelled)", on_click=_cancel_alarm_cb, args=(sn,))
 
             st.markdown("<hr style='margin:2px 0; border-color:#21262d;'>", unsafe_allow_html=True)
         
