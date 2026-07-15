@@ -48,8 +48,9 @@ def render_table(df_filtered):
         summary_rows = []
         for region, group in df_work.groupby('Region'):
             # Kumpulkan nama OLT unik di region ini
-            olt_list = group['OLT'].unique()
-            olt_display = ", ".join(sorted(set(olt_list)))
+            olt_list = sorted(set(group['OLT'].unique()))
+            olt_count = len(olt_list)
+            olt_display = ", ".join(olt_list)  # Untuk Excel saja
             
             # Hitung jumlah tiap status (case-insensitive & clean)
             status_counts = group[target_col].astype(str).str.strip().str.lower().value_counts()
@@ -60,8 +61,9 @@ def render_table(df_filtered):
             suspend = sum(v for k, v in status_counts.items() if 'suspend' in k)
             
             summary_rows.append({
-                "OLT": olt_display,
                 "Region": region,
+                "Jumlah OLT": olt_count,
+                "OLT (Detail)": olt_display,  # Kolom Excel
                 "Bad Rx": badrx,
                 "LOS": los,
                 "Dying Gasp": dying,
@@ -76,7 +78,7 @@ def render_table(df_filtered):
         # Tambahkan Nomor Urut (No)
         df_summary.insert(0, 'No', range(1, len(df_summary) + 1))
         
-        # Add Download Button on the right
+        # Add Download Button on the right (Excel menyertakan kolom OLT Detail)
         with col2:
             excel_data = to_excel_with_autofit(df_summary)
             st.download_button(
@@ -86,41 +88,49 @@ def render_table(df_filtered):
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True
             )
-            
+        
+        # Helper untuk badge metrik
+        def format_metric(val, color, bg_color):
+            if val > 0:
+                return f"<span style='background-color:{bg_color}; color:{color}; padding:3px 10px; border-radius:12px; font-size:0.9rem; font-weight:800;'>{val}</span>"
+            return f"<span style='color:rgba(255,255,255,0.15); font-size:0.9rem;'>—</span>"
+
         # --- TABLE HEADER ---
-        h_cols = st.columns([0.4, 3.5, 1.5, 1, 1, 1, 1])
-        headers = ["No", "OLT", "Region", "Bad Rx", "LOS", "Dying Gasp", "Suspend"]
+        h_cols = st.columns([0.3, 2.0, 0.8, 1, 1, 1, 1])
+        headers = ["No", "Region", "OLT", "Bad Rx", "LOS", "Dying Gasp", "Suspend"]
         for hc, ht in zip(h_cols, headers):
-            hc.markdown(f"<span style='font-size:0.75rem; color:#c9d1d9; font-weight:800; text-transform:uppercase;'>{ht}</span>", unsafe_allow_html=True)
+            hc.markdown(
+                f"<span style='font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase; letter-spacing:1px;'>{ht}</span>",
+                unsafe_allow_html=True
+            )
             
-        st.markdown("<hr style='margin:4px 0 6px 0; border-color:#30363d;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin:4px 0 8px 0; border-color:#30363d;'>", unsafe_allow_html=True)
         
         # --- TABLE ROWS ---
         for idx, r in df_summary.iterrows():
-            row_cols = st.columns([0.4, 3.5, 1.5, 1, 1, 1, 1])
+            row_cols = st.columns([0.3, 2.0, 0.8, 1, 1, 1, 1])
             
             # No
-            row_cols[0].markdown(f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.95rem; color:#8b949e;'>{idx+1}</span>", unsafe_allow_html=True)
-            
-            # OLT (Bisa sangat panjang, kita biarkan text-wrap normal atau truncate jika mau, tapi OLT nama penting)
-            row_cols[1].markdown(f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.85rem; color:#ffffff; font-weight:600;'>{r['OLT']}</span>", unsafe_allow_html=True)
-            
-            # Region
-            row_cols[2].markdown(f"<span style='font-size:0.95rem; color:#a5d6ff; font-weight:500;'>{r['Region']}</span>", unsafe_allow_html=True)
-            
-            # Helper for metric badges
-            def format_metric(val, color, bg_color):
-                if val > 0:
-                    return f"<span style='background-color:{bg_color}; color:{color}; padding:2px 8px; border-radius:12px; font-size:0.85rem; font-weight:800;'>{val}</span>"
-                return f"<span style='color:rgba(255,255,255,0.2); font-size:0.85rem;'>0</span>"
-            
+            row_cols[0].markdown(
+                f"<span style='font-size:0.9rem; color:#484f58; font-weight:600;'>{idx+1}</span>",
+                unsafe_allow_html=True
+            )
+            # Region - nama besar & terang
+            row_cols[1].markdown(
+                f"<span style='font-size:1rem; color:#e6edf3; font-weight:700; letter-spacing:0.3px;'>{r['Region']}</span>",
+                unsafe_allow_html=True
+            )
+            # Jumlah OLT - badge kecil
+            row_cols[2].markdown(
+                f"<span style='background:rgba(88,166,255,0.12); color:#58a6ff; padding:2px 8px; border-radius:8px; font-size:0.82rem; font-weight:600;'>{r['Jumlah OLT']} OLT</span>",
+                unsafe_allow_html=True
+            )
             # Metrics
-            row_cols[3].markdown(format_metric(r['Bad Rx'], "#F59E0B", "rgba(245,158,11,0.15)"), unsafe_allow_html=True)
-            row_cols[4].markdown(format_metric(r['LOS'], "#F43F5E", "rgba(244,63,94,0.15)"), unsafe_allow_html=True)
-            row_cols[5].markdown(format_metric(r['Dying Gasp'], "#A855F7", "rgba(168,85,247,0.15)"), unsafe_allow_html=True)
-            row_cols[6].markdown(format_metric(r['Suspend'], "#94A3B8", "rgba(100,116,139,0.15)"), unsafe_allow_html=True)
+            row_cols[3].markdown(format_metric(r['Bad Rx'],    "#F59E0B", "rgba(245,158,11,0.15)"),  unsafe_allow_html=True)
+            row_cols[4].markdown(format_metric(r['LOS'],       "#F43F5E", "rgba(244,63,94,0.15)"),   unsafe_allow_html=True)
+            row_cols[5].markdown(format_metric(r['Dying Gasp'],"#A855F7", "rgba(168,85,247,0.15)"), unsafe_allow_html=True)
+            row_cols[6].markdown(format_metric(r['Suspend'],   "#94A3B8", "rgba(100,116,139,0.15)"),unsafe_allow_html=True)
             
-            st.markdown("<hr style='margin:2px 0; border-color:#21262d;'>", unsafe_allow_html=True)
+            st.markdown("<hr style='margin:4px 0; border-color:#21262d;'>", unsafe_allow_html=True)
     else:
         st.info("Click 'SCAN' to populate data.")
-
