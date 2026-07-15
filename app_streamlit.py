@@ -212,13 +212,14 @@ with st.sidebar:
                 import pandas as pd
                 
                 # Map nama sheet ke numeric GID-nya masing-masing
-                # Public Google Sheets URL endpoint requires GID instead of string names
+                # Gunakan URL export CSV publik langsung agar lebih stabil
+                SPREADSHEET_ID = "1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw"
                 target_sheets_gid = {
-                    "Fatmawati": "0",
-                    "Senopati": "570642648",
-                    "Cinere": "912514856",
-                    "Lenteng Agung": "162726682",
-                    "Cipedak": "2107355748",
+                    "Fatmawati"     : "0",
+                    "Senopati"      : "570642648",
+                    "Cinere"        : "912514856",
+                    "Lenteng Agung" : "162726682",
+                    "Cipedak"       : "2107355748",
                     "Pinang/kalijati": "1647719979"
                 }
                 all_data = []
@@ -226,9 +227,8 @@ with st.sidebar:
                 _sheet_errors = {}
                 for sheet_name, _gid in target_sheets_gid.items():
                     try:
-                        with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
-                            # Pass GID as worksheet to prevent URL control char errors
-                            df_sheet = _gconn.read(spreadsheet=_SYNC_URL, worksheet=_gid)
+                        _csv_url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/export?format=csv&gid={_gid}"
+                        df_sheet = pd.read_csv(_csv_url)
                         if df_sheet is not None and not df_sheet.empty:
                             all_data.append(df_sheet)
                     except Exception as e_sheet:
