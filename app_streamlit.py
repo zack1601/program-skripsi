@@ -427,155 +427,164 @@ if not st.session_state.get('is_scanning', False):
             st.warning("📊 Database riwayat masih kosong. Silakan klik 'START SCAN' di menu kiri minimal satu kali untuk mulai merekam data grafik.")
 
     # ─────────────────────────────────────────────────────────────────────────────
-    # PANEL: FIELD TECHNICIAN UPDATES
+    # PANEL: FIELD TECHNICIAN UPDATES  (auto-refresh setiap 12 detik via fragment)
     # ─────────────────────────────────────────────────────────────────────────────
     import math
 
-    def _resolve_alarm_cb(sn_val):
-        update_alarm_status_by_sn(sn_val, 'Resolved')
-        
-    def _cancel_alarm_cb(sn_val):
-        update_alarm_status_by_sn(sn_val, 'Cancelled')
+    @st.fragment(run_every=12)
+    def render_field_tech_panel():
+        def _resolve_alarm_cb(sn_val):
+            update_alarm_status_by_sn(sn_val, 'Resolved')
+            
+        def _cancel_alarm_cb(sn_val):
+            update_alarm_status_by_sn(sn_val, 'Cancelled')
 
-    df_field_updates = get_alarm_updates(limit=200)
+        df_field_updates = get_alarm_updates(limit=200)
 
-    col_h1, col_h2 = st.columns([5, 1])
-    with col_h1:
-        st.markdown("""<div style='
-            margin-top: 12px;
-            padding: 16px 20px 12px 20px;
-            border-radius: 10px;
-            border: 1px solid #30363D;
-            background: rgba(22,27,34,0.85);
-        '>
-            <p style='margin:0; font-size:1rem; font-weight:700;
-                      letter-spacing:1px; color:#c9d1d9;'>
-                🛠️ FIELD TECHNICIAN UPDATES
-                <span style='font-size:0.75rem; font-weight:400; color:#484f58; margin-left:8px;'>
-                    — hanya menampilkan alarm aktif (Sent / In Progress)
-                </span>
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-    with col_h2:
-        st.markdown("<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
-        st.button("🔄 Refresh", key="refresh_tech", use_container_width=True)
+        col_h1, col_h2 = st.columns([5, 1])
+        with col_h1:
+            # Timestamp auto-refresh kecil di pojok judul
+            _now_str = dt.datetime.now(dt.timezone(dt.timedelta(hours=7))).strftime("%H:%M:%S")
+            st.markdown(f"""<div style='
+                margin-top: 12px;
+                padding: 16px 20px 12px 20px;
+                border-radius: 10px;
+                border: 1px solid #30363D;
+                background: rgba(22,27,34,0.85);
+            '>
+                <p style='margin:0; font-size:1rem; font-weight:700;
+                          letter-spacing:1px; color:#c9d1d9;'>
+                    🛠️ FIELD TECHNICIAN UPDATES
+                    <span style='font-size:0.75rem; font-weight:400; color:#484f58; margin-left:8px;'>
+                        — hanya menampilkan alarm aktif (Sent / In Progress)
+                    </span>
+                    <span style='font-size:0.72rem; font-weight:400; color:#3fb950; margin-left:16px;'>
+                        🔴 LIVE · Upd {_now_str}
+                    </span>
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        with col_h2:
+            st.markdown("<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
+            if st.button("🔄 Refresh", key="refresh_tech", use_container_width=True):
+                st.rerun(scope="fragment")
 
-    if df_field_updates.empty:
-        st.info("🟢 Tidak ada alarm aktif. Semua gangguan sudah ditangani atau belum ada alarm yang dikirim.")
-    else:
-        # --- PAGINATION LOGIC ---
-        items_per_page = 5
-        total_pages = max(1, math.ceil(len(df_field_updates) / items_per_page))
+        if df_field_updates.empty:
+            st.info("🟢 Tidak ada alarm aktif. Semua gangguan sudah ditangani atau belum ada alarm yang dikirim.")
+        else:
+            # --- PAGINATION LOGIC ---
+            items_per_page = 5
+            total_pages = max(1, math.ceil(len(df_field_updates) / items_per_page))
 
-        if st.session_state['tech_page'] >= total_pages:
-            st.session_state['tech_page'] = total_pages - 1
-        if st.session_state['tech_page'] < 0:
-            st.session_state['tech_page'] = 0
+            if st.session_state['tech_page'] >= total_pages:
+                st.session_state['tech_page'] = total_pages - 1
+            if st.session_state['tech_page'] < 0:
+                st.session_state['tech_page'] = 0
 
-        start_idx = st.session_state['tech_page'] * items_per_page
-        end_idx = start_idx + items_per_page
-        df_page = df_field_updates.iloc[start_idx:end_idx]
+            start_idx = st.session_state['tech_page'] * items_per_page
+            end_idx = start_idx + items_per_page
+            df_page = df_field_updates.iloc[start_idx:end_idx]
 
-        # Badge berwarna sesuai status
-        _STATUS_BADGE = {
-            "Sent"       : ("📤 Sent",        "#484f58", "#c9d1d9"),
-            "In Progress": ("🔧 In Progress", "#7d4e00", "#f5a623"),
-            "Resolved"   : ("✅ Resolved",    "#0d4429", "#3fb950"),
-            "Cancelled"  : ("❌ Cancelled",   "#4d1919", "#f85149"),
-        }
+            # Badge berwarna sesuai status
+            _STATUS_BADGE = {
+                "Sent"       : ("📤 Sent",        "#484f58", "#c9d1d9"),
+                "In Progress": ("🔧 In Progress", "#7d4e00", "#f5a623"),
+                "Resolved"   : ("✅ Resolved",    "#0d4429", "#3fb950"),
+                "Cancelled"  : ("❌ Cancelled",   "#4d1919", "#f85149"),
+            }
 
-        def _badge(status):
-            label, bg, color = _STATUS_BADGE.get(
-                status, (status, "#333", "#fff")
-            )
-            return (
-                f"<span style='background:{bg}; color:{color}; "
-                f"padding:2px 8px; border-radius:12px; font-size:0.78rem; "
-                f"font-weight:600; white-space:nowrap;'>{label}</span>"
-            )
+            def _badge(status):
+                label, bg, color = _STATUS_BADGE.get(
+                    status, (status, "#333", "#fff")
+                )
+                return (
+                    f"<span style='background:{bg}; color:{color}; "
+                    f"padding:2px 8px; border-radius:12px; font-size:0.78rem; "
+                    f"font-weight:600; white-space:nowrap;'>{label}</span>"
+                )
 
-        # --- HEADER TABEL ---
-        h_cols = st.columns([2, 2, 1.2, 1.5, 1.5, 1.5, 1.8, 1.3])
-        headers = ["Serial Number", "Pelanggan", "Category", "Status",
-                   "Teknisi", "Reply", "Waktu", "Aksi"]
-        for hc, ht in zip(h_cols, headers):
-            hc.markdown(
-                f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.85rem; color:#c9d1d9; text-transform:uppercase; "
-                f"letter-spacing:0.5px; font-weight:800;'>{ht}</span>",
-                unsafe_allow_html=True
-            )
+            # --- HEADER TABEL ---
+            h_cols = st.columns([2, 2, 1.2, 1.5, 1.5, 1.5, 1.8, 1.3])
+            headers = ["Serial Number", "Pelanggan", "Category", "Status",
+                       "Teknisi", "Reply", "Waktu", "Aksi"]
+            for hc, ht in zip(h_cols, headers):
+                hc.markdown(
+                    f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.85rem; color:#c9d1d9; text-transform:uppercase; "
+                    f"letter-spacing:0.5px; font-weight:800;'>{ht}</span>",
+                    unsafe_allow_html=True
+                )
 
-        st.markdown("<hr style='margin:4px 0 6px 0; border-color:#30363d;'>", unsafe_allow_html=True)
+            st.markdown("<hr style='margin:4px 0 6px 0; border-color:#30363d;'>", unsafe_allow_html=True)
 
-        # --- BARIS DATA ---
-        for idx, r in df_page.iterrows():
-            sn     = r.get("sn", "-") or "-"
-            tech   = r.get("technician", "") or "-"
-            reply  = r.get("reply_text",  "") or "-"
-            ra     = r.get("reply_at",    "") or "-"
-            status = r.get("status", "Sent")
-            ra_short   = ra[11:16] if len(ra) >= 16 else ra
-            sent_short = str(r.get("sent_at", "-"))[11:16]
+            # --- BARIS DATA ---
+            for idx, r in df_page.iterrows():
+                sn     = r.get("sn", "-") or "-"
+                tech   = r.get("technician", "") or "-"
+                reply  = r.get("reply_text",  "") or "-"
+                ra     = r.get("reply_at",    "") or "-"
+                status = r.get("status", "Sent")
+                ra_short   = ra[11:16] if len(ra) >= 16 else ra
+                sent_short = str(r.get("sent_at", "-"))[11:16]
 
-            row_cols = st.columns([2, 2, 1.2, 1.5, 1.5, 1.5, 1.8, 1.3])
-            row_cols[0].markdown(
-                f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.95rem; color:#58a6ff; font-weight:700;'>{sn[:14]}</span>",
-                unsafe_allow_html=True
-            )
-            row_cols[1].markdown(
-                f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.95rem; color:#ffffff; font-weight:600;'>{r.get('pelanggan', '-')}</span>",
-                unsafe_allow_html=True
-            )
-            row_cols[2].markdown(
-                f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.95rem; color:#f5a623; font-weight:700;'>{r.get('category', '-')}</span>",
-                unsafe_allow_html=True
-            )
-            row_cols[3].markdown(_badge(status), unsafe_allow_html=True)
-            row_cols[4].markdown(
-                f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.95rem; color:#e6edf3; font-weight:500;'>{tech}</span>",
-                unsafe_allow_html=True
-            )
-            row_cols[5].markdown(
-                f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.95rem; color:#e6edf3; font-weight:500;'>{reply}</span>",
-                unsafe_allow_html=True
-            )
-            row_cols[6].markdown(
-                f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.85rem; color:#a5d6ff; font-weight:500;'>Sent {sent_short}<br>Upd {ra_short}</span>",
-                unsafe_allow_html=True
-            )
+                row_cols = st.columns([2, 2, 1.2, 1.5, 1.5, 1.5, 1.8, 1.3])
+                row_cols[0].markdown(
+                    f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.95rem; color:#58a6ff; font-weight:700;'>{sn[:14]}</span>",
+                    unsafe_allow_html=True
+                )
+                row_cols[1].markdown(
+                    f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.95rem; color:#ffffff; font-weight:600;'>{r.get('pelanggan', '-')}</span>",
+                    unsafe_allow_html=True
+                )
+                row_cols[2].markdown(
+                    f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.95rem; color:#f5a623; font-weight:700;'>{r.get('category', '-')}</span>",
+                    unsafe_allow_html=True
+                )
+                row_cols[3].markdown(_badge(status), unsafe_allow_html=True)
+                row_cols[4].markdown(
+                    f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.95rem; color:#e6edf3; font-weight:500;'>{tech}</span>",
+                    unsafe_allow_html=True
+                )
+                row_cols[5].markdown(
+                    f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.95rem; color:#e6edf3; font-weight:500;'>{reply}</span>",
+                    unsafe_allow_html=True
+                )
+                row_cols[6].markdown(
+                    f"<span style='font-family:\"JetBrains Mono\", monospace; font-size:0.85rem; color:#a5d6ff; font-weight:500;'>Sent {sent_short}<br>Upd {ra_short}</span>",
+                    unsafe_allow_html=True
+                )
 
-            # --- TOMBOL AKSI (langsung tanpa konfirmasi) ---
-            with row_cols[7]:
-                btn_col1, btn_col2 = st.columns(2)
-                with btn_col1:
-                    st.button("✅", key=f"resolve_{sn}_{idx}", help="Tandai Selesai (Resolved)", on_click=_resolve_alarm_cb, args=(sn,))
-                with btn_col2:
-                    st.button("❌", key=f"cancel_{sn}_{idx}", help="Batalkan (Cancelled)", on_click=_cancel_alarm_cb, args=(sn,))
+                # --- TOMBOL AKSI ---
+                with row_cols[7]:
+                    btn_col1, btn_col2 = st.columns(2)
+                    with btn_col1:
+                        st.button("✅", key=f"resolve_{sn}_{idx}", help="Tandai Selesai (Resolved)", on_click=_resolve_alarm_cb, args=(sn,))
+                    with btn_col2:
+                        st.button("❌", key=f"cancel_{sn}_{idx}", help="Batalkan (Cancelled)", on_click=_cancel_alarm_cb, args=(sn,))
 
-            st.markdown("<hr style='margin:2px 0; border-color:#21262d;'>", unsafe_allow_html=True)
-        
-        # --- PAGINATION CONTROLS ---
-        st.markdown("<br>", unsafe_allow_html=True)
-        p_col1, p_col2, p_col3, _ = st.columns([1, 1, 2, 4])
-        with p_col1:
-            if st.button("⬅️ Prev", disabled=(st.session_state['tech_page'] == 0), use_container_width=True):
-                st.session_state['tech_page'] -= 1
-                st.rerun()
-        with p_col2:
-            if st.button("Next ➡️", disabled=(st.session_state['tech_page'] >= total_pages - 1), use_container_width=True):
-                st.session_state['tech_page'] += 1
-                st.rerun()
-        with p_col3:
-            st.markdown(f"<div style='padding-top:8px; color:#8b949e; font-size:0.85rem;'>Page {st.session_state['tech_page'] + 1} of {total_pages} (Total: {len(df_field_updates)})</div>", unsafe_allow_html=True)
+                st.markdown("<hr style='margin:2px 0; border-color:#21262d;'>", unsafe_allow_html=True)
+            
+            # --- PAGINATION CONTROLS ---
+            st.markdown("<br>", unsafe_allow_html=True)
+            p_col1, p_col2, p_col3, _ = st.columns([1, 1, 2, 4])
+            with p_col1:
+                if st.button("⬅️ Prev", disabled=(st.session_state['tech_page'] == 0), use_container_width=True):
+                    st.session_state['tech_page'] -= 1
+                    st.rerun(scope="fragment")
+            with p_col2:
+                if st.button("Next ➡️", disabled=(st.session_state['tech_page'] >= total_pages - 1), use_container_width=True):
+                    st.session_state['tech_page'] += 1
+                    st.rerun(scope="fragment")
+            with p_col3:
+                st.markdown(f"<div style='padding-top:8px; color:#8b949e; font-size:0.85rem;'>Page {st.session_state['tech_page'] + 1} of {total_pages} (Total: {len(df_field_updates)})</div>", unsafe_allow_html=True)
 
         st.markdown("<hr style='border-color:#21262d; margin-top:8px;'>", unsafe_allow_html=True)
 
-        # Spacer to push content below the fixed Network Summary bar
+        # Spacer
         st.write("")
         st.write("")
-        st.write("")
-        st.write("")
+
+    render_field_tech_panel()
+
 
 # --- SCANNING ENGINE ---
 if st.session_state['is_scanning']:

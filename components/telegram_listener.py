@@ -30,13 +30,15 @@ from components.database import (
     set_last_telegram_update_id,
 )
 
+# Impor dari file konfigurasi terpusat
+from config import TELEGRAM_BOT_TOKEN
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Konfigurasi Bot (sama dengan telegram.py)
 # ─────────────────────────────────────────────────────────────────────────────
-TOKEN   = "8789834499:AAEeqHkPjSzlkr4egB0sMPvsMyoDUBkG2OU"
-POLL_INTERVAL = 30   # detik antar polling
+POLL_INTERVAL = 10   # detik antar polling (real-time update)
 
-_UPDATES_URL = f"https://api.telegram.org/bot{TOKEN}/getUpdates"
+_UPDATES_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates"
 
 # Guard agar thread hanya dijalankan satu kali per sesi Streamlit
 _listener_started = False
