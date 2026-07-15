@@ -9,12 +9,17 @@ def inject_custom_css():
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
     /* Global Styles */
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
     
     html, body, [data-testid="stAppViewContainer"] {
         background-color: #0E1117 !important;
         color: #FFFFFF !important;
-        font-family: 'Share Tech Mono', monospace;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Table Data Font */
+    [data-testid="stDataFrame"] * {
+        font-family: 'JetBrains Mono', monospace !important;
     }
     
     /* Sembunyikan header & toolbar bawaan Streamlit agar tidak bentrok dengan sticky bar */
@@ -35,13 +40,13 @@ def inject_custom_css():
     [data-testid="stSidebar"] {
         background-color: #161B22 !important;
         border-right: 1px solid #30363D;
-        font-family: 'Share Tech Mono', monospace !important;
+        font-family: 'Inter', sans-serif !important;
     }
     
     [data-testid="stSidebar"] p, 
     [data-testid="stSidebar"] label, 
     [data-testid="stSidebar"] input {
-        font-family: 'Share Tech Mono', monospace !important;
+        font-family: 'Inter', sans-serif !important;
     }
     
     /* Ensure Streamlit's sidebar collapse icon renders as an icon, not raw text */
@@ -464,12 +469,12 @@ def inject_custom_css():
 
     /* ── Section label ── */
     .nw-section-label {
-        font-family: 'Share Tech Mono', monospace !important;
-        font-size: 0.72rem !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.95rem !important;
         font-weight: 800 !important;
-        color: #484F58 !important;
+        color: #8B949E !important;
         letter-spacing: 2px !important;
-        margin: 0 0 8px 2px !important;
+        margin: 12px 0 10px 2px !important;
         text-transform: uppercase;
     }
 

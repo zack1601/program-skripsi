@@ -414,60 +414,27 @@ if not st.session_state.get('is_scanning', False):
     # ─────────────────────────────────────────────────────────────────────────────
     import math
 
-    if 'confirm_action' not in st.session_state:
-        st.session_state['confirm_action'] = None
-
-    df_field_updates = get_alarm_updates(limit=200)
-
-    st.markdown("""<div style='
-        margin-top: 12px;
-        padding: 16px 20px 12px 20px;
-        border-radius: 10px;
-        border: 1px solid #30363D;
-        background: rgba(22,27,34,0.85);
-    '>
-        <p style='margin:0; font-size:1rem; font-weight:700;
-                  letter-spacing:1px; color:#c9d1d9;'>
-            🛠️ FIELD TECHNICIAN UPDATES
-            <span style='font-size:0.75rem; font-weight:400; color:#484f58; margin-left:8px;'>
-                — hanya menampilkan alarm aktif (Sent / In Progress)
-            </span>
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # --- KONFIRMASI INLINE (di dalam panel, tepat di bawah header) ---
-    if st.session_state['confirm_action']:
-        ca = st.session_state['confirm_action']
-        _sn = ca['sn']
-        _act = ca['action']
-        _icon = "✅" if _act == "Resolved" else "❌"
-        _col = "#3fb950" if _act == "Resolved" else "#f85149"
-        _bg  = "rgba(35,134,54,0.15)" if _act == "Resolved" else "rgba(218,54,51,0.15)"
-
-        st.markdown(f"""
-        <div style='padding:12px 16px; border:1px solid {_col}; border-radius:8px;
-                    background:{_bg}; margin-bottom:12px;'>
-            <b style='color:#c9d1d9;'>Konfirmasi:</b>
-            Tandai <b style='color:#58a6ff;'>{_sn}</b> sebagai
-            <span style='color:{_col}; font-weight:700;'>{_act}</span> ?
+    col_h1, col_h2 = st.columns([5, 1])
+    with col_h1:
+        st.markdown("""<div style='
+            margin-top: 12px;
+            padding: 16px 20px 12px 20px;
+            border-radius: 10px;
+            border: 1px solid #30363D;
+            background: rgba(22,27,34,0.85);
+        '>
+            <p style='margin:0; font-size:1rem; font-weight:700;
+                      letter-spacing:1px; color:#c9d1d9;'>
+                🛠️ FIELD TECHNICIAN UPDATES
+                <span style='font-size:0.75rem; font-weight:400; color:#484f58; margin-left:8px;'>
+                    — hanya menampilkan alarm aktif (Sent / In Progress)
+                </span>
+            </p>
         </div>
         """, unsafe_allow_html=True)
-
-        bc1, bc2, bc3 = st.columns([2, 1, 1])
-        with bc2:
-            ya_clicked = st.button("✅ YA", key="confirm_ya", use_container_width=True)
-        with bc3:
-            tidak_clicked = st.button("❌ TIDAK", key="confirm_tidak", use_container_width=True)
-
-        if ya_clicked:
-            update_alarm_status_by_sn(_sn, _act)
-            st.toast(f"{_icon} {_sn[:12]} → {_act}!", icon=_icon)
-            st.session_state['confirm_action'] = None
-            st.rerun()
-        if tidak_clicked:
-            st.session_state['confirm_action'] = None
-            st.rerun()
+    with col_h2:
+        st.markdown("<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
+        st.button("🔄 Refresh", key="refresh_tech", use_container_width=True)
 
     if df_field_updates.empty:
         st.info("🟢 Tidak ada alarm aktif. Semua gangguan sudah ditangani atau belum ada alarm yang dikirim.")
@@ -553,16 +520,18 @@ if not st.session_state.get('is_scanning', False):
                 unsafe_allow_html=True
             )
 
-            # --- TOMBOL AKSI (hanya muncul jika status masih aktif) ---
+            # --- TOMBOL AKSI (langsung tanpa konfirmasi) ---
             with row_cols[7]:
                 btn_col1, btn_col2 = st.columns(2)
                 with btn_col1:
                     if st.button("✅", key=f"resolve_{sn}_{idx}", help="Tandai Selesai (Resolved)"):
-                        st.session_state['confirm_action'] = {'sn': sn, 'action': 'Resolved'}
+                        update_alarm_status_by_sn(sn, 'Resolved')
+                        st.toast(f"✅ {sn[:12]} → Resolved!", icon="✅")
                         st.rerun()
                 with btn_col2:
                     if st.button("❌", key=f"cancel_{sn}_{idx}", help="Batalkan (Cancelled)"):
-                        st.session_state['confirm_action'] = {'sn': sn, 'action': 'Cancelled'}
+                        update_alarm_status_by_sn(sn, 'Cancelled')
+                        st.toast(f"❌ {sn[:12]} → Cancelled!", icon="❌")
                         st.rerun()
 
             st.markdown("<hr style='margin:2px 0; border-color:#21262d;'>", unsafe_allow_html=True)
