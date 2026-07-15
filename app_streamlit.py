@@ -494,8 +494,8 @@ if not st.session_state.get('is_scanning', False):
                    "Teknisi", "Reply", "Waktu", "Aksi"]
         for hc, ht in zip(h_cols, headers):
             hc.markdown(
-                f"<span style='font-size:0.72rem; color:#8b949e; text-transform:uppercase; "
-                f"letter-spacing:0.5px; font-weight:600;'>{ht}</span>",
+                f"<span style='font-size:0.75rem; color:#c9d1d9; text-transform:uppercase; "
+                f"letter-spacing:0.5px; font-weight:700;'>{ht}</span>",
                 unsafe_allow_html=True
             )
 
@@ -513,28 +513,28 @@ if not st.session_state.get('is_scanning', False):
 
             row_cols = st.columns([2, 2, 1.2, 1.5, 1.5, 1.5, 1.8, 1.3])
             row_cols[0].markdown(
-                f"<span style='font-family:monospace; font-size:0.78rem; color:#58a6ff;'>{sn[:14]}</span>",
+                f"<span style='font-family:monospace; font-size:0.85rem; color:#58a6ff; font-weight:600;'>{sn[:14]}</span>",
                 unsafe_allow_html=True
             )
             row_cols[1].markdown(
-                f"<span style='font-size:0.8rem;'>{r.get('pelanggan', '-')}</span>",
+                f"<span style='font-size:0.85rem; color:#ffffff; font-weight:500;'>{r.get('pelanggan', '-')}</span>",
                 unsafe_allow_html=True
             )
             row_cols[2].markdown(
-                f"<span style='font-size:0.8rem; color:#f5a623;'>{r.get('category', '-')}</span>",
+                f"<span style='font-size:0.85rem; color:#f5a623; font-weight:600;'>{r.get('category', '-')}</span>",
                 unsafe_allow_html=True
             )
             row_cols[3].markdown(_badge(status), unsafe_allow_html=True)
             row_cols[4].markdown(
-                f"<span style='font-size:0.78rem; color:#8b949e;'>{tech}</span>",
+                f"<span style='font-size:0.85rem; color:#c9d1d9;'>{tech}</span>",
                 unsafe_allow_html=True
             )
             row_cols[5].markdown(
-                f"<span style='font-size:0.78rem; color:#8b949e;'>{reply}</span>",
+                f"<span style='font-size:0.85rem; color:#c9d1d9;'>{reply}</span>",
                 unsafe_allow_html=True
             )
             row_cols[6].markdown(
-                f"<span style='font-size:0.72rem; color:#484f58;'>Sent {sent_short}<br>Upd {ra_short}</span>",
+                f"<span style='font-size:0.75rem; color:#8b949e;'>Sent {sent_short}<br>Upd {ra_short}</span>",
                 unsafe_allow_html=True
             )
 
