@@ -831,6 +831,7 @@ if st.session_state['is_scanning']:
                         <div style="color: #F59E0B; font-family: monospace; font-size: 1.2rem; font-weight: 800;">⏱️ {t_str}</div>
                     </div>
                     """, unsafe_allow_html=True)
+                    terminal_placeholder.empty()
                     time.sleep(0.5)
                     break
             
@@ -957,7 +958,6 @@ if st.session_state['is_scanning']:
                     record["Power/Cause"] = record["last_down_cause"]
                 
                 simulated_records.append(record)
-                time.sleep(0.005)
                 
             st.session_state['temp_results'] = simulated_records
             
@@ -997,6 +997,7 @@ if st.session_state['is_scanning']:
         
         st.session_state['is_scanning'] = False
         st.session_state['stop_scanning'] = False
+        terminal_placeholder.empty()
         st.rerun()
         
     except Exception as e:
