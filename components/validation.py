@@ -179,6 +179,24 @@ def validate_input_dataframe(
             f"⚠️  {dropped} baris kosong ditemukan dan diabaikan."
         )
 
+    # — Langkah 3b: drop baris di mana SEMUA kolom wajib kosong/None —
+    # Ini menangani baris sisa dari concat multi-tab GSheets
+    _NULL_VALS = {"nan", "none", "nat", "", "null"}
+    def _is_null_str(v) -> bool:
+        return str(v).strip().lower() in _NULL_VALS
+
+    req_null_mask = (
+        clean_df["ip_olt"].apply(_is_null_str) &
+        clean_df["serial_number"].apply(_is_null_str) &
+        clean_df["port"].apply(_is_null_str)
+    )
+    if req_null_mask.any():
+        dropped2 = req_null_mask.sum()
+        clean_df = clean_df[~req_null_mask].reset_index(drop=True)
+        errors.append(
+            f"⚠️  {dropped2} baris dengan IP/SN/Port kosong ditemukan dan diabaikan."
+        )
+
     # — Langkah 4: normalisasi nilai kolom kunci —
     clean_df["ip_olt"] = (
         clean_df["ip_olt"].astype(str).str.strip()
@@ -190,8 +208,8 @@ def validate_input_dataframe(
 
     # — Langkah 5: validasi format IP —
     mask_bad_ip = ~clean_df["ip_olt"].apply(_is_valid_ip)
-    # Kecualikan sel yang berisi "nan" (berasal dari NaN asli)
-    mask_bad_ip = mask_bad_ip & (clean_df["ip_olt"].str.lower() != "nan")
+    # Kecualikan sel yang berisi "nan" atau "none" (berasal dari NaN asli)
+    mask_bad_ip = mask_bad_ip & ~clean_df["ip_olt"].str.lower().isin(_NULL_VALS)
     if mask_bad_ip.any():
         bad_rows = clean_df[mask_bad_ip].index.tolist()
         bad_vals = clean_df.loc[mask_bad_ip, "ip_olt"].tolist()
@@ -202,7 +220,7 @@ def validate_input_dataframe(
 
     # — Langkah 6: validasi Serial Number —
     mask_bad_sn = ~clean_df["serial_number"].apply(_is_valid_sn)
-    mask_bad_sn = mask_bad_sn & (clean_df["serial_number"].str.lower() != "nan")
+    mask_bad_sn = mask_bad_sn & ~clean_df["serial_number"].str.lower().isin(_NULL_VALS)
     if mask_bad_sn.any():
         bad_rows = clean_df[mask_bad_sn].index.tolist()
         bad_vals = clean_df.loc[mask_bad_sn, "serial_number"].tolist()
@@ -213,7 +231,7 @@ def validate_input_dataframe(
 
     # — Langkah 7: validasi PORT —
     mask_bad_port = ~clean_df["port"].apply(_is_valid_port)
-    mask_bad_port = mask_bad_port & (clean_df["port"].str.lower() != "nan")
+    mask_bad_port = mask_bad_port & ~clean_df["port"].str.lower().isin(_NULL_VALS)
     if mask_bad_port.any():
         bad_rows = clean_df[mask_bad_port].index.tolist()
         bad_vals = clean_df.loc[mask_bad_port, "port"].tolist()
