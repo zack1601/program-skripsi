@@ -211,15 +211,24 @@ with st.sidebar:
                 from contextlib import redirect_stdout, redirect_stderr
                 import pandas as pd
                 
-                # Daftar nama sheet persis seperti yang Anda buat
-                target_sheets = ["Fatmawati", "Senopati", "Cinere", "Lenteng Agung", "Cipedak", "Pinang/kalijati"]
+                # Map nama sheet ke numeric GID-nya masing-masing
+                # Public Google Sheets URL endpoint requires GID instead of string names
+                target_sheets_gid = {
+                    "Fatmawati": "0",
+                    "Senopati": "570642648",
+                    "Cinere": "912514856",
+                    "Lenteng Agung": "162726682",
+                    "Cipedak": "2107355748",
+                    "Pinang/kalijati": "1647719979"
+                }
                 all_data = []
                 
                 _sheet_errors = {}
-                for sheet_name in target_sheets:
+                for sheet_name, _gid in target_sheets_gid.items():
                     try:
                         with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
-                            df_sheet = _gconn.read(spreadsheet=_SYNC_URL, worksheet=sheet_name)
+                            # Pass GID as worksheet to prevent URL control char errors
+                            df_sheet = _gconn.read(spreadsheet=_SYNC_URL, worksheet=_gid)
                         if df_sheet is not None and not df_sheet.empty:
                             all_data.append(df_sheet)
                     except Exception as e_sheet:
