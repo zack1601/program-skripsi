@@ -1,5 +1,6 @@
 import requests
 import time
+import datetime
 import streamlit as st
 import json
 import os
@@ -52,8 +53,9 @@ def should_send_alarm(sn, status):
         # Sudah pernah dikirim
         return False
     else:
-        # Belum pernah dikirim, catat sekarang
-        history[key] = time.strftime('%Y-%m-%d %H:%M:%S')
+        # Belum pernah dikirim, catat sekarang (Waktu WIB)
+        wib_tz = datetime.timezone(datetime.timedelta(hours=7))
+        history[key] = datetime.datetime.now(wib_tz).strftime('%Y-%m-%d %H:%M:%S')
         try:
             with open(ALARM_HISTORY_FILE, 'w') as f:
                 json.dump(history, f)
@@ -88,6 +90,10 @@ def send_telegram_alarm(record) -> Optional[int]:
     
     coord_text = f'<a href="{maps_link}">{lat}, {lon}</a>' if maps_link else "-"
 
+    # Dapatkan waktu saat ini dalam WIB (UTC+7)
+    wib_tz = datetime.timezone(datetime.timedelta(hours=7))
+    current_time_wib = datetime.datetime.now(wib_tz).strftime('%Y-%m-%d %H:%M:%S')
+
     # Template Markdown Sesuai Permintaan
     template = f"""━━━━━━━━━━━━━━━
 🚨 <b>NOC ALARM REPORT</b> 🚨
@@ -99,7 +105,7 @@ def send_telegram_alarm(record) -> Optional[int]:
 👤 <b>User:</b> {cust_id} - {cust_name}
 📡 <b>Power:</b> {record.get('Power/Cause', '-')}
 🗺️ <b>Coordinate:</b> {coord_text}
-⏰ <b>Time:</b> {time.strftime('%Y-%m-%d %H:%M:%S')}
+⏰ <b>Time:</b> {current_time_wib}
 ━━━━━━━━━━━━━━━
 🛠️ Sent via NETWATCH OPS CENTER
 
