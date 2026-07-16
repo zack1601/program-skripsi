@@ -5,6 +5,7 @@ import streamlit as st
 import json
 import os
 from typing import Optional
+import config
 
 ALARM_HISTORY_FILE = "output/alarm_history.json"
 
@@ -74,8 +75,8 @@ def send_telegram_alarm(record) -> Optional[int]:
         message_id digunakan untuk mendeteksi reply dari teknisi lapangan.
     """
     # Kredensial Resmi User
-    TOKEN = "8789834499:AAEeqHkPjSzlkr4egB0sMPvsMyoDUBkG2OU"
-    CHAT_ID = "-1003975720951"
+    TOKEN = config.TELEGRAM_BOT_TOKEN
+    CHAT_ID = config.TELEGRAM_CHAT_ID
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
     
     # Parsing ID & Nama dari "id-nama"

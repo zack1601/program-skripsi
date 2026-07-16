@@ -82,3 +82,9 @@ MAX_WORKERS       = _get_val("multithreading", "max_workers", 3)        # Jumlah
 INPUT_FILE        = _get_val("file_io", "input_file", "data_noc.xlsx")
 OUTPUT_DIR        = _get_val("file_io", "output_dir", "output")
 LOG_DIR           = _get_val("file_io", "log_dir", "logs")
+
+# ============================================================================
+# TELEGRAM
+# ============================================================================
+TELEGRAM_BOT_TOKEN = _get_val("telegram", "bot_token", "8789834499:AAEeqHkPjSzlkr4egB0sMPvsMyoDUBkG2OU")
+TELEGRAM_CHAT_ID   = _get_val("telegram", "chat_id", "-1003975720951")
