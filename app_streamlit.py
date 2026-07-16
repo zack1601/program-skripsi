@@ -183,17 +183,47 @@ def apply_business_logic(row):
 
 # --- SIDEBAR UI ---
 with st.sidebar:
-    # Single-line Minimalist Header
     st.markdown("""
-    <div style='padding: 16px 0; border-bottom: 1px solid #30363D; margin-bottom: 16px;'>
-        <p style='margin:0; font-size:1.5rem; font-weight:800; letter-spacing:2px; color:#FFFFFF;'>NETWATCH OPS CENTER <span style="color:#484F58; font-weight:400;"></span></p>
+    <div style='padding: 16px 0; margin-bottom: 8px;'>
+        <p style='margin:0; font-size:1.5rem; font-weight:800; letter-spacing:2px; color:#FFFFFF;'>NETWATCH OPS CENTER</p>
     </div>
     """, unsafe_allow_html=True)
-    
-    # Modern Navigation (Glassmorphism)
-    st.markdown('<div class="sidebar-btn active"><i class="fa-solid fa-chart-line" style="margin-right:10px;opacity:0.7;"></i>Monitoring Dashboard</div>', unsafe_allow_html=True)
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.divider()
+    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 10px;'>⚙️ SYSTEM CONTROLS</p>", unsafe_allow_html=True)
+    # Dynamic Scan/Stop Toggle Button
+    is_running = st.session_state.get('is_scanning', False)
+    if is_running:
+        st.markdown('<div class="stop-btn">', unsafe_allow_html=True)
+        if st.button("STOP SCANNING", use_container_width=True):
+            st.session_state['is_scanning'] = False
+            st.session_state['stop_scanning'] = True
+            
+            # Pindahkan data yang sudah terkumpul sejauh ini ke data_final agar tidak kosong
+            if 'temp_results' in st.session_state and st.session_state['temp_results']:
+                final_df = pd.DataFrame(st.session_state['temp_results'])
+                if not final_df.empty:
+                    # Bersihkan SN untuk deduplikasi terpercaya
+                    final_df['Serial Number'] = final_df['Serial Number'].astype(str).str.strip().str.upper()
+                    final_df['Nama/ID Pelanggan'] = final_df['Nama/ID Pelanggan'].astype(str).str.strip().str.upper()
+                    
+                    # Deduplikasi ketat hanya berdasarkan SN
+                    final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
+                    
+                    st.session_state['data_final'] = final_df
+                    save_scan_results(final_df)
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    else:
+        st.markdown('<div class="start-btn">', unsafe_allow_html=True)
+        if st.button("START SCAN", use_container_width=True):
+            st.session_state['is_scanning'] = True
+            st.session_state['stop_scanning'] = False
+            st.session_state['temp_results'] = []
+            st.session_state['data_final'] = pd.DataFrame()
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
+    st.markdown('<br>', unsafe_allow_html=True)
     # ── SYNC DATA BUTTON ──────────────────────────────────────────────────────
     _last_sync = get_last_sync_time()
     st.markdown(
@@ -254,112 +284,11 @@ with st.sidebar:
                 st.error(f"❌ Gagal terhubung ke Google Sheets: {_e}")
         st.rerun()
 
-    st.markdown("<hr style='margin: 1.5em 0; border: none; border-top: 1px solid #30363D;'>", unsafe_allow_html=True)
 
-    # Dynamic Scan/Stop Toggle Button
-    is_running = st.session_state.get('is_scanning', False)
-    if is_running:
-        st.markdown('<div class="stop-btn">', unsafe_allow_html=True)
-        if st.button("STOP SCANNING", use_container_width=True):
-            st.session_state['is_scanning'] = False
-            st.session_state['stop_scanning'] = True
-            
-            # Pindahkan data yang sudah terkumpul sejauh ini ke data_final agar tidak kosong
-            if 'temp_results' in st.session_state and st.session_state['temp_results']:
-                final_df = pd.DataFrame(st.session_state['temp_results'])
-                if not final_df.empty:
-                    # Bersihkan SN untuk deduplikasi terpercaya
-                    final_df['Serial Number'] = final_df['Serial Number'].astype(str).str.strip().str.upper()
-                    final_df['Nama/ID Pelanggan'] = final_df['Nama/ID Pelanggan'].astype(str).str.strip().str.upper()
-                    
-                    # Deduplikasi ketat hanya berdasarkan SN
-                    final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
-                    
-                    st.session_state['data_final'] = final_df
-                    save_scan_results(final_df)
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-    else:
-        st.markdown('<div class="start-btn">', unsafe_allow_html=True)
-        if st.button("START SCAN", use_container_width=True):
-            st.session_state['is_scanning'] = True
-            st.session_state['stop_scanning'] = False
-            st.session_state['temp_results'] = []
-            st.session_state['data_final'] = pd.DataFrame()
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # Alarm Region Selector
-    st.markdown("<hr style='margin: 1.5em 0; border: none; border-top: 1px solid #30363D;'>", unsafe_allow_html=True)
-    region_options = ["Semua Wilayah", "Fatmawati", "Cipedak", "Pinang/Kalijati", "Lenteng Agung", "Cinere", "Senopati"]
-    selected_region_alarm = st.selectbox("🎯 Target Alarm Region:", region_options)
-    
-    # Alarm button
-    btn_disabled = st.session_state['data_final'].empty
-    st.markdown('<div class="alarm-btn">', unsafe_allow_html=True)
-    if st.button("SEND ALARM", use_container_width=True, disabled=btn_disabled):
-        df_problems = st.session_state['data_final'][st.session_state['data_final']['Category'].isin(['LOS', 'BadRx'])]
-        
-        if df_problems.empty:
-            st.sidebar.info("System Healthy: No Alarms Needed")
-        else:
-            # Pre-filter and pre-check deduplication
-            to_send = []
-            for row in df_problems.to_dict('records'):
-                row_region = get_region_from_olt(row.get('OLT', ''))
-                
-                # Filter by region
-                if selected_region_alarm != "Semua Wilayah" and row_region != selected_region_alarm:
-                    continue
-                
-                sn = row.get('Serial Number', '')
-                status = row.get('Category', '')
-                
-                if should_send_alarm(sn, status):
-                    to_send.append(row)
-            
-            if to_send:
-                # Tampilkan notif di awal / bersamaan dengan pengiriman pertama
-                st.success(f"{len(to_send)} Alarms Sent to {selected_region_alarm}!")
-                
-                # Kirim ke Telegram + simpan message_id ke SQLite
-                for row in to_send:
-                    msg_id = send_telegram_alarm(row)
-                    if msg_id:  # Simpan hanya jika pengiriman berhasil
-                        save_alarm_sent(msg_id, row)
-            else:
-                st.info("No new alarms to send (or already sent).")
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown("---")
-
-    # Render OLT select dropdown, search text box, and modern Quick Filters (fully modularized!)
-    render_filters(st.session_state['data_final'])
-
-    # Logout button di area paling bawah sidebar
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("🚪 LOGOUT", key="logout_btn", use_container_width=True):
-        _delete_session(st.session_state.get('session_token', ''))
-        st.session_state['logged_in'] = False
-        st.session_state['session_token'] = None
-        st.session_state['login_time'] = None
-        st.query_params.clear()
-        st.rerun()
-
-# --- FILTER DATA FOR DISPLAY ---
-df_raw = st.session_state['data_final']
-df_filtered = df_raw.copy()
-
-if not df_raw.empty:
-    if st.session_state.get('filter_mode', 'All') != "All":
-        df_filtered = df_filtered[df_filtered['Category'] == st.session_state.get('filter_mode', 'All')]
-    if st.session_state.get('selected_olt', 'All OLT') != "All OLT":
-        from components.telegram import get_region_from_olt
-        df_filtered = df_filtered[df_filtered['OLT'].apply(get_region_from_olt) == st.session_state.get('selected_olt')]
-    if st.session_state.get('search_sn_sidebar'):
-        s_term = st.session_state.get('search_sn_sidebar')
-        df_filtered = df_filtered[df_filtered.astype(str).apply(lambda x: x.str.contains(s_term, case=False)).any(axis=1)]
-
+    st.divider()
+    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 10px;'>🚨 ALARM CENTER</p>", unsafe_allow_html=True)
+    st.divider()
+    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 10px;'>🔍 DATA FILTERS</p>", unsafe_allow_html=True)
 # --- RENDER DASHBOARD (Hanya tampil jika TIDAK sedang proses scan) ---
 if not st.session_state.get('is_scanning', False):
     # --- RENDER METRICS & RISK SCORE GAUGE (STICKY HEADER) ---
