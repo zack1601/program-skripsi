@@ -287,8 +287,78 @@ with st.sidebar:
 
     st.divider()
     st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 10px;'>🚨 ALARM CENTER</p>", unsafe_allow_html=True)
+
+    # Alarm Region Selector
+    region_options = ["Semua Wilayah", "Fatmawati", "Cipedak", "Pinang/Kalijati", "Lenteng Agung", "Cinere", "Senopati"]
+    selected_region_alarm = st.selectbox("🎯 Target Alarm Region:", region_options)
+    
+    # Alarm button
+    btn_disabled = st.session_state['data_final'].empty
+    st.markdown('<div class="alarm-btn">', unsafe_allow_html=True)
+    if st.button("SEND ALARM", use_container_width=True, disabled=btn_disabled):
+        df_problems = st.session_state['data_final'][st.session_state['data_final']['Category'].isin(['LOS', 'BadRx'])]
+        
+        if df_problems.empty:
+            st.sidebar.info("System Healthy: No Alarms Needed")
+        else:
+            # Pre-filter and pre-check deduplication
+            to_send = []
+            for row in df_problems.to_dict('records'):
+                row_region = get_region_from_olt(row.get('OLT', ''))
+                
+                # Filter by region
+                if selected_region_alarm != "Semua Wilayah" and row_region != selected_region_alarm:
+                    continue
+                
+                sn = row.get('Serial Number', '')
+                status = row.get('Category', '')
+                
+                if should_send_alarm(sn, status):
+                    to_send.append(row)
+            
+            if to_send:
+                # Tampilkan notif di awal / bersamaan dengan pengiriman pertama
+                st.success(f"{len(to_send)} Alarms Sent to {selected_region_alarm}!")
+                
+                # Kirim ke Telegram + simpan message_id ke SQLite
+                for row in to_send:
+                    msg_id = send_telegram_alarm(row)
+                    if msg_id:  # Simpan hanya jika pengiriman berhasil
+                        save_alarm_sent(msg_id, row)
+            else:
+                st.info("No new alarms to send (or already sent).")
+    st.markdown('</div>', unsafe_allow_html=True)
+
     st.divider()
     st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 10px;'>🔍 DATA FILTERS</p>", unsafe_allow_html=True)
+
+    # Render OLT select dropdown, search text box, and modern Quick Filters (fully modularized!)
+    render_filters(st.session_state['data_final'])
+
+    # Logout button di area paling bawah sidebar
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("🚪 LOGOUT", key="logout_btn", use_container_width=True):
+        _delete_session(st.session_state.get('session_token', ''))
+        st.session_state['logged_in'] = False
+        st.session_state['session_token'] = None
+        st.session_state['login_time'] = None
+        st.query_params.clear()
+        st.rerun()
+
+# --- FILTER DATA FOR DISPLAY ---
+df_raw = st.session_state['data_final']
+df_filtered = df_raw.copy()
+
+if not df_raw.empty:
+    if st.session_state.get('filter_mode', 'All') != "All":
+        df_filtered = df_filtered[df_filtered['Category'] == st.session_state.get('filter_mode', 'All')]
+    if st.session_state.get('selected_olt', 'All OLT') != "All OLT":
+        from components.telegram import get_region_from_olt
+        df_filtered = df_filtered[df_filtered['OLT'].apply(get_region_from_olt) == st.session_state.get('selected_olt')]
+    if st.session_state.get('search_sn_sidebar'):
+        s_term = st.session_state.get('search_sn_sidebar')
+        df_filtered = df_filtered[df_filtered.astype(str).apply(lambda x: x.str.contains(s_term, case=False)).any(axis=1)]
+
 # --- RENDER DASHBOARD (Hanya tampil jika TIDAK sedang proses scan) ---
 if not st.session_state.get('is_scanning', False):
     # --- RENDER METRICS & RISK SCORE GAUGE (STICKY HEADER) ---
