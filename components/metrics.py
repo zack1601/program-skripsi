@@ -42,9 +42,9 @@ def render_metrics(df_filtered):
     pulse_los = " pulse-los" if los > 0 else ""
     pulse_badrx = " pulse-badrx" if badrx > 0 else ""
 
-    # ── Full sticky HTML block ────────────────────────────────────
+    # ── Full HTML block ────────────────────────────────────
     st.markdown(f"""
-<div class="nw-sticky-bar">
+<div class="nw-metrics-bar">
 <div class="nw-sticky-inner">
 <p class="nw-section-label">NETWORK SUMMARY</p>
 <div class="nw-cards-gauge-row">

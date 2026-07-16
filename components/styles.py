@@ -440,26 +440,22 @@ def inject_custom_css():
        allowing position:sticky on .nw-sticky-bar to work.
     ============================================================ */
 
-    /* Enable scroll context on Streamlit main area */
+    /* Adjust main padding */
     section.main > div.block-container {
-        overflow-y: visible !important;
-        padding-top: 0.5rem !important;
+        padding-top: 2rem !important;
     }
 
-    /* ── Fixed Network Summary Bar ── */
-    .nw-sticky-bar {
-        position: fixed !important;
-        top: 0 !important;
-        /* offset untuk sidebar Streamlit (default ~21rem / 336px) */
-        left: 21rem !important;
-        right: 0 !important;
-        z-index: 9999 !important;
+    /* ── Relative Network Summary Bar ── */
+    .nw-metrics-bar {
+        position: relative !important;
+        margin-bottom: 20px !important;
         background: rgba(13, 17, 23, 0.97) !important;
         backdrop-filter: blur(16px) !important;
         -webkit-backdrop-filter: blur(16px) !important;
-        border-bottom: 1px solid rgba(48, 54, 61, 0.8) !important;
-        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55) !important;
-        padding: 10px 1.5rem 12px 1.5rem !important;
+        border-bottom: 1px solid rgba(48, 54, 61, 0.4) !important;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+        padding: 16px 1.5rem !important;
     }
 
     /* ── Inner content container ── */

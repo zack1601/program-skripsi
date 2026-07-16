@@ -365,66 +365,77 @@ if not st.session_state.get('is_scanning', False):
     # --- RENDER METRICS & RISK SCORE GAUGE (STICKY HEADER) ---
     render_metrics(df_filtered)
 
-    # --- RENDER HISTORICAL TREND CHART ---
-    df_trend = get_historical_trend()
-    st.markdown("<div style='margin-top: 80px;'></div>", unsafe_allow_html=True)
-    with st.expander("📈 Historical Problem Trend", expanded=True):
-        if not df_trend.empty:
-            # Pivot the data
-            df_pivot = df_trend.pivot(index='scan_timestamp', columns='Category', values='count').fillna(0)
-            df_pivot = df_pivot.reset_index()
-        
-            # Highlight problematic categories
-            cols_to_plot = [c for c in ['LOS', 'BadRx', 'Offline', 'Dyinggasp'] if c in df_pivot.columns]
-            if cols_to_plot:
-                fig = go.Figure()
-            
-                color_map = {
-                    "LOS": "rgba(255, 75, 75, 1)",        # Merah
-                    "BadRx": "rgba(245, 166, 35, 1)",      # Orange/Kuning
-                    "Offline": "rgba(142, 142, 147, 1)",   # Abu-abu
-                    "Dyinggasp": "rgba(156, 39, 176, 1)"   # Ungu
-                }
-                fill_map = {
-                    "LOS": "rgba(255, 75, 75, 0.15)",       
-                    "BadRx": "rgba(245, 166, 35, 0.15)",     
-                    "Offline": "rgba(142, 142, 147, 0.15)",  
-                    "Dyinggasp": "rgba(156, 39, 176, 0.15)"  
-                }
 
-                for c in cols_to_plot:
-                    fig.add_trace(go.Scatter(
-                        x=df_pivot["scan_timestamp"],
-                        y=df_pivot[c],
-                        name=c,
-                        mode='lines',
-                        line_shape='spline',
-                        line=dict(color=color_map.get(c, "rgba(255,255,255,1)"), width=3),
-                        fill='tozeroy',
-                        fillcolor=fill_map.get(c, "rgba(255,255,255,0.1)"),
-                    ))
+    st.markdown("<br>", unsafe_allow_html=True)
+    tab1, tab2, tab3 = st.tabs(["🌍 Live Monitoring", "📈 Analytics & Trend", "🛠️ Field Updates"])
+    
+    with tab1:
+
+        render_map(df_filtered)
+        st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
+        render_table(df_filtered)
+
+    with tab2:
+        # --- RENDER HISTORICAL TREND CHART ---
+        df_trend = get_historical_trend()
+        with st.expander("📈 Historical Problem Trend", expanded=True):
+            if not df_trend.empty:
+                # Pivot the data
+                df_pivot = df_trend.pivot(index='scan_timestamp', columns='Category', values='count').fillna(0)
+                df_pivot = df_pivot.reset_index()
+        
+                # Highlight problematic categories
+                cols_to_plot = [c for c in ['LOS', 'BadRx', 'Offline', 'Dyinggasp'] if c in df_pivot.columns]
+                if cols_to_plot:
+                    fig = go.Figure()
             
-                # Premium Styling (Dark Mode & Glassmorphism)
-                fig.update_layout(
-                    height=250,  # Memperkecil tinggi grafik sekitar 25-30%
-                    plot_bgcolor="rgba(0,0,0,0)",
-                    paper_bgcolor="rgba(0,0,0,0)",
-                    font=dict(color="#c9d1d9"),
-                    xaxis_title="",
-                    yaxis_title="Jumlah Pelanggan",
-                    legend_title="",
-                    legend=dict(font=dict(color="white")), # Mengubah warna teks legend menjadi putih
-                    hovermode="x unified",
-                    margin=dict(l=0, r=0, t=30, b=0)
-                )
-                fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#30363d')
-                fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#30363d')
+                    color_map = {
+                        "LOS": "rgba(255, 75, 75, 1)",        # Merah
+                        "BadRx": "rgba(245, 166, 35, 1)",      # Orange/Kuning
+                        "Offline": "rgba(142, 142, 147, 1)",   # Abu-abu
+                        "Dyinggasp": "rgba(156, 39, 176, 1)"   # Ungu
+                    }
+                    fill_map = {
+                        "LOS": "rgba(255, 75, 75, 0.15)",       
+                        "BadRx": "rgba(245, 166, 35, 0.15)",     
+                        "Offline": "rgba(142, 142, 147, 0.15)",  
+                        "Dyinggasp": "rgba(156, 39, 176, 0.15)"  
+                    }
+
+                    for c in cols_to_plot:
+                        fig.add_trace(go.Scatter(
+                            x=df_pivot["scan_timestamp"],
+                            y=df_pivot[c],
+                            name=c,
+                            mode='lines',
+                            line_shape='spline',
+                            line=dict(color=color_map.get(c, "rgba(255,255,255,1)"), width=3),
+                            fill='tozeroy',
+                            fillcolor=fill_map.get(c, "rgba(255,255,255,0.1)"),
+                        ))
             
-                st.plotly_chart(fig, use_container_width=True)
+                    # Premium Styling (Dark Mode & Glassmorphism)
+                    fig.update_layout(
+                        height=250,  # Memperkecil tinggi grafik sekitar 25-30%
+                        plot_bgcolor="rgba(0,0,0,0)",
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        font=dict(color="#c9d1d9"),
+                        xaxis_title="",
+                        yaxis_title="Jumlah Pelanggan",
+                        legend_title="",
+                        legend=dict(font=dict(color="white")), # Mengubah warna teks legend menjadi putih
+                        hovermode="x unified",
+                        margin=dict(l=0, r=0, t=30, b=0)
+                    )
+                    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#30363d')
+                    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#30363d')
+            
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.info("Belum ada data masalah (LOS/BadRx) yang tersimpan di riwayat.")
             else:
-                st.info("Belum ada data masalah (LOS/BadRx) yang tersimpan di riwayat.")
-        else:
-            st.warning("📊 Database riwayat masih kosong. Silakan klik 'START SCAN' di menu kiri minimal satu kali untuk mulai merekam data grafik.")
+                st.warning("📊 Database riwayat masih kosong. Silakan klik 'START SCAN' di menu kiri minimal satu kali untuk mulai merekam data grafik.")
+
 
     # ─────────────────────────────────────────────────────────────────────────────
     # PANEL: FIELD TECHNICIAN UPDATES  (auto-refresh setiap 12 detik via fragment)
@@ -583,7 +594,8 @@ if not st.session_state.get('is_scanning', False):
         st.write("")
         st.write("")
 
-    render_field_tech_panel()
+    with tab3:
+        render_field_tech_panel()
 
 
 # --- SCANNING ENGINE ---
@@ -1018,15 +1030,8 @@ if st.session_state['is_scanning']:
         st.session_state['is_scanning'] = False
         st.session_state['stop_scanning'] = False
 
-# --- RENDER GEOGRAPHIC TOPOLOGY (MODULAR MAP) ---
+# --- LAPORAN EXCEL ---
 if not st.session_state.get('is_scanning', False):
-        render_map(df_filtered)
-
-        st.markdown("<div style='margin-top: -2rem; height: 12px;'></div>", unsafe_allow_html=True)
-
-        # --- RENDER LANDSCAPE DATA TABLE ---
-        render_table(df_filtered)
-
         # ─────────────────────────────────────────────────────────────────────────────
         # ─────────────────────────────────────────────────────────────────────────────
         # DOWNLOAD LAPORAN EXCEL (dari SQLite — Single Source of Truth)
