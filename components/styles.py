@@ -451,10 +451,12 @@ def inject_custom_css():
     }
 
     /* 3. Force all parents of sticky element to be visible so sticky works */
-    div.block-container,
-    div.block-container > div,
-    div.block-container > div > div.element-container,
-    div.block-container > div > div.element-container > div.stMarkdown {
+    [data-testid="stAppViewBlockContainer"],
+    [data-testid="stAppViewBlockContainer"] > div,
+    [data-testid="stVerticalBlock"],
+    [data-testid="stVerticalBlockBorderWrapper"],
+    .element-container,
+    .stMarkdown {
         overflow: visible !important;
     }
 
