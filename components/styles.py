@@ -434,22 +434,34 @@ def inject_custom_css():
     st.markdown("""
 <style>
     /* ============================================================
-       STICKY HEADER — Network Summary Cards + Risk Gauge
-       Streamlit scrolls inside .main .block-container.
-       Setting overflow-y:auto there makes it the scroll context,
-       allowing position:sticky on .nw-sticky-bar to work.
+       STICKY HEADER FIX & ALIGNMENT
     ============================================================ */
+    
+    /* 1. Hide default Streamlit header to avoid spacing issues */
+    header[data-testid="stHeader"] {
+        display: none !important;
+    }
 
-    /* Adjust main padding */
+    /* 2. Align Sidebar and Main Content perfectly */
+    section[data-testid="stSidebar"] > div {
+        padding-top: 2rem !important;
+    }
     section.main > div.block-container {
-        padding-top: 0rem !important;
+        padding-top: 2rem !important;
+    }
+
+    /* 3. Force all parents of sticky element to be visible so sticky works */
+    div.block-container,
+    div.block-container > div,
+    div.block-container > div > div.element-container,
+    div.block-container > div > div.element-container > div.stMarkdown {
         overflow: visible !important;
     }
 
     /* ── Relative Network Summary Bar ── */
     .nw-metrics-bar {
         position: sticky !important;
-        top: 0rem !important;
+        top: 2rem !important;
         z-index: 99999 !important;
         margin-bottom: 20px !important;
         background: rgba(13, 17, 23, 0.97) !important;
