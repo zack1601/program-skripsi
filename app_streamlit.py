@@ -227,9 +227,8 @@ st.markdown(f"""
         overflow-y: auto !important;
     }}
 
-    /* ── RAIL ICON BUTTONS ── */
-    /* Base: all rail buttons look like colored icon badge */
-    .rail-btn button {{
+    /* ── RAIL ICON BUTTONS (Structural) ── */
+    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) button {{
         width: 44px !important; height: 44px !important;
         border-radius: 14px !important;
         background: rgba(255,255,255,0.06) !important;
@@ -242,7 +241,11 @@ st.markdown(f"""
         margin: 0 auto 10px auto !important;
         position: relative !important;
     }}
-    .rail-btn button p, .rail-btn button div, .rail-btn button span {{
+    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) button:hover {{
+        background: rgba(255,255,255,0.10) !important;
+        color: #D1D5DB !important;
+    }}
+    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) button p {{
         font-family: "Font Awesome 6 Free", "FontAwesome" !important;
         font-weight: 900 !important;
         font-size: 1.2rem !important;
@@ -251,52 +254,22 @@ st.markdown(f"""
         color: inherit !important;
     }}
 
-    /* LOGO BUTTON: Purple gradient */
-    .rail-logo button {{
+    /* LOGO BUTTON: index 1 */
+    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(1) button {{
         background: linear-gradient(135deg, #7C3AED, #4F46E5) !important;
     }}
-    .rail-logo button p {{ color: #fff !important; font-size: 1.4rem !important; }}
-    
-    /* DEFAULT hover */
-    .rail-btn:not(.rail-logo):not(.rail-out) button:hover {{
-        background: rgba(255,255,255,0.10) !important;
-        color: #D1D5DB !important;
+    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(1) button p {{
+        color: #fff !important; font-size: 1.4rem !important;
     }}
-    .rail-btn:not(.rail-logo):not(.rail-out) button:hover p {{ color: #D1D5DB !important; }}
 
-    /* ACTIVE badge: amber/orange bg */
-    .rail-btn.active button {{
-        background: #F59E0B !important;
-        color: #1C1C1C !important;
-    }}
-    .rail-btn.active button p {{ color: #1C1C1C !important; }}
-
-    /* LOGOUT button: blue badge */
-    .rail-out button {{
+    /* LOGOUT BUTTON: index 8 */
+    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(8) button {{
         background: rgba(59, 130, 246, 0.15) !important;
         color: #3B82F6 !important;
     }}
-    .rail-out button p {{ color: #3B82F6 !important; }}
-    
-    .rail-out button:hover {{
+    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(8) button:hover {{
         background: rgba(59, 130, 246, 0.3) !important;
         color: #60A5FA !important;
-    }}
-    .rail-out button:hover p {{ color: #60A5FA !important; }}
-
-    /* NOTIFICATION DOT */
-    .has-dot button {{
-        overflow: visible !important;
-    }}
-    .has-dot .stButton::after {{
-        content: '';
-        position: absolute;
-        top: 6px; right: 6px;
-        width: 9px; height: 9px;
-        background-color: #F43F5E;
-        border-radius: 50%;
-        border: 2px solid #0d0d12;
-        z-index: 10;
     }}
 
     /* ── PANEL CONTENT STYLING ── */
@@ -430,53 +403,38 @@ with st.sidebar:
     rail_col, panel_col = st.columns([1, 4])
     
     with rail_col:
-        # LOGO
-        st.markdown("<div class='rail-btn rail-logo'>", unsafe_allow_html=True)
+        # LOGO (index 1)
         if st.button("\uf0e8", key="rail_logo", help="NETWATCH OPS CENTER"):
             st.session_state['active_panel'] = None
             st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-        
+            
+        # Spacer (index 2)
         st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
         
-        # SYSTEM
-        cls_sys = "rail-btn rail-sys active" if active_panel == 'system' else "rail-btn rail-sys"
-        if st.session_state.get('is_scanning', False): cls_sys += " has-dot has-dot-scan"
-        st.markdown(f"<div class='{cls_sys}'>", unsafe_allow_html=True)
+        # SYSTEM (index 3)
         if st.button("\uf0e7", key="rail_sys", help="System Controls"):
             st.session_state['active_panel'] = 'system' if active_panel != 'system' else None
             st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        # ALARM
-        cls_alr = "rail-btn rail-alr active" if active_panel == 'alarm' else "rail-btn rail-alr"
-        st.markdown(f"<div class='{cls_alr}'>", unsafe_allow_html=True)
+            
+        # ALARM (index 4)
         if st.button("\uf0f3", key="rail_alr", help="Alarm Center"):
             st.session_state['active_panel'] = 'alarm' if active_panel != 'alarm' else None
             st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        # FILTERS
-        cls_flt = "rail-btn rail-flt active" if active_panel == 'filters' else "rail-btn rail-flt"
-        if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'): cls_flt += " has-dot"
-        st.markdown(f"<div class='{cls_flt}'>", unsafe_allow_html=True)
+            
+        # FILTERS (index 5)
         if st.button("\uf0b0", key="rail_flt", help="Data Filters"):
             st.session_state['active_panel'] = 'filters' if active_panel != 'filters' else None
             st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        # QUICK
-        cls_qck = "rail-btn rail-qck active" if active_panel == 'quick' else "rail-btn rail-qck"
-        if st.session_state.get('filter_mode', 'All') != 'All': cls_qck += " has-dot"
-        st.markdown(f"<div class='{cls_qck}'>", unsafe_allow_html=True)
+            
+        # QUICK (index 6)
         if st.button("\uf00a", key="rail_qck", help="Quick Filters"):
             st.session_state['active_panel'] = 'quick' if active_panel != 'quick' else None
             st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        # LOGOUT (Push to bottom using a lot of vertical space for now, or use CSS absolute pos for logout)
+            
+        # Spacer (index 7)
         st.markdown("<div style='height: 40vh;'></div>", unsafe_allow_html=True)
-        st.markdown("<div class='rail-btn rail-out'>", unsafe_allow_html=True)
+        
+        # LOGOUT (index 8)
         if st.button("\uf2f5", key="rail_out", help="Logout"):
             _delete_session(st.session_state.get('session_token', ''))
             st.session_state['logged_in'] = False
@@ -484,7 +442,42 @@ with st.sidebar:
             st.session_state['login_time'] = None
             st.query_params.clear()
             st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+
+    # Dynamic CSS for active state and notification dots
+    active_idx = {'system': 3, 'alarm': 4, 'filters': 5, 'quick': 6}.get(active_panel)
+    dynamic_css = ""
+    if active_idx:
+        dynamic_css += f"""
+        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child({active_idx}) button {{
+            background: #F59E0B !important; color: #1C1C1C !important;
+        }}
+        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child({active_idx}) button p {{
+            color: #1C1C1C !important;
+        }}
+        """
+    if st.session_state.get('is_scanning', False):
+        dynamic_css += f"""
+        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(3) button {{ overflow: visible !important; }}
+        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(3) button::after {{
+            content: ''; position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; background-color: #00F0FF; border-radius: 50%; border: 2px solid #0d0d12; z-index: 10;
+        }}
+        """
+    if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'):
+        dynamic_css += f"""
+        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(5) button {{ overflow: visible !important; }}
+        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(5) button::after {{
+            content: ''; position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; background-color: #F43F5E; border-radius: 50%; border: 2px solid #0d0d12; z-index: 10;
+        }}
+        """
+    if st.session_state.get('filter_mode', 'All') != 'All':
+        dynamic_css += f"""
+        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(6) button {{ overflow: visible !important; }}
+        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(6) button::after {{
+            content: ''; position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; background-color: #F43F5E; border-radius: 50%; border: 2px solid #0d0d12; z-index: 10;
+        }}
+        """
+    if dynamic_css:
+        st.markdown(f"<style>{dynamic_css}</style>", unsafe_allow_html=True)
         
     with panel_col:
         # Render panel header + close button for any active panel
