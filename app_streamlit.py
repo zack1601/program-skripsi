@@ -184,12 +184,12 @@ def apply_business_logic(row):
 # --- SIDEBAR UI ---
 with st.sidebar:
     st.markdown("""
-    <div style='padding: 16px 0; margin-bottom: 8px;'>
+    <div style='padding: 10px 0; margin-bottom: 5px; text-align: center;'>
         <p style='margin:0; font-size:1.5rem; font-weight:800; letter-spacing:2px; color:#FFFFFF;'>NETWATCH OPS CENTER</p>
     </div>
     """, unsafe_allow_html=True)
-    st.divider()
-    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 10px;'>⚙️ SYSTEM CONTROLS</p>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin: 10px 0 15px 0; border: none; border-top: 1px solid rgba(255, 255, 255, 0.1);'>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 5px;'>⚙️ SYSTEM CONTROLS</p>", unsafe_allow_html=True)
     # Dynamic Scan/Stop Toggle Button
     is_running = st.session_state.get('is_scanning', False)
     if is_running:
@@ -223,7 +223,8 @@ with st.sidebar:
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('<br>', unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 5px;'></div>", unsafe_allow_html=True)
+    
     # ── SYNC DATA BUTTON ──────────────────────────────────────────────────────
     _last_sync = get_last_sync_time()
     st.markdown(
@@ -285,8 +286,8 @@ with st.sidebar:
         st.rerun()
 
 
-    st.divider()
-    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 10px;'>🚨 ALARM CENTER</p>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin: 5px 0 5px 0; border: none; border-top: 1px solid rgba(255, 255, 255, 0.1);'>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 5px;'>🚨 ALARM CENTER</p>", unsafe_allow_html=True)
 
     # Alarm Region Selector
     region_options = ["Semua Wilayah", "Fatmawati", "Cipedak", "Pinang/Kalijati", "Lenteng Agung", "Cinere", "Senopati"]
@@ -328,9 +329,8 @@ with st.sidebar:
             else:
                 st.info("No new alarms to send (or already sent).")
     st.markdown('</div>', unsafe_allow_html=True)
-
-    st.divider()
-    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 10px;'>🔍 DATA FILTERS</p>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin: 5px 0 5px 0; border: none; border-top: 1px solid rgba(255, 255, 255, 0.1);'>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 5px;'>🔍 DATA FILTERS</p>", unsafe_allow_html=True)
 
     # Render OLT select dropdown, search text box, and modern Quick Filters (fully modularized!)
     render_filters(st.session_state['data_final'])

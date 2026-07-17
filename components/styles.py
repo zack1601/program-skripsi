@@ -442,12 +442,14 @@ def inject_custom_css():
 
     /* Adjust main padding */
     section.main > div.block-container {
-        padding-top: 2rem !important;
+        padding-top: 1rem !important;
     }
 
     /* ── Relative Network Summary Bar ── */
     .nw-metrics-bar {
-        position: relative !important;
+        position: sticky !important;
+        top: 1rem;
+        z-index: 999;
         margin-bottom: 20px !important;
         background: rgba(13, 17, 23, 0.97) !important;
         backdrop-filter: blur(16px) !important;
