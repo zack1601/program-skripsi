@@ -182,172 +182,347 @@ def apply_business_logic(row):
 
 
 # --- SIDEBAR UI ---
+if 'active_panel' not in st.session_state:
+    st.session_state['active_panel'] = 'system'
+
+# Dynamic CSS for Slide-in Panel
+active_panel = st.session_state['active_panel']
+sidebar_width = "320px" if active_panel else "64px"
+
+st.markdown(f"""
+<style>
+    /* Force sidebar width */
+    [data-testid="stSidebar"] {{
+        min-width: {sidebar_width} !important;
+        max-width: {sidebar_width} !important;
+        transition: min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        overflow-x: hidden !important;
+    }}
+    /* Hide native collapse button */
+    [data-testid="stSidebarCollapseButton"] {{ display: none !important; }}
+    
+    /* Rail & Panel Layout */
+    .sidebar-layout {{
+        display: flex;
+        flex-direction: row;
+        width: 320px; /* Fixed total width */
+        height: 100vh;
+        margin-left: -1rem; /* Adjust for Streamlit's default padding */
+        margin-top: -3.5rem;
+    }}
+    .rail {{
+        width: 64px;
+        flex: 0 0 64px;
+        background-color: #0E1117;
+        border-right: 1px solid rgba(255,255,255,0.05);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+        z-index: 10;
+    }}
+    .panel {{
+        width: 256px;
+        flex: 0 0 256px;
+        background-color: #0d1117;
+        padding: 20px;
+        overflow-y: auto;
+    }}
+    
+    /* Rail Buttons Styling */
+    .rail-btn button {{
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 12px !important;
+        background: transparent !important;
+        border: none !important;
+        color: #8B949E !important;
+        font-size: 1.2rem !important;
+        margin-bottom: 10px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.2s !important;
+        padding: 0 !important;
+    }}
+    .rail-btn button:hover {{
+        background: rgba(255,255,255,0.05) !important;
+        color: #fff !important;
+    }}
+    .rail-btn.active button {{
+        background: rgba(0, 240, 255, 0.1) !important;
+        color: #00F0FF !important;
+        border-right: 3px solid #00F0FF !important;
+        border-radius: 8px 0 0 8px !important;
+    }}
+    .rail-btn button::before {{
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+    }}
+    .rail-logo button::before {{ content: "\f0e8" !important; color: #fff !important; font-size: 1.5rem !important; }}
+    .rail-sys button::before {{ content: "\f0e7" !important; }} /* bolt */
+    .rail-alr button::before {{ content: "\f0f3" !important; }} /* bell */
+    .rail-flt button::before {{ content: "\f0b0" !important; }} /* filter */
+    .rail-qck button::before {{ content: "\f00a" !important; }} /* border-all */
+    .rail-out button::before {{ content: "\f2f5" !important; }} /* logout */
+    
+    .rail-spacer {{ flex-grow: 1; }}
+    
+    /* Notification Dot */
+    .has-dot button::after {{
+        content: '';
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 8px;
+        height: 8px;
+        background-color: #f43f5e;
+        border-radius: 50%;
+        border: 2px solid #0E1117;
+    }}
+    .has-dot-scan button::after {{ background-color: #00F0FF; }}
+</style>
+""", unsafe_allow_html=True)
+
 with st.sidebar:
-    st.markdown("""
-    <div style='padding: 10px 0; margin-bottom: 5px; text-align: center;'>
-        <p style='margin:0; font-size:1.5rem; font-weight:800; letter-spacing:2px; color:#FFFFFF;'>NETWATCH OPS CENTER</p>
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown("<hr style='margin: 10px 0 15px 0; border: none; border-top: 1px solid rgba(255, 255, 255, 0.1);'>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 5px;'>SYSTEM CONTROLS</p>", unsafe_allow_html=True)
-    # Dynamic Scan/Stop Toggle Button
-    is_running = st.session_state.get('is_scanning', False)
-    if is_running:
-        st.markdown('<div class="stop-btn scan-primary-btn">', unsafe_allow_html=True)
-        if st.button("STOP SCANNING", use_container_width=True):
-            st.session_state['is_scanning'] = False
-            st.session_state['stop_scanning'] = True
-            
-            # Move collected data to data_final
-            if 'temp_results' in st.session_state and st.session_state['temp_results']:
-                final_df = pd.DataFrame(st.session_state['temp_results'])
-                if not final_df.empty:
-                    # Clean SN for reliable deduplication
-                    final_df['Serial Number'] = final_df['Serial Number'].astype(str).str.strip().str.upper()
-                    final_df['Nama/ID Pelanggan'] = final_df['Nama/ID Pelanggan'].astype(str).str.strip().str.upper()
-                    
-                    # Strict deduplication by SN
-                    final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
-                    
-                    st.session_state['data_final'] = final_df
-                    save_scan_results(final_df)
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-    else:
-        st.markdown('<div class="start-btn scan-primary-btn">', unsafe_allow_html=True)
-        if st.button("START SCAN", use_container_width=True):
-            st.session_state['is_scanning'] = True
-            st.session_state['stop_scanning'] = False
-            st.session_state['temp_results'] = []
-            st.session_state['data_final'] = pd.DataFrame()
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown("<div style='margin-bottom: 5px;'></div>", unsafe_allow_html=True)
+    # Build a pseudo-HTML layout using columns (Streamlit doesn't support raw HTML with functional st.buttons easily, 
+    # so we must use st.columns with forced CSS nowrap)
+    st.markdown("""<style>
+        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 0 !important; }
+        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) { min-width: 64px !important; max-width: 64px !important; flex: 0 0 64px !important; border-right: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
+        [data-testid="stSidebar"] [data-testid="column"]:nth-child(2) { min-width: 256px !important; max-width: 256px !important; flex: 0 0 256px !important; padding: 15px; }
+    </style>""", unsafe_allow_html=True)
     
-    # ── SYNC DATA BUTTON ──────────────────────────────────────────────────────
-    _last_sync = get_last_sync_time()
-    st.markdown(
-        f"<p style='margin:0 0 6px 0; font-size:0.75rem; color:#484f58;'>"
-        f"Last Cache: <b style='color:#8b949e'>{_last_sync}</b></p>",
-        unsafe_allow_html=True
-    )
-    st.markdown("<div class='sync-secondary-btn'>", unsafe_allow_html=True)
-    if st.button("SYNC GOOGLE SHEETS", use_container_width=True):
-        with st.spinner("Fetching data from all Google Sheets tabs..."):
-            try:
-                _gconn = st.connection("gsheets", type=GSheetsConnection)
-                # Use spreadsheet ID only tanpa #gid=0 agar tidak bentrok dengan pencarian nama tab
-                _SYNC_URL = "1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw"
-                from io import StringIO
-                from contextlib import redirect_stdout, redirect_stderr
-                import pandas as pd
-                
-                # Map sheet names to numeric GID-nya masing-masing
-                # Use direct public CSV export publik langsung agar lebih stabil
-                SPREADSHEET_ID = "1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw"
-                target_sheets_gid = {
-                    "Fatmawati"     : "0",
-                    "Senopati"      : "570642648",
-                    "Cinere"        : "912514856",
-                    "Lenteng Agung" : "162726682",
-                    "Cipedak"       : "2107355748",
-                    "Pinang/kalijati": "1647719979"
-                }
-                all_data = []
-                
-                _sheet_errors = {}
-                for sheet_name, _gid in target_sheets_gid.items():
-                    try:
-                        _csv_url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/export?format=csv&gid={_gid}"
-                        df_sheet = pd.read_csv(_csv_url)
-                        
-                        if df_sheet is not None and not df_sheet.empty:
-                            if sheet_name == "Senopati" and str(df_sheet.columns[0]).startswith("Unnamed:"):
-                                # Bypass missing headers in Senopati tab
-                                expected_cols = ['OLT', 'IP_OLT', 'SN', 'PORT', 'NAMA_ID PELANGGAN', 'Unnamed: 5', 'NAMA PELANGGAN', 'ID_PELANGGAN', 'ID SPLITTER', 'ALAMAT', 'Latitude', 'Longitude', 'Link Maps']
-                                df_sheet.columns = expected_cols[:len(df_sheet.columns)]
-                            
-                            all_data.append(df_sheet)
-                    except Exception as e_sheet:
-                        _sheet_errors[sheet_name] = str(e_sheet)
-
-                if _sheet_errors:
-                    for _sn, _se in _sheet_errors.items():
-                        st.error(f"❌ Tab '{_sn}': {_se}")
-
-                if all_data:
-                    _df_sync_combined = pd.concat(all_data, ignore_index=True)
-                    cache_input_from_gsheets(_df_sync_combined)
-                    st.success(f"✅ {len(_df_sync_combined)} rows from {len(all_data)} regions successfully cached to SQLite!")
-                else:
-                    st.warning("⚠️ Google Sheets returned no data from all tabs.")
-            except Exception as _e:
-                st.error(f"❌ Failed to connect to Google Sheets: {_e}")
-        st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown("<hr style='margin: 5px 0 5px 0; border: none; border-top: 1px solid rgba(255, 255, 255, 0.1);'>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 5px;'>ALARM CENTER</p>", unsafe_allow_html=True)
-
-    # Alarm Region Selector
-    region_options = ["All Regions", "Fatmawati", "Cipedak", "Pinang/Kalijati", "Lenteng Agung", "Cinere", "Senopati"]
-    selected_region_alarm = st.selectbox("Target Alarm Region:", region_options)
+    rail_col, panel_col = st.columns([1, 4])
     
-    # Alarm button
-    btn_disabled = st.session_state['data_final'].empty
-    st.markdown('<div class="alarm-btn">', unsafe_allow_html=True)
-    if st.button("SEND ALARM", use_container_width=True, disabled=btn_disabled):
-        df_problems = st.session_state['data_final'][st.session_state['data_final']['Category'].isin(['LOS', 'BadRx'])]
+    with rail_col:
+        # LOGO
+        st.markdown("<div class='rail-btn rail-logo'>", unsafe_allow_html=True)
+        if st.button(" ", key="rail_logo", help="NETWATCH OPS CENTER"):
+            st.session_state['active_panel'] = None
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
         
-        if df_problems.empty:
-            st.sidebar.info("System Healthy: No Alarms Needed")
-        else:
-            # Pre-filter and pre-check deduplication
-            to_send = []
-            for row in df_problems.to_dict('records'):
-                row_region = get_region_from_olt(row.get('OLT', ''))
-                
-                # Filter by region
-                if selected_region_alarm != "All Regions" and row_region != selected_region_alarm:
-                    continue
-                
-                sn = row.get('Serial Number', '')
-                status = row.get('Category', '')
-                
-                if should_send_alarm(sn, status):
-                    to_send.append(row)
-            
-            if to_send:
-                # Show notification
-                st.success(f"{len(to_send)} Alarms Sent to {selected_region_alarm}!")
-                
-                # Send to Telegram + save message_id ke SQLite
-                for row in to_send:
-                    msg_id = send_telegram_alarm(row)
-                    if msg_id:  # Simpan hanya jika pengiriman berhasil
-                        save_alarm_sent(msg_id, row)
+        st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+        
+        # SYSTEM
+        cls_sys = "rail-btn rail-sys active" if active_panel == 'system' else "rail-btn rail-sys"
+        if st.session_state.get('is_scanning', False): cls_sys += " has-dot has-dot-scan"
+        st.markdown(f"<div class='{cls_sys}'>", unsafe_allow_html=True)
+        if st.button(" ", key="rail_sys", help="System Controls"):
+            st.session_state['active_panel'] = 'system' if active_panel != 'system' else None
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # ALARM
+        cls_alr = "rail-btn rail-alr active" if active_panel == 'alarm' else "rail-btn rail-alr"
+        st.markdown(f"<div class='{cls_alr}'>", unsafe_allow_html=True)
+        if st.button(" ", key="rail_alr", help="Alarm Center"):
+            st.session_state['active_panel'] = 'alarm' if active_panel != 'alarm' else None
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # FILTERS
+        cls_flt = "rail-btn rail-flt active" if active_panel == 'filters' else "rail-btn rail-flt"
+        if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'): cls_flt += " has-dot"
+        st.markdown(f"<div class='{cls_flt}'>", unsafe_allow_html=True)
+        if st.button(" ", key="rail_flt", help="Data Filters"):
+            st.session_state['active_panel'] = 'filters' if active_panel != 'filters' else None
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # QUICK
+        cls_qck = "rail-btn rail-qck active" if active_panel == 'quick' else "rail-btn rail-qck"
+        if st.session_state.get('filter_mode', 'All') != 'All': cls_qck += " has-dot"
+        st.markdown(f"<div class='{cls_qck}'>", unsafe_allow_html=True)
+        if st.button(" ", key="rail_qck", help="Quick Filters"):
+            st.session_state['active_panel'] = 'quick' if active_panel != 'quick' else None
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # LOGOUT (Push to bottom using a lot of vertical space for now, or use CSS absolute pos for logout)
+        st.markdown("<div style='height: 40vh;'></div>", unsafe_allow_html=True)
+        st.markdown("<div class='rail-btn rail-out'>", unsafe_allow_html=True)
+        if st.button(" ", key="rail_out", help="Logout"):
+            _delete_session(st.session_state.get('session_token', ''))
+            st.session_state['logged_in'] = False
+            st.session_state['session_token'] = None
+            st.session_state['login_time'] = None
+            st.query_params.clear()
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+    with panel_col:
+        if active_panel == 'system':
+            st.markdown("<h3 style='margin-top:0; font-size:1.1rem; color:#fff;'>SYSTEM CONTROLS</h3>", unsafe_allow_html=True)
+            is_running = st.session_state.get('is_scanning', False)
+            if is_running:
+                st.markdown('<div class="stop-btn scan-primary-btn">', unsafe_allow_html=True)
+                if st.button("STOP SCANNING", use_container_width=True):
+                    st.session_state['is_scanning'] = False
+                    st.session_state['stop_scanning'] = True
+                    if 'temp_results' in st.session_state and st.session_state['temp_results']:
+                        final_df = pd.DataFrame(st.session_state['temp_results'])
+                        if not final_df.empty:
+                            final_df['Serial Number'] = final_df['Serial Number'].astype(str).str.strip().str.upper()
+                            final_df['Nama/ID Pelanggan'] = final_df['Nama/ID Pelanggan'].astype(str).str.strip().str.upper()
+                            final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
+                            st.session_state['data_final'] = final_df
+                            save_scan_results(final_df)
+                    st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
             else:
-                st.info("No new alarms to send (or already sent).")
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown("<hr style='margin: 5px 0 5px 0; border: none; border-top: 1px solid rgba(255, 255, 255, 0.1);'>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 5px;'>DATA FILTERS</p>", unsafe_allow_html=True)
+                st.markdown('<div class="start-btn scan-primary-btn">', unsafe_allow_html=True)
+                if st.button("START SCAN", use_container_width=True):
+                    st.session_state['is_scanning'] = True
+                    st.session_state['stop_scanning'] = False
+                    st.session_state['temp_results'] = []
+                    st.session_state['data_final'] = pd.DataFrame()
+                    st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
 
-    # Render OLT select dropdown, search text box, and modern Quick Filters (fully modularized!)
-    render_filters(st.session_state['data_final'])
+            st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
+            _last_sync = get_last_sync_time()
+            st.markdown(f"<p style='margin:0 0 6px 0; font-size:0.75rem; color:#484f58;'>🗄️ Last Cache: <b style='color:#8b949e'>{_last_sync}</b></p>", unsafe_allow_html=True)
+            
+            st.markdown("<div class='sync-secondary-btn'>", unsafe_allow_html=True)
+            if st.button("SYNC GOOGLE SHEETS", use_container_width=True):
+                with st.spinner("Fetching data from all Google Sheets tabs..."):
+                    try:
+                        _gconn = st.connection("gsheets", type=GSheetsConnection)
+                        from io import StringIO
+                        import pandas as pd
+                        SPREADSHEET_ID = "1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw"
+                        target_sheets_gid = {
+                            "Fatmawati": "0", "Senopati": "570642648", "Cinere": "912514856",
+                            "Lenteng Agung": "162726682", "Cipedak": "2107355748", "Pinang/kalijati": "1647719979"
+                        }
+                        all_data = []
+                        _sheet_errors = {}
+                        for sheet_name, _gid in target_sheets_gid.items():
+                            try:
+                                _csv_url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/export?format=csv&gid={_gid}"
+                                df_sheet = pd.read_csv(_csv_url)
+                                if df_sheet is not None and not df_sheet.empty:
+                                    if sheet_name == "Senopati" and str(df_sheet.columns[0]).startswith("Unnamed:"):
+                                        expected_cols = ['OLT', 'IP_OLT', 'SN', 'PORT', 'NAMA_ID PELANGGAN', 'Unnamed: 5', 'NAMA PELANGGAN', 'ID_PELANGGAN', 'ID SPLITTER', 'ALAMAT', 'Latitude', 'Longitude', 'Link Maps']
+                                        df_sheet.columns = expected_cols[:len(df_sheet.columns)]
+                                    all_data.append(df_sheet)
+                            except Exception as e_sheet:
+                                _sheet_errors[sheet_name] = str(e_sheet)
+                        if _sheet_errors:
+                            for _sn, _se in _sheet_errors.items(): st.error(f"❌ Tab '{_sn}': {_se}")
+                        if all_data:
+                            _df_sync_combined = pd.concat(all_data, ignore_index=True)
+                            cache_input_from_gsheets(_df_sync_combined)
+                            st.success(f"✅ {len(_df_sync_combined)} rows from {len(all_data)} regions successfully cached to SQLite!")
+                        else:
+                            st.warning("⚠️ Google Sheets returned no data from all tabs.")
+                    except Exception as _e:
+                        st.error(f"❌ Failed to connect to Google Sheets: {_e}")
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+        elif active_panel == 'alarm':
+            st.markdown("<h3 style='margin-top:0; font-size:1.1rem; color:#fff;'>ALARM CENTER</h3>", unsafe_allow_html=True)
+            region_options = ["All Regions", "Fatmawati", "Cipedak", "Pinang/Kalijati", "Lenteng Agung", "Cinere", "Senopati"]
+            selected_region_alarm = st.selectbox("Target Alarm Region:", region_options)
+            btn_disabled = st.session_state.get('data_final', pd.DataFrame()).empty
+            st.markdown('<div class="alarm-btn">', unsafe_allow_html=True)
+            if st.button("SEND ALARM", use_container_width=True, disabled=btn_disabled):
+                df_problems = st.session_state['data_final'][st.session_state['data_final']['Category'].isin(['LOS', 'BadRx'])]
+                if df_problems.empty:
+                    st.sidebar.info("System Healthy: No Alarms Needed")
+                else:
+                    to_send = []
+                    for row in df_problems.to_dict('records'):
+                        row_region = get_region_from_olt(row.get('OLT', ''))
+                        if selected_region_alarm != "All Regions" and row_region != selected_region_alarm: continue
+                        if should_send_alarm(row.get('Serial Number', ''), row.get('Category', '')): to_send.append(row)
+                    if to_send:
+                        st.success(f"{len(to_send)} Alarms Sent to {selected_region_alarm}!")
+                        for row in to_send:
+                            msg_id = send_telegram_alarm(row)
+                            if msg_id: save_alarm_sent(msg_id, row)
+                    else:
+                        st.info("No new alarms to send (or already sent).")
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Mini Log Alarm
+            st.markdown("<h4 style='font-size:0.85rem; color:#8B949E; margin-top:20px;'>Recent Sent Alarms</h4>", unsafe_allow_html=True)
+            df_log = get_alarm_history(limit=3)
+            if not df_log.empty:
+                for _, log in df_log.iterrows():
+                    st.markdown(f"<div style='background:rgba(255,255,255,0.02); padding:8px; border-radius:6px; margin-bottom:5px; font-size:0.75rem;'><b style='color:#F43F5E'>{log.get('category','ALARM')}</b> - {log.get('sn','')} <br><span style='color:#8B949E'>{log.get('timestamp','')}</span></div>", unsafe_allow_html=True)
+            else:
+                st.markdown("<p style='font-size:0.75rem; color:#8B949E;'>No recent logs.</p>", unsafe_allow_html=True)
+                
+        elif active_panel == 'filters':
+            st.markdown("<h3 style='margin-top:0; font-size:1.1rem; color:#fff;'>DATA FILTERS</h3>", unsafe_allow_html=True)
+            data_final = st.session_state.get('data_final', pd.DataFrame())
+            if not data_final.empty:
+                from components.telegram import get_region_from_olt
+                regions = sorted(list(set(data_final['OLT'].apply(get_region_from_olt))))
+                olt_options = ["All OLT"] + regions
+                selected_olt = st.selectbox("Select Region:", options=olt_options, index=olt_options.index(st.session_state.get('selected_olt', 'All OLT')))
+                st.session_state['selected_olt'] = selected_olt
+            else:
+                st.selectbox("Select Region:", options=["Waiting for Scan..."], disabled=True)
+            
+            s_term = st.text_input("Search SN / Name:", value=st.session_state.get('search_sn_sidebar', ''))
+            st.session_state['search_sn_sidebar'] = s_term
+            
+            if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'):
+                if st.button("Clear Filters", use_container_width=True):
+                    st.session_state['selected_olt'] = 'All OLT'
+                    st.session_state['search_sn_sidebar'] = ''
+                    st.rerun()
+                    
+        elif active_panel == 'quick':
+            st.markdown("<h3 style='margin-top:0; font-size:1.1rem; color:#fff;'>QUICK FILTERS</h3>", unsafe_allow_html=True)
+            
+            # Vertical Toggle List
+            st.markdown("""
+            <style>
+                .qck-list-btn button {
+                    justify-content: flex-start !important;
+                    text-align: left !important;
+                    background: transparent !important;
+                    border: 1px solid rgba(255,255,255,0.1) !important;
+                    border-radius: 8px !important;
+                    margin-bottom: 8px !important;
+                    transition: all 0.2s !important;
+                }
+                .qck-list-btn button:hover {
+                    background: rgba(255,255,255,0.05) !important;
+                }
+                .qck-active-Online button { border-color: #10B981 !important; color: #10B981 !important; background: rgba(16,185,129,0.1) !important; }
+                .qck-active-LOS button { border-color: #F43F5E !important; color: #F43F5E !important; background: rgba(244,63,94,0.1) !important; }
+                .qck-active-BadRx button { border-color: #F59E0B !important; color: #F59E0B !important; background: rgba(245,158,11,0.1) !important; }
+                .qck-active-Dyinggasp button { border-color: #A855F7 !important; color: #A855F7 !important; background: rgba(168,85,247,0.1) !important; }
+                .qck-active-Suspend button { border-color: #64748B !important; color: #64748B !important; background: rgba(100,116,139,0.1) !important; }
+            </style>
+            """, unsafe_allow_html=True)
+            
+            current_mode = st.session_state.get('filter_mode', 'All')
+            
+            def make_qck_btn(label, mode):
+                is_active = (current_mode == mode)
+                check = "✓ " if is_active else "  "
+                cls_val = f"qck-list-btn qck-active-{mode}" if is_active else "qck-list-btn"
+                st.markdown(f"<div class='{cls_val}'>", unsafe_allow_html=True)
+                if st.button(f"{check} {label}", key=f"qf_{mode}", use_container_width=True):
+                    st.session_state['filter_mode'] = mode if not is_active else 'All'
+                    st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
+                
+            make_qck_btn("Online", "Online")
+            make_qck_btn("LOS", "LOS")
+            make_qck_btn("BadRx", "BadRx")
+            make_qck_btn("Dyinggasp", "Dyinggasp")
+            make_qck_btn("Suspend", "Suspend")
 
-    # Logout button pinned paling bawah sidebar
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("<div class='logout-btn'>", unsafe_allow_html=True)
-    if st.button("LOGOUT", key="logout_btn", use_container_width=True):
-        _delete_session(st.session_state.get('session_token', ''))
-        st.session_state['logged_in'] = False
-        st.session_state['session_token'] = None
-        st.session_state['login_time'] = None
-        st.query_params.clear()
-        st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
-
+# --- FILTER DATA FOR DISPLAY ---
 # --- FILTER DATA FOR DISPLAY ---
 df_raw = st.session_state['data_final']
 df_filtered = df_raw.copy()
