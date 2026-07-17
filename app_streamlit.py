@@ -243,56 +243,46 @@ st.markdown(f"""
         position: relative !important;
     }}
     .rail-btn button p, .rail-btn button div, .rail-btn button span {{
-        margin: 0 !important; padding: 0 !important;
-        line-height: 0 !important; font-size: 0 !important; color: transparent !important;
-    }}
-    
-    .rail-btn button p::before {{
-        font-family: "Font Awesome 6 Free" !important;
+        font-family: "Font Awesome 6 Free", "FontAwesome" !important;
         font-weight: 900 !important;
-        font-size: 1.1rem !important;
+        font-size: 1.2rem !important;
         line-height: 1 !important;
-        color: #6B7280 !important;
-        display: block !important;
+        margin: 0 !important; padding: 0 !important;
+        color: inherit !important;
     }}
 
     /* LOGO BUTTON: Purple gradient */
     .rail-logo button {{
         background: linear-gradient(135deg, #7C3AED, #4F46E5) !important;
     }}
-    .rail-logo button p::before {{ content: "\\f0e8" !important; color: #fff !important; font-size: 1.3rem !important; }}
+    .rail-logo button p {{ color: #fff !important; font-size: 1.4rem !important; }}
     
-    /* ICONS */
-    .rail-sys button p::before {{ content: "\\f0e7" !important; }}
-    .rail-alr button p::before {{ content: "\\f0f3" !important; }}
-    .rail-flt button p::before {{ content: "\\f0b0" !important; }}
-    .rail-qck button p::before {{ content: "\\f00a" !important; }}
-    .rail-out button p::before {{ content: "\\f2f5" !important; }}
-
     /* DEFAULT hover */
-    .rail-btn:not(.rail-logo):not(.rail-out) button:hover p::before {{
-        color: #D1D5DB !important;
-    }}
     .rail-btn:not(.rail-logo):not(.rail-out) button:hover {{
         background: rgba(255,255,255,0.10) !important;
-    }}    /* ACTIVE badge: amber/orange bg */
+        color: #D1D5DB !important;
+    }}
+    .rail-btn:not(.rail-logo):not(.rail-out) button:hover p {{ color: #D1D5DB !important; }}
+
+    /* ACTIVE badge: amber/orange bg */
     .rail-btn.active button {{
         background: #F59E0B !important;
+        color: #1C1C1C !important;
     }}
-    .rail-btn.active button p::before {{ color: #1C1C1C !important; }}
+    .rail-btn.active button p {{ color: #1C1C1C !important; }}
 
     /* LOGOUT button: blue badge */
     .rail-out button {{
         background: rgba(59, 130, 246, 0.15) !important;
+        color: #3B82F6 !important;
     }}
-    .rail-out button p::before {{ color: #3B82F6 !important; }}
+    .rail-out button p {{ color: #3B82F6 !important; }}
     
     .rail-out button:hover {{
         background: rgba(59, 130, 246, 0.3) !important;
-    }}
-    .rail-out button:hover p::before {{
         color: #60A5FA !important;
     }}
+    .rail-out button:hover p {{ color: #60A5FA !important; }}
 
     /* NOTIFICATION DOT */
     .has-dot button {{
@@ -327,7 +317,7 @@ st.markdown(f"""
     
     /* Close Button Hack */
     /* Target the first button in the panel_col (which is our close button) */
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(2) [data-testid="stButton"]:first-of-type button {{
+    [data-testid="stSidebar"] [data-testid="column"]:nth-child(2) button:first-of-type {{
         position: absolute !important;
         top: 20px !important;
         right: 18px !important;
@@ -338,11 +328,11 @@ st.markdown(f"""
         padding: 0 !important;
         display: flex !important; align-items: center !important; justify-content: center !important;
     }}
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(2) [data-testid="stButton"]:first-of-type button p {{
+    [data-testid="stSidebar"] [data-testid="column"]:nth-child(2) button:first-of-type p {{
         font-size: 1rem !important; margin: 0 !important;
         color: inherit !important;
     }}
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(2) [data-testid="stButton"]:first-of-type button:hover {{
+    [data-testid="stSidebar"] [data-testid="column"]:nth-child(2) button:first-of-type:hover {{
         background: rgba(255,255,255,0.12) !important; color: #D1D5DB !important;
     }}
 
@@ -442,7 +432,7 @@ with st.sidebar:
     with rail_col:
         # LOGO
         st.markdown("<div class='rail-btn rail-logo'>", unsafe_allow_html=True)
-        if st.button(" ", key="rail_logo", help="NETWATCH OPS CENTER"):
+        if st.button("\uf0e8", key="rail_logo", help="NETWATCH OPS CENTER"):
             st.session_state['active_panel'] = None
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
@@ -453,7 +443,7 @@ with st.sidebar:
         cls_sys = "rail-btn rail-sys active" if active_panel == 'system' else "rail-btn rail-sys"
         if st.session_state.get('is_scanning', False): cls_sys += " has-dot has-dot-scan"
         st.markdown(f"<div class='{cls_sys}'>", unsafe_allow_html=True)
-        if st.button(" ", key="rail_sys", help="System Controls"):
+        if st.button("\uf0e7", key="rail_sys", help="System Controls"):
             st.session_state['active_panel'] = 'system' if active_panel != 'system' else None
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
@@ -461,7 +451,7 @@ with st.sidebar:
         # ALARM
         cls_alr = "rail-btn rail-alr active" if active_panel == 'alarm' else "rail-btn rail-alr"
         st.markdown(f"<div class='{cls_alr}'>", unsafe_allow_html=True)
-        if st.button(" ", key="rail_alr", help="Alarm Center"):
+        if st.button("\uf0f3", key="rail_alr", help="Alarm Center"):
             st.session_state['active_panel'] = 'alarm' if active_panel != 'alarm' else None
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
@@ -470,7 +460,7 @@ with st.sidebar:
         cls_flt = "rail-btn rail-flt active" if active_panel == 'filters' else "rail-btn rail-flt"
         if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'): cls_flt += " has-dot"
         st.markdown(f"<div class='{cls_flt}'>", unsafe_allow_html=True)
-        if st.button(" ", key="rail_flt", help="Data Filters"):
+        if st.button("\uf0b0", key="rail_flt", help="Data Filters"):
             st.session_state['active_panel'] = 'filters' if active_panel != 'filters' else None
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
@@ -479,7 +469,7 @@ with st.sidebar:
         cls_qck = "rail-btn rail-qck active" if active_panel == 'quick' else "rail-btn rail-qck"
         if st.session_state.get('filter_mode', 'All') != 'All': cls_qck += " has-dot"
         st.markdown(f"<div class='{cls_qck}'>", unsafe_allow_html=True)
-        if st.button(" ", key="rail_qck", help="Quick Filters"):
+        if st.button("\uf00a", key="rail_qck", help="Quick Filters"):
             st.session_state['active_panel'] = 'quick' if active_panel != 'quick' else None
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
@@ -487,7 +477,7 @@ with st.sidebar:
         # LOGOUT (Push to bottom using a lot of vertical space for now, or use CSS absolute pos for logout)
         st.markdown("<div style='height: 40vh;'></div>", unsafe_allow_html=True)
         st.markdown("<div class='rail-btn rail-out'>", unsafe_allow_html=True)
-        if st.button(" ", key="rail_out", help="Logout"):
+        if st.button("\uf2f5", key="rail_out", help="Logout"):
             _delete_session(st.session_state.get('session_token', ''))
             st.session_state['logged_in'] = False
             st.session_state['session_token'] = None
