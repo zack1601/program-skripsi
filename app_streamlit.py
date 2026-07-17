@@ -474,24 +474,24 @@ with st.sidebar:
         st.markdown("</div>", unsafe_allow_html=True)
         
     with panel_col:
-        if active_panel == 'system':
-            # Panel Header (Figma style: MODULE label + title + close button)
-            close_col, _ = st.columns([5, 1])
-            st.markdown("""
+        # Render panel header + close button for any active panel
+        if active_panel:
+            panel_titles = {'system': 'System', 'alarm': 'Alarm', 'filters': 'Filters', 'quick': 'Quick'}
+            st.markdown(f"""
             <div class='panel-header'>
                 <div>
                     <div class='panel-module-label'>MODULE</div>
-                    <div class='panel-title'>System</div>
+                    <div class='panel-title'>{panel_titles.get(active_panel, '')}</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
-            with _:
-                st.markdown("<div class='panel-close'>", unsafe_allow_html=True)
-                if st.button("✕", key="panel_close_sys"):
-                    st.session_state['active_panel'] = None
-                    st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown("<div class='panel-close'>", unsafe_allow_html=True)
+            if st.button("✕", key="panel_close"):
+                st.session_state['active_panel'] = None
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
 
+        if active_panel == 'system':
             st.markdown("<div class='section-label' style='padding: 0 18px;'>SCAN ENGINE</div>", unsafe_allow_html=True)
             
             is_running = st.session_state.get('is_scanning', False)
