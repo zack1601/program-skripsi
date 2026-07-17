@@ -189,24 +189,24 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     st.markdown("<hr style='margin: 10px 0 15px 0; border: none; border-top: 1px solid rgba(255, 255, 255, 0.1);'>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 5px;'>⚙️ SYSTEM CONTROLS</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 5px;'>SYSTEM CONTROLS</p>", unsafe_allow_html=True)
     # Dynamic Scan/Stop Toggle Button
     is_running = st.session_state.get('is_scanning', False)
     if is_running:
-        st.markdown('<div class="stop-btn">', unsafe_allow_html=True)
+        st.markdown('<div class="stop-btn scan-primary-btn">', unsafe_allow_html=True)
         if st.button("STOP SCANNING", use_container_width=True):
             st.session_state['is_scanning'] = False
             st.session_state['stop_scanning'] = True
             
-            # Pindahkan data yang sudah terkumpul sejauh ini ke data_final agar tidak kosong
+            # Move collected data to data_final
             if 'temp_results' in st.session_state and st.session_state['temp_results']:
                 final_df = pd.DataFrame(st.session_state['temp_results'])
                 if not final_df.empty:
-                    # Bersihkan SN untuk deduplikasi terpercaya
+                    # Clean SN for reliable deduplication
                     final_df['Serial Number'] = final_df['Serial Number'].astype(str).str.strip().str.upper()
                     final_df['Nama/ID Pelanggan'] = final_df['Nama/ID Pelanggan'].astype(str).str.strip().str.upper()
                     
-                    # Deduplikasi ketat hanya berdasarkan SN
+                    # Strict deduplication by SN
                     final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
                     
                     st.session_state['data_final'] = final_df
@@ -214,7 +214,7 @@ with st.sidebar:
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
     else:
-        st.markdown('<div class="start-btn">', unsafe_allow_html=True)
+        st.markdown('<div class="start-btn scan-primary-btn">', unsafe_allow_html=True)
         if st.button("START SCAN", use_container_width=True):
             st.session_state['is_scanning'] = True
             st.session_state['stop_scanning'] = False
@@ -229,21 +229,22 @@ with st.sidebar:
     _last_sync = get_last_sync_time()
     st.markdown(
         f"<p style='margin:0 0 6px 0; font-size:0.75rem; color:#484f58;'>"
-        f"🗄️ Cache terakhir: <b style='color:#8b949e'>{_last_sync}</b></p>",
+        f"Last Cache: <b style='color:#8b949e'>{_last_sync}</b></p>",
         unsafe_allow_html=True
     )
-    if st.button("🔄 SYNC GOOGLE SHEETS", use_container_width=True):
-        with st.spinner("Menarik data dari seluruh tab Google Sheets..."):
+    st.markdown("<div class='sync-secondary-btn'>", unsafe_allow_html=True)
+    if st.button("SYNC GOOGLE SHEETS", use_container_width=True):
+        with st.spinner("Fetching data from all Google Sheets tabs..."):
             try:
                 _gconn = st.connection("gsheets", type=GSheetsConnection)
-                # Gunakan ID spreadsheet saja tanpa #gid=0 agar tidak bentrok dengan pencarian nama tab
+                # Use spreadsheet ID only tanpa #gid=0 agar tidak bentrok dengan pencarian nama tab
                 _SYNC_URL = "1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw"
                 from io import StringIO
                 from contextlib import redirect_stdout, redirect_stderr
                 import pandas as pd
                 
-                # Map nama sheet ke numeric GID-nya masing-masing
-                # Gunakan URL export CSV publik langsung agar lebih stabil
+                # Map sheet names to numeric GID-nya masing-masing
+                # Use direct public CSV export publik langsung agar lebih stabil
                 SPREADSHEET_ID = "1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw"
                 target_sheets_gid = {
                     "Fatmawati"     : "0",
@@ -278,20 +279,20 @@ with st.sidebar:
                 if all_data:
                     _df_sync_combined = pd.concat(all_data, ignore_index=True)
                     cache_input_from_gsheets(_df_sync_combined)
-                    st.success(f"✅ {len(_df_sync_combined)} baris dari {len(all_data)} wilayah berhasil di-cache ke SQLite!")
+                    st.success(f"✅ {len(_df_sync_combined)} rows from {len(all_data)} regions successfully cached to SQLite!")
                 else:
-                    st.warning("⚠️ Google Sheets tidak mengembalikan data apapun dari semua tab.")
+                    st.warning("⚠️ Google Sheets returned no data from all tabs.")
             except Exception as _e:
-                st.error(f"❌ Gagal terhubung ke Google Sheets: {_e}")
+                st.error(f"❌ Failed to connect to Google Sheets: {_e}")
         st.rerun()
-
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<hr style='margin: 5px 0 5px 0; border: none; border-top: 1px solid rgba(255, 255, 255, 0.1);'>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 5px;'>🚨 ALARM CENTER</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 5px;'>ALARM CENTER</p>", unsafe_allow_html=True)
 
     # Alarm Region Selector
-    region_options = ["Semua Wilayah", "Fatmawati", "Cipedak", "Pinang/Kalijati", "Lenteng Agung", "Cinere", "Senopati"]
-    selected_region_alarm = st.selectbox("🎯 Target Alarm Region:", region_options)
+    region_options = ["All Regions", "Fatmawati", "Cipedak", "Pinang/Kalijati", "Lenteng Agung", "Cinere", "Senopati"]
+    selected_region_alarm = st.selectbox("Target Alarm Region:", region_options)
     
     # Alarm button
     btn_disabled = st.session_state['data_final'].empty
@@ -308,7 +309,7 @@ with st.sidebar:
                 row_region = get_region_from_olt(row.get('OLT', ''))
                 
                 # Filter by region
-                if selected_region_alarm != "Semua Wilayah" and row_region != selected_region_alarm:
+                if selected_region_alarm != "All Regions" and row_region != selected_region_alarm:
                     continue
                 
                 sn = row.get('Serial Number', '')
@@ -318,10 +319,10 @@ with st.sidebar:
                     to_send.append(row)
             
             if to_send:
-                # Tampilkan notif di awal / bersamaan dengan pengiriman pertama
+                # Show notification
                 st.success(f"{len(to_send)} Alarms Sent to {selected_region_alarm}!")
                 
-                # Kirim ke Telegram + simpan message_id ke SQLite
+                # Send to Telegram + save message_id ke SQLite
                 for row in to_send:
                     msg_id = send_telegram_alarm(row)
                     if msg_id:  # Simpan hanya jika pengiriman berhasil
@@ -330,20 +331,22 @@ with st.sidebar:
                 st.info("No new alarms to send (or already sent).")
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown("<hr style='margin: 5px 0 5px 0; border: none; border-top: 1px solid rgba(255, 255, 255, 0.1);'>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 5px;'>🔍 DATA FILTERS</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#8B949E; margin-bottom: 5px;'>DATA FILTERS</p>", unsafe_allow_html=True)
 
     # Render OLT select dropdown, search text box, and modern Quick Filters (fully modularized!)
     render_filters(st.session_state['data_final'])
 
-    # Logout button di area paling bawah sidebar
+    # Logout button pinned paling bawah sidebar
     st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("🚪 LOGOUT", key="logout_btn", use_container_width=True):
+    st.markdown("<div class='logout-btn'>", unsafe_allow_html=True)
+    if st.button("LOGOUT", key="logout_btn", use_container_width=True):
         _delete_session(st.session_state.get('session_token', ''))
         st.session_state['logged_in'] = False
         st.session_state['session_token'] = None
         st.session_state['login_time'] = None
         st.query_params.clear()
         st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- FILTER DATA FOR DISPLAY ---
 df_raw = st.session_state['data_final']
@@ -648,7 +651,7 @@ if st.session_state['is_scanning']:
                     "❌ Tidak ada sumber data tersedia.\n\n"
                     "SQLite cache kosong, Google Sheets tidak terjangkau, "
                     "dan file Excel lokal tidak ditemukan.\n\n"
-                    "→ Klik **🔄 SYNC GOOGLE SHEETS** di sidebar untuk mengisi cache."
+                    "→ Klik **SYNC GOOGLE SHEETS** di sidebar untuk mengisi cache."
                 )
                 st.session_state['is_scanning'] = False
                 st.stop()

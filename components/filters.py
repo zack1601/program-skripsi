@@ -2,7 +2,7 @@ import streamlit as st
 
 def render_filters(data_final):
     """
-    Renders OLT Dropdown, Search Input, and Modern Quick Filter Buttons in the Sidebar.
+    Renders OLT Dropdown, Search Input, and Modern QUICK FILTERS Buttons in the Sidebar.
     """
     # 1. OLT SELECT FILTER
     if not data_final.empty:
@@ -15,12 +15,12 @@ def render_filters(data_final):
         st.selectbox("Select Region:", options=["Waiting for Scan..."], disabled=True, key="olt_select_sidebar_disabled")
 
     # 2. SEARCH INPUT
-    st.text_input("Search SN / Name:", placeholder="Input data...", key="search_sn_sidebar")
+    st.text_input("Search SN / Name:", placeholder="Search...", key="search_sn_sidebar")
     
     st.markdown("<br>", unsafe_allow_html=True)
     
     # 3. MODERN QUICK FILTER BUTTONS
-    st.markdown("Quick Filter")
+    st.markdown("QUICK FILTERS")
     
     # CSS Sakti untuk memaksa tombol berbentuk KOTAK SEMPURNA (Identik) di Sidebar
     st.markdown("""
@@ -86,32 +86,32 @@ def render_filters(data_final):
     # Render 5 Kolom Native presisi rapat di Sidebar
     f_col1, f_col2, f_col3, f_col4, f_col5 = st.columns(5)
     with f_col1:
-        if st.button("🌐", key="btn_online", help="ONLINE"):
+        if st.button(" ", key="btn_online", help="ONLINE"):
             st.session_state['filter_mode'] = 'Online'
             st.rerun()
     with f_col2:
-        if st.button("❌", key="btn_los", help="LOS"):
+        if st.button(" ", key="btn_los", help="LOS"):
             st.session_state['filter_mode'] = 'LOS'
             st.rerun()
     with f_col3:
-        if st.button("⚠️", key="btn_badrx", help="BadRx"):
+        if st.button(" ", key="btn_badrx", help="BadRx"):
             st.session_state['filter_mode'] = 'BadRx'
             st.rerun()
     with f_col4:
-        if st.button("🔌", key="btn_dying", help="Dyinggasp"):
+        if st.button(" ", key="btn_dying", help="Dyinggasp"):
             st.session_state['filter_mode'] = 'Dyinggasp'
             st.rerun()
     with f_col5:
-        if st.button("🔒", key="btn_suspend", help="Suspend"):
+        if st.button(" ", key="btn_suspend", help="Suspend"):
             st.session_state['filter_mode'] = 'Suspend'
             st.rerun()
 
     if st.session_state.get('filter_mode', 'All') != 'All':
-        if st.button("✖ Reset Status", key="qf_reset", use_container_width=True):
+        if st.button("Reset Status", key="qf_reset", use_container_width=True):
             st.session_state['filter_mode'] = 'All'
             st.rerun()
 
     filter_val = st.session_state.get('filter_mode', 'All')
     color_class = filter_val if filter_val != 'All' else 'gray'
-    st.markdown(f"**Status Terpilih:** :{color_class}[{filter_val}]")
+    st.markdown(f"**Selected Status:** :{color_class}[{filter_val}]")
     st.markdown("---")

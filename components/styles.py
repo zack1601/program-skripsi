@@ -427,6 +427,87 @@ def inject_custom_css():
         border: none !important;
         background: transparent !important;
     }
+
+    /* ============================================================
+       SIDEBAR UI REDESIGN (CYBERSECURITY COMMAND CENTER)
+    ============================================================ */
+    
+    /* Global FontAwesome styling for buttons */
+    .scan-primary-btn button::before,
+    .sync-secondary-btn button::before,
+    .alarm-btn button::before,
+    .logout-btn button::before,
+    [data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button::before {
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+        margin-right: 8px !important;
+    }
+    
+    /* 1. Primary CTA: START SCAN / STOP SCAN */
+    .scan-primary-btn button {
+        background-color: rgba(16, 185, 129, 0.1) !important; /* Slight tint */
+        border: 2px solid #00f0ff !important; /* Glowing cyan */
+        color: #00f0ff !important;
+        font-weight: 800 !important;
+        letter-spacing: 1px !important;
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.3) !important;
+        transition: all 0.3s ease !important;
+    }
+    .scan-primary-btn button:hover {
+        background-color: rgba(0, 240, 255, 0.2) !important;
+        box-shadow: 0 0 20px rgba(0, 240, 255, 0.6) !important;
+        color: #fff !important;
+    }
+    .scan-primary-btn button::before { content: "\f04b" !important; } /* fa-play */
+    .scan-primary-btn.stop-btn button::before { content: "\f04d" !important; } /* fa-stop */
+
+    /* 2. Secondary CTA: SYNC & ALARM */
+    .sync-secondary-btn button,
+    .alarm-btn button {
+        background-color: rgba(30, 41, 59, 0.5) !important; /* Muted dark */
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: #94a3b8 !important;
+    }
+    .sync-secondary-btn button:hover,
+    .alarm-btn button:hover {
+        border-color: #cbd5e1 !important;
+        color: #cbd5e1 !important;
+    }
+    .sync-secondary-btn button::before { content: "\f021" !important; } /* fa-rotate */
+    .alarm-btn button::before { content: "\f0f3" !important; margin-right: 5px !important;} /* fa-bell */
+
+    /* 3. Logout Button */
+    .logout-btn button {
+        background-color: rgba(220, 38, 38, 0.1) !important;
+        border: 1px dashed #ef4444 !important;
+        color: #ef4444 !important;
+        margin-top: 20px !important;
+    }
+    .logout-btn button::before { content: "\f2f5" !important; } /* fa-right-from-bracket */
+
+    /* 4. Quick Filters FontAwesome Icons (Replacing Emojis) */
+    [data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button {
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+        font-size: 1.2rem !important; /* Resize icon */
+    }
+    /* Online */
+    [data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] > div:nth-child(1) button::before { content: "\f0ac" !important; } /* fa-globe */
+    /* LOS */
+    [data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] > div:nth-child(2) button::before { content: "\f00d" !important; } /* fa-xmark */
+    /* BadRx */
+    [data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] > div:nth-child(3) button::before { content: "\f071" !important; } /* fa-triangle-exclamation */
+    /* Dyinggasp */
+    [data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] > div:nth-child(4) button::before { content: "\f1e6" !important; } /* fa-plug */
+    /* Suspend */
+    [data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] > div:nth-child(5) button::before { content: "\f023" !important; } /* fa-lock */
+    
+    [data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button::before {
+        margin-right: 0 !important; /* No margin since there's no text */
+    }
+    
+    /* Horizontal Dividers are handled in Python via st.markdown('<hr>') */
+</style>
 </style>
 """, unsafe_allow_html=True)
 
