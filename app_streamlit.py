@@ -191,108 +191,229 @@ sidebar_width = "320px" if active_panel else "64px"
 
 st.markdown(f"""
 <style>
-    /* Force sidebar width */
+    /* Force sidebar width & hide collapse button */
     [data-testid="stSidebar"] {{
         min-width: {sidebar_width} !important;
         max-width: {sidebar_width} !important;
         transition: min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         overflow-x: hidden !important;
-    }}
-    /* Hide native collapse button */
-    [data-testid="stSidebarCollapseButton"] {{ display: none !important; }}
-    
-    /* Rail & Panel Layout */
-    .sidebar-layout {{
-        display: flex;
-        flex-direction: row;
-        width: 320px; /* Fixed total width */
-        height: 100vh;
-        margin-left: -1rem; /* Adjust for Streamlit's default padding */
-        margin-top: -3.5rem;
-    }}
-    .rail {{
-        width: 64px;
-        flex: 0 0 64px;
-        background-color: #0E1117;
-        border-right: 1px solid rgba(255,255,255,0.05);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding-top: 20px;
-        z-index: 10;
-    }}
-    .panel {{
-        width: 256px;
-        flex: 0 0 256px;
-        background-color: #0d1117;
-        padding: 20px;
-        overflow-y: auto;
-    }}
-    
-    /* Rail Buttons Styling */
-    .rail-btn button {{
-        width: 44px !important;
-        height: 44px !important;
-        border-radius: 12px !important;
-        background: transparent !important;
-        border: none !important;
-        color: #8B949E !important;
-        margin-bottom: 10px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        transition: all 0.2s !important;
+        background-color: #0d0d12 !important;
         padding: 0 !important;
+    }}
+    [data-testid="stSidebarCollapseButton"] {{ display: none !important; }}
+    [data-testid="stSidebar"] > div:first-child {{ padding: 0 !important; overflow: visible !important; }}
+
+    /* Column layout hack */
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] {{
+        flex-wrap: nowrap !important;
+        gap: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: 100vh !important;
+    }}
+    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) {{
+        min-width: 64px !important; max-width: 64px !important; flex: 0 0 64px !important;
+        background-color: #0d0d12 !important;
+        border-right: 1px solid rgba(255,255,255,0.06) !important;
+        padding: 12px 0 12px 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }}
+    [data-testid="stSidebar"] [data-testid="column"]:nth-child(2) {{
+        min-width: 256px !important; max-width: 256px !important; flex: 0 0 256px !important;
+        background-color: #111118 !important;
+        padding: 0 !important;
+        overflow-y: auto !important;
+    }}
+
+    /* ── RAIL ICON BUTTONS ── */
+    /* Base: all rail buttons look like colored icon badge */
+    .rail-btn button {{
+        width: 44px !important; height: 44px !important;
+        border-radius: 14px !important;
+        background: rgba(255,255,255,0.06) !important;
+        border: none !important;
+        color: #6B7280 !important;
+        display: flex !important;
+        align-items: center !important; justify-content: center !important;
+        transition: all 0.2s ease !important;
+        padding: 0 !important;
+        margin: 0 auto 10px auto !important;
         position: relative !important;
     }}
-    /* Target the text element inside Streamlit button for FontAwesome font */
-    .rail-btn button p, .rail-btn button div {{
+    .rail-btn button p, .rail-btn button div, .rail-btn button span {{
         font-family: "Font Awesome 6 Free" !important;
         font-weight: 900 !important;
-        font-size: 1.2rem !important;
+        font-size: 1.1rem !important;
         line-height: 1 !important;
-        margin: 0 !important;
-        padding: 0 !important;
+        margin: 0 !important; padding: 0 !important;
+        color: inherit !important;
     }}
-    .rail-logo button p, .rail-logo button div {{ font-size: 1.4rem !important; color: #00F0FF !important; }}
-    .rail-btn button:hover {{
-        background: rgba(255,255,255,0.05) !important;
+
+    /* LOGO BUTTON: Purple gradient */
+    .rail-logo button {{
+        background: linear-gradient(135deg, #7C3AED, #4F46E5) !important;
         color: #fff !important;
     }}
-    .rail-btn.active button {{
-        background: rgba(0, 240, 255, 0.1) !important;
-        color: #00F0FF !important;
-        border-right: 3px solid #00F0FF !important;
-        border-radius: 8px 0 0 8px !important;
+    .rail-logo button p, .rail-logo button div {{ color: #fff !important; font-size: 1.3rem !important; }}
+
+    /* DEFAULT hover */
+    .rail-btn:not(.rail-logo):not(.rail-out) button:hover {{
+        background: rgba(255,255,255,0.10) !important;
+        color: #D1D5DB !important;
     }}
-    
-    .rail-spacer {{ flex-grow: 1; }}
-    
-    /* Notification Dot */
-    .has-dot button::after {{
+
+    /* ACTIVE badge: amber/orange bg */
+    .rail-btn.active button {{
+        background: #F59E0B !important;
+        color: #1C1C1C !important;
+    }}
+    .rail-btn.active button p, .rail-btn.active button div {{ color: #1C1C1C !important; }}
+
+    /* LOGOUT button: blue badge */
+    .rail-out button {{
+        background: rgba(59, 130, 246, 0.15) !important;
+        color: #3B82F6 !important;
+    }}
+    .rail-out button:hover {{
+        background: rgba(59, 130, 246, 0.3) !important;
+        color: #60A5FA !important;
+    }}
+    .rail-out button p, .rail-out button div {{ color: inherit !important; }}
+
+    /* NOTIFICATION DOT */
+    .has-dot button {{
+        overflow: visible !important;
+    }}
+    .has-dot .stButton::after {{
         content: '';
         position: absolute;
-        top: 8px;
-        right: 8px;
-        width: 8px;
-        height: 8px;
-        background-color: #f43f5e;
+        top: 6px; right: 6px;
+        width: 9px; height: 9px;
+        background-color: #F43F5E;
         border-radius: 50%;
-        border: 2px solid #0E1117;
+        border: 2px solid #0d0d12;
+        z-index: 10;
     }}
-    .has-dot-scan button::after {{ background-color: #00F0FF; }}
+
+    /* ── PANEL CONTENT STYLING ── */
+    .panel-header {{
+        display: flex; align-items: flex-start; justify-content: space-between;
+        padding: 20px 18px 14px 18px;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        margin-bottom: 18px;
+    }}
+    .panel-module-label {{
+        font-size: 0.65rem; font-weight: 700; color: #6B7280;
+        letter-spacing: 2px; text-transform: uppercase; margin-bottom: 2px;
+    }}
+    .panel-title {{
+        font-size: 1.3rem; font-weight: 700; color: #F9FAFB;
+        line-height: 1.2;
+    }}
+    .panel-close button {{
+        width: 28px !important; height: 28px !important;
+        border-radius: 8px !important;
+        background: rgba(255,255,255,0.06) !important;
+        border: none !important; color: #6B7280 !important;
+        font-size: 0.8rem !important;
+        padding: 0 !important;
+    }}
+    .panel-close button:hover {{ background: rgba(255,255,255,0.12) !important; color: #D1D5DB !important; }}
+    .panel-close button p, .panel-close button div {{ font-size: 0.8rem !important; color: inherit !important; }}
+
+    /* Section label */
+    .section-label {{
+        font-size: 0.65rem; font-weight: 700; color: #6B7280;
+        letter-spacing: 2px; text-transform: uppercase;
+        margin: 0 0 8px 0;
+    }}
+
+    /* START SCAN button (primary CTA) */
+    .scan-cta button {{
+        background: #1E2030 !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        color: #F9FAFB !important;
+        font-size: 1rem !important; font-weight: 700 !important;
+        letter-spacing: 1px !important;
+        border-radius: 14px !important;
+        height: 56px !important;
+        width: 100% !important;
+        transition: all 0.2s !important;
+    }}
+    .scan-cta button:hover {{
+        background: #252840 !important;
+        border-color: rgba(255,255,255,0.15) !important;
+    }}
+    .scan-cta button p, .scan-cta button div {{
+        font-size: 1rem !important; font-weight: 700 !important;
+        letter-spacing: 1px !important;
+    }}
+    .stop-cta button {{
+        background: rgba(244, 63, 94, 0.12) !important;
+        border: 1px solid rgba(244, 63, 94, 0.3) !important;
+        color: #F43F5E !important;
+        border-radius: 14px !important; height: 56px !important;
+        font-weight: 700 !important; font-size: 1rem !important; letter-spacing: 1px !important;
+    }}
+
+    /* LAST CACHE card */
+    .cache-card {{
+        background: #161620;
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 12px;
+        padding: 10px 14px;
+        margin: 12px 0;
+    }}
+    .cache-label {{ font-size: 0.6rem; font-weight: 700; color: #6B7280; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }}
+    .cache-val {{ font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #10B981; font-weight: 500; }}
+
+    /* SYNC secondary button */
+    .sync-btn button {{
+        background: #1A1E2E !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        color: #9CA3AF !important;
+        border-radius: 14px !important;
+        height: 48px !important;
+        transition: all 0.2s !important;
+    }}
+    .sync-btn button:hover {{ border-color: rgba(255,255,255,0.15) !important; color: #E5E7EB !important; }}
+    .sync-btn button p, .sync-btn button div {{ color: inherit !important; }}
+
+    /* ALARM CENTER */
+    .alarm-region label {{ font-size: 0.75rem !important; color: #9CA3AF !important; }}
+    .alarm-cta button {{
+        background: rgba(244, 63, 94, 0.12) !important;
+        border: 1px solid rgba(244, 63, 94, 0.3) !important;
+        color: #F43F5E !important;
+        border-radius: 14px !important; height: 50px !important;
+        font-weight: 700 !important;
+    }}
+    .alarm-cta button:hover {{ background: rgba(244, 63, 94, 0.2) !important; }}
+
+    /* Quick filter toggle list */
+    .qck-list-btn button {{
+        justify-content: flex-start !important;
+        text-align: left !important;
+        background: transparent !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        border-radius: 10px !important;
+        margin-bottom: 6px !important;
+        transition: all 0.2s !important;
+        height: 42px !important;
+        color: #9CA3AF !important;
+    }}
+    .qck-list-btn button:hover {{ background: rgba(255,255,255,0.04) !important; color: #E5E7EB !important; }}
+    .qck-list-btn button p, .qck-list-btn button div {{ color: inherit !important; text-align: left !important; }}
+    .qck-active-Online button {{ border-color: rgba(16,185,129,0.5) !important; color: #10B981 !important; background: rgba(16,185,129,0.07) !important; }}
+    .qck-active-LOS button {{ border-color: rgba(244,63,94,0.5) !important; color: #F43F5E !important; background: rgba(244,63,94,0.07) !important; }}
+    .qck-active-BadRx button {{ border-color: rgba(245,158,11,0.5) !important; color: #F59E0B !important; background: rgba(245,158,11,0.07) !important; }}
+    .qck-active-Dyinggasp button {{ border-color: rgba(168,85,247,0.5) !important; color: #A855F7 !important; background: rgba(168,85,247,0.07) !important; }}
+    .qck-active-Suspend button {{ border-color: rgba(100,116,139,0.5) !important; color: #64748B !important; background: rgba(100,116,139,0.07) !important; }}
 </style>
 """, unsafe_allow_html=True)
-
 with st.sidebar:
-    # Build a pseudo-HTML layout using columns (Streamlit doesn't support raw HTML with functional st.buttons easily, 
-    # so we must use st.columns with forced CSS nowrap)
-    st.markdown("""<style>
-        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 0 !important; }
-        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) { min-width: 64px !important; max-width: 64px !important; flex: 0 0 64px !important; border-right: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
-        [data-testid="stSidebar"] [data-testid="column"]:nth-child(2) { min-width: 256px !important; max-width: 256px !important; flex: 0 0 256px !important; padding: 15px; }
-    </style>""", unsafe_allow_html=True)
-    
     rail_col, panel_col = st.columns([1, 4])
     
     with rail_col:
@@ -354,11 +475,29 @@ with st.sidebar:
         
     with panel_col:
         if active_panel == 'system':
-            st.markdown("<h3 style='margin-top:0; font-size:1.1rem; color:#fff;'>SYSTEM CONTROLS</h3>", unsafe_allow_html=True)
+            # Panel Header (Figma style: MODULE label + title + close button)
+            close_col, _ = st.columns([5, 1])
+            st.markdown("""
+            <div class='panel-header'>
+                <div>
+                    <div class='panel-module-label'>MODULE</div>
+                    <div class='panel-title'>System</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            with _:
+                st.markdown("<div class='panel-close'>", unsafe_allow_html=True)
+                if st.button("✕", key="panel_close_sys"):
+                    st.session_state['active_panel'] = None
+                    st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
+
+            st.markdown("<div class='section-label' style='padding: 0 18px;'>SCAN ENGINE</div>", unsafe_allow_html=True)
+            
             is_running = st.session_state.get('is_scanning', False)
             if is_running:
-                st.markdown('<div class="stop-btn scan-primary-btn">', unsafe_allow_html=True)
-                if st.button("STOP SCANNING", use_container_width=True):
+                st.markdown("<div class='stop-cta'>", unsafe_allow_html=True)
+                if st.button("⏹  STOP SCANNING", use_container_width=True):
                     st.session_state['is_scanning'] = False
                     st.session_state['stop_scanning'] = True
                     if 'temp_results' in st.session_state and st.session_state['temp_results']:
@@ -370,23 +509,28 @@ with st.sidebar:
                             st.session_state['data_final'] = final_df
                             save_scan_results(final_df)
                     st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
             else:
-                st.markdown('<div class="start-btn scan-primary-btn">', unsafe_allow_html=True)
-                if st.button("START SCAN", use_container_width=True):
+                st.markdown("<div class='scan-cta'>", unsafe_allow_html=True)
+                if st.button("▶  START SCAN", use_container_width=True):
                     st.session_state['is_scanning'] = True
                     st.session_state['stop_scanning'] = False
                     st.session_state['temp_results'] = []
                     st.session_state['data_final'] = pd.DataFrame()
                     st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
 
-            st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
             _last_sync = get_last_sync_time()
-            st.markdown(f"<p style='margin:0 0 6px 0; font-size:0.75rem; color:#484f58;'>🗄️ Last Cache: <b style='color:#8b949e'>{_last_sync}</b></p>", unsafe_allow_html=True)
+            st.markdown(f"""
+            <div class='cache-card'>
+                <div class='cache-label'>LAST CACHE</div>
+                <div class='cache-val'>{_last_sync}</div>
+            </div>
+            """, unsafe_allow_html=True)
             
-            st.markdown("<div class='sync-secondary-btn'>", unsafe_allow_html=True)
-            if st.button("SYNC GOOGLE SHEETS", use_container_width=True):
+            st.markdown("<div class='sync-btn'>", unsafe_allow_html=True)
+            if st.button("⇄  Sync Google Sheets", use_container_width=True):
+
                 with st.spinner("Fetching data from all Google Sheets tabs..."):
                     try:
                         _gconn = st.connection("gsheets", type=GSheetsConnection)
