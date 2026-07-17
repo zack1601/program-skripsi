@@ -44,7 +44,6 @@ st.set_page_config(
 
 # --- INJECT CUSTOM CSS ---
 inject_custom_css()
-st.caption("🔍 UI Version: V3.1 (Sticky & Aligned)")
 
 # --- INITIALIZE SESSION STATE ---
 import json

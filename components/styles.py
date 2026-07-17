@@ -434,7 +434,7 @@ def inject_custom_css():
     st.markdown("""
 <style>
     /* ============================================================
-       STICKY HEADER FIX & ALIGNMENT
+       STICKY HEADER FIX & ALIGNMENT (V3)
     ============================================================ */
     
     /* 1. Hide default Streamlit header to avoid spacing issues */
@@ -442,29 +442,20 @@ def inject_custom_css():
         display: none !important;
     }
 
-    /* 2. Align Sidebar and Main Content perfectly */
-    section[data-testid="stSidebar"] > div {
-        padding-top: 2rem !important;
-    }
-    section.main > div.block-container {
-        padding-top: 2rem !important;
-    }
-
-    /* 3. Force all parents of sticky element to be visible so sticky works */
-    [data-testid="stAppViewBlockContainer"],
-    [data-testid="stAppViewBlockContainer"] > div,
-    [data-testid="stVerticalBlock"],
-    [data-testid="stVerticalBlockBorderWrapper"],
-    .element-container,
-    .stMarkdown {
+    /* 2. Force all intermediate parent divs of the metrics bar to be visible */
+    /* This overrides Streamlit's inner clipping wrappers without breaking main scroll */
+    div:has(.nw-metrics-bar):not([data-testid="stAppViewContainer"]):not([data-testid="stApp"]) {
         overflow: visible !important;
     }
 
-    /* ── Relative Network Summary Bar ── */
+    /* 3. The Sticky Metrics Bar */
     .nw-metrics-bar {
         position: sticky !important;
-        top: 2rem !important;
-        z-index: 99999 !important;
+        /* Kunci posisi lengket tepat di batas atas */
+        top: 1rem !important;
+        /* Tarik blok ini ke atas agar persis sejajar dengan teks sidebar */
+        margin-top: -4rem !important;
+        z-index: 999999 !important;
         margin-bottom: 20px !important;
         background: rgba(13, 17, 23, 0.97) !important;
         backdrop-filter: blur(16px) !important;
