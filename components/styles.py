@@ -434,7 +434,7 @@ def inject_custom_css():
     st.markdown("""
 <style>
     /* ============================================================
-       STICKY HEADER FIX & ALIGNMENT (V3)
+       STICKY HEADER FIX & ALIGNMENT (V4 - Flexbox Hack)
     ============================================================ */
     
     /* 1. Hide default Streamlit header to avoid spacing issues */
@@ -442,20 +442,24 @@ def inject_custom_css():
         display: none !important;
     }
 
-    /* 2. Force all intermediate parent divs of the metrics bar to be visible */
-    /* This overrides Streamlit's inner clipping wrappers without breaking main scroll */
-    div:has(.nw-metrics-bar):not([data-testid="stAppViewContainer"]):not([data-testid="stApp"]) {
+    /* 2. Fix Streamlit's Block Container Overflow */
+    [data-testid="stAppViewBlockContainer"] {
         overflow: visible !important;
+        padding-top: 1rem !important; /* Base alignment */
     }
 
-    /* 3. The Sticky Metrics Bar */
-    .nw-metrics-bar {
+    /* 3. The true secret to Streamlit sticky headers: Make the parent element-container sticky! */
+    .element-container:has(.nw-metrics-bar) {
         position: sticky !important;
-        /* Kunci posisi lengket tepat di batas atas */
+        position: -webkit-sticky !important;
         top: 1rem !important;
-        /* Tarik blok ini ke atas agar persis sejajar dengan teks sidebar */
-        margin-top: -4rem !important;
         z-index: 999999 !important;
+    }
+
+    /* 4. The Metrics Bar Styling (No longer needs to be the sticky anchor, just styled) */
+    .nw-metrics-bar {
+        width: 100%;
+        margin-top: -1rem !important; /* Fine-tune vertical alignment with sidebar */
         margin-bottom: 20px !important;
         background: rgba(13, 17, 23, 0.97) !important;
         backdrop-filter: blur(16px) !important;
