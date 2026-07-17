@@ -450,10 +450,10 @@ with st.sidebar:
             
             # Mini Log Alarm
             st.markdown("<h4 style='font-size:0.85rem; color:#8B949E; margin-top:20px;'>Recent Sent Alarms</h4>", unsafe_allow_html=True)
-            df_log = get_alarm_history(limit=3)
+            df_log = get_all_alarm_history().head(3)
             if not df_log.empty:
                 for _, log in df_log.iterrows():
-                    st.markdown(f"<div style='background:rgba(255,255,255,0.02); padding:8px; border-radius:6px; margin-bottom:5px; font-size:0.75rem;'><b style='color:#F43F5E'>{log.get('category','ALARM')}</b> - {log.get('sn','')} <br><span style='color:#8B949E'>{log.get('timestamp','')}</span></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='background:rgba(255,255,255,0.02); padding:8px; border-radius:6px; margin-bottom:5px; font-size:0.75rem;'><b style='color:#F43F5E'>{log.get('Category', log.get('category','ALARM'))}</b> - {log.get('Serial Number', log.get('sn',''))} <br><span style='color:#8B949E'>{log.get('Waktu Alarm Dikirim', log.get('timestamp',''))}</span></div>", unsafe_allow_html=True)
             else:
                 st.markdown("<p style='font-size:0.75rem; color:#8B949E;'>No recent logs.</p>", unsafe_allow_html=True)
                 
