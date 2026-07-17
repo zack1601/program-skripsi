@@ -190,6 +190,7 @@ active_panel = st.session_state['active_panel']
 sidebar_width = "320px" if active_panel else "64px"
 
 st.markdown(f"""
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
     /* Force sidebar width & hide collapse button */
     [data-testid="stSidebar"] {{
@@ -228,7 +229,7 @@ st.markdown(f"""
     }}
 
     /* ── RAIL ICON BUTTONS (Structural) ── */
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) button {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) button {{
         width: 44px !important; height: 44px !important;
         border-radius: 14px !important;
         background: rgba(255,255,255,0.06) !important;
@@ -241,11 +242,11 @@ st.markdown(f"""
         margin: 0 auto 10px auto !important;
         position: relative !important;
     }}
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) button:hover {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) button:hover {{
         background: rgba(255,255,255,0.10) !important;
         color: #D1D5DB !important;
     }}
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) button p {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) button p {{
         font-family: "Font Awesome 6 Free", "FontAwesome" !important;
         font-weight: 900 !important;
         font-size: 1.2rem !important;
@@ -255,19 +256,19 @@ st.markdown(f"""
     }}
 
     /* LOGO BUTTON: index 1 */
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(1) button {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-child(1) button {{
         background: linear-gradient(135deg, #7C3AED, #4F46E5) !important;
     }}
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(1) button p {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-child(1) button p {{
         color: #fff !important; font-size: 1.4rem !important;
     }}
 
     /* LOGOUT BUTTON: index 8 */
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(8) button {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-child(8) button {{
         background: rgba(59, 130, 246, 0.15) !important;
         color: #3B82F6 !important;
     }}
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(8) button:hover {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-child(8) button:hover {{
         background: rgba(59, 130, 246, 0.3) !important;
         color: #60A5FA !important;
     }}
@@ -289,8 +290,7 @@ st.markdown(f"""
     }}
     
     /* Close Button Hack */
-    /* Target the first button in the panel_col (which is our close button) */
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(2) button:first-of-type {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-child(2) button {{
         position: absolute !important;
         top: 20px !important;
         right: 18px !important;
@@ -301,11 +301,11 @@ st.markdown(f"""
         padding: 0 !important;
         display: flex !important; align-items: center !important; justify-content: center !important;
     }}
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(2) button:first-of-type p {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-child(2) button p {{
         font-size: 1rem !important; margin: 0 !important;
         color: inherit !important;
     }}
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(2) button:first-of-type:hover {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-child(2) button:hover {{
         background: rgba(255,255,255,0.12) !important; color: #D1D5DB !important;
     }}
 
