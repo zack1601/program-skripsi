@@ -192,7 +192,6 @@ sidebar_width = "320px" if active_panel else "64px"
 st.markdown(f"""
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-    /* Force sidebar width & hide collapse button */
     [data-testid="stSidebar"] {{
         min-width: {sidebar_width} !important;
         max-width: {sidebar_width} !important;
@@ -203,6 +202,8 @@ st.markdown(f"""
     }}
     [data-testid="stSidebarCollapseButton"] {{ display: none !important; }}
     [data-testid="stSidebar"] > div:first-child {{ padding: 0 !important; overflow: visible !important; }}
+    [data-testid="stSidebar"] [data-testid="stSidebarContent"] {{ padding: 0 !important; }}
+    [data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {{ padding: 0 !important; }}
 
     /* Column layout hack */
     [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] {{
@@ -254,38 +255,38 @@ st.markdown(f"""
         color: inherit !important;
     }}
 
-    /* Specific Inactive Icon Colors */
-    /* System (Index 3) - Amber */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(3) button p {{
+    /* Specific Inactive Icon Colors using marker classes */
+    /* System - Amber */
+    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.sys-btn-marker) + div[data-testid="element-container"] button p {{
         color: #F59E0B !important;
     }}
-    /* Alarm (Index 4) - Red */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(4) button p {{
+    /* Alarm - Red */
+    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.alr-btn-marker) + div[data-testid="element-container"] button p {{
         color: #F43F5E !important;
     }}
-    /* Filters (Index 5) - Cyan */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(5) button p {{
+    /* Filters - Cyan */
+    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.flt-btn-marker) + div[data-testid="element-container"] button p {{
         color: #00F0FF !important;
     }}
-    /* Quick (Index 6) - Purple */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(6) button p {{
+    /* Quick - Purple */
+    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.qck-btn-marker) + div[data-testid="element-container"] button p {{
         color: #A855F7 !important;
     }}
 
-    /* LOGO BUTTON: index 1 */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(1) button {{
+    /* LOGO BUTTON */
+    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.logo-btn-marker) + div[data-testid="element-container"] button {{
         background: linear-gradient(135deg, #7C3AED, #4F46E5) !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(1) button p {{
+    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.logo-btn-marker) + div[data-testid="element-container"] button p {{
         color: #fff !important; font-size: 1.4rem !important;
     }}
 
-    /* LOGOUT BUTTON: index 8 */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(8) button {{
+    /* LOGOUT BUTTON */
+    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.out-btn-marker) + div[data-testid="element-container"] button {{
         background: rgba(59, 130, 246, 0.15) !important;
         color: #3B82F6 !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(8) button:hover {{
+    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.out-btn-marker) + div[data-testid="element-container"] button:hover {{
         background: rgba(59, 130, 246, 0.3) !important;
         color: #60A5FA !important;
     }}
@@ -422,6 +423,7 @@ with st.sidebar:
     
     with rail_col:
         # LOGO (index 1)
+        st.markdown("<div class='logo-btn-marker'></div>", unsafe_allow_html=True)
         if st.button("\uf0e8", key="rail_logo", help="NETWATCH OPS CENTER"):
             st.session_state['active_panel'] = None
             st.rerun()
@@ -430,21 +432,25 @@ with st.sidebar:
         st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
         
         # SYSTEM (index 3)
+        st.markdown("<div class='sys-btn-marker'></div>", unsafe_allow_html=True)
         if st.button("\uf0e7", key="rail_sys", help="System Controls"):
             st.session_state['active_panel'] = 'system' if active_panel != 'system' else None
             st.rerun()
             
         # ALARM (index 4)
+        st.markdown("<div class='alr-btn-marker'></div>", unsafe_allow_html=True)
         if st.button("\uf0f3", key="rail_alr", help="Alarm Center"):
             st.session_state['active_panel'] = 'alarm' if active_panel != 'alarm' else None
             st.rerun()
             
         # FILTERS (index 5)
+        st.markdown("<div class='flt-btn-marker'></div>", unsafe_allow_html=True)
         if st.button("\uf0b0", key="rail_flt", help="Data Filters"):
             st.session_state['active_panel'] = 'filters' if active_panel != 'filters' else None
             st.rerun()
             
         # QUICK (index 6)
+        st.markdown("<div class='qck-btn-marker'></div>", unsafe_allow_html=True)
         if st.button("\uf00a", key="rail_qck", help="Quick Filters"):
             st.session_state['active_panel'] = 'quick' if active_panel != 'quick' else None
             st.rerun()
@@ -453,6 +459,7 @@ with st.sidebar:
         st.markdown("<div style='height: 40vh;'></div>", unsafe_allow_html=True)
         
         # LOGOUT (index 8)
+        st.markdown("<div class='out-btn-marker'></div>", unsafe_allow_html=True)
         if st.button("\uf2f5", key="rail_out", help="Logout"):
             _delete_session(st.session_state.get('session_token', ''))
             st.session_state['logged_in'] = False
@@ -461,36 +468,38 @@ with st.sidebar:
             st.query_params.clear()
             st.rerun()
 
-    # Dynamic CSS for active state and notification dots
-    active_idx = {'system': 3, 'alarm': 4, 'filters': 5, 'quick': 6}.get(active_panel)
+    # Dynamic CSS for active state and notification dots using marker classes
     dynamic_css = ""
-    if active_idx:
-        dynamic_css += f"""
-        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type({active_idx}) button {{
-            background: #F59E0B !important; color: #1C1C1C !important;
-        }}
-        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type({active_idx}) button p {{
-            color: #1C1C1C !important;
-        }}
-        """
+    if active_panel:
+        marker_map = {'system': 'sys', 'alarm': 'alr', 'filters': 'flt', 'quick': 'qck'}
+        m_name = marker_map.get(active_panel)
+        if m_name:
+            dynamic_css += f"""
+            [data-testid="stSidebar"] div[data-testid="element-container"]:has(.{m_name}-btn-marker) + div[data-testid="element-container"] button {{
+                background: #F59E0B !important; color: #1C1C1C !important;
+            }}
+            [data-testid="stSidebar"] div[data-testid="element-container"]:has(.{m_name}-btn-marker) + div[data-testid="element-container"] button p {{
+                color: #1C1C1C !important;
+            }}
+            """
     if st.session_state.get('is_scanning', False):
         dynamic_css += f"""
-        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(3) button {{ overflow: visible !important; }}
-        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(3) button::after {{
+        [data-testid="stSidebar"] div[data-testid="element-container"]:has(.sys-btn-marker) + div[data-testid="element-container"] button {{ overflow: visible !important; }}
+        [data-testid="stSidebar"] div[data-testid="element-container"]:has(.sys-btn-marker) + div[data-testid="element-container"] button::after {{
             content: ''; position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; background-color: #00F0FF; border-radius: 50%; border: 2px solid #0d0d12; z-index: 10;
         }}
         """
     if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'):
         dynamic_css += f"""
-        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(5) button {{ overflow: visible !important; }}
-        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(5) button::after {{
+        [data-testid="stSidebar"] div[data-testid="element-container"]:has(.flt-btn-marker) + div[data-testid="element-container"] button {{ overflow: visible !important; }}
+        [data-testid="stSidebar"] div[data-testid="element-container"]:has(.flt-btn-marker) + div[data-testid="element-container"] button::after {{
             content: ''; position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; background-color: #F43F5E; border-radius: 50%; border: 2px solid #0d0d12; z-index: 10;
         }}
         """
     if st.session_state.get('filter_mode', 'All') != 'All':
         dynamic_css += f"""
-        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(6) button {{ overflow: visible !important; }}
-        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(6) button::after {{
+        [data-testid="stSidebar"] div[data-testid="element-container"]:has(.qck-btn-marker) + div[data-testid="element-container"] button {{ overflow: visible !important; }}
+        [data-testid="stSidebar"] div[data-testid="element-container"]:has(.qck-btn-marker) + div[data-testid="element-container"] button::after {{
             content: ''; position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; background-color: #F43F5E; border-radius: 50%; border: 2px solid #0d0d12; z-index: 10;
         }}
         """
