@@ -107,7 +107,7 @@ if 'stop_scanning' not in st.session_state:
 if 'temp_results' not in st.session_state:
     st.session_state['temp_results'] = []
 if 'filter_mode' not in st.session_state:
-    st.session_state['filter_mode'] = 'All'
+    st.session_state['filter_mode'] = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
 if 'tech_page' not in st.session_state:
     st.session_state['tech_page'] = 0
 if 'login_time' not in st.session_state:
@@ -233,8 +233,8 @@ st.markdown(f"""
     [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) button {{
         width: 44px !important; height: 44px !important;
         border-radius: 14px !important;
-        background: rgba(255,255,255,0.06) !important;
-        border: none !important;
+        background: rgba(255,255,255,0.04) !important;
+        border: 1px solid rgba(255,255,255,0.03) !important;
         color: #6B7280 !important;
         display: flex !important;
         align-items: center !important; justify-content: center !important;
@@ -244,7 +244,8 @@ st.markdown(f"""
         position: relative !important;
     }}
     [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) button:hover {{
-        background: rgba(255,255,255,0.10) !important;
+        background: rgba(255,255,255,0.08) !important;
+        border-color: rgba(255,255,255,0.08) !important;
     }}
     [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) button p {{
         font-family: "Font Awesome 6 Free", "FontAwesome" !important;
@@ -273,157 +274,220 @@ st.markdown(f"""
         color: #A855F7 !important;
     }}
 
-    /* LOGO BUTTON */
+    /* LOGO BUTTON: Satellite Purple Card */
     [data-testid="stSidebar"] div[data-testid="element-container"]:has(.logo-btn-marker) + div[data-testid="element-container"] button {{
         background: linear-gradient(135deg, #7C3AED, #4F46E5) !important;
+        box-shadow: 0 0 12px rgba(124, 58, 237, 0.4) !important;
+        border: none !important;
     }}
     [data-testid="stSidebar"] div[data-testid="element-container"]:has(.logo-btn-marker) + div[data-testid="element-container"] button p {{
-        color: #fff !important; font-size: 1.4rem !important;
+        color: #fff !important; font-size: 1.3rem !important;
     }}
 
     /* LOGOUT BUTTON */
     [data-testid="stSidebar"] div[data-testid="element-container"]:has(.out-btn-marker) + div[data-testid="element-container"] button {{
-        background: rgba(59, 130, 246, 0.15) !important;
+        background: rgba(59, 130, 246, 0.1) !important;
+        border-color: rgba(59, 130, 246, 0.15) !important;
         color: #3B82F6 !important;
     }}
     [data-testid="stSidebar"] div[data-testid="element-container"]:has(.out-btn-marker) + div[data-testid="element-container"] button:hover {{
-        background: rgba(59, 130, 246, 0.3) !important;
+        background: rgba(59, 130, 246, 0.2) !important;
         color: #60A5FA !important;
     }}
 
     /* ── PANEL CONTENT STYLING ── */
     .panel-header {{
         display: flex; align-items: flex-start; justify-content: space-between;
-        padding: 20px 18px 14px 18px;
+        padding: 24px 18px 14px 18px;
         border-bottom: 1px solid rgba(255,255,255,0.06);
-        margin-bottom: 18px;
+        margin-bottom: 20px;
     }}
     .panel-module-label {{
         font-size: 0.65rem; font-weight: 700; color: #6B7280;
-        letter-spacing: 2px; text-transform: uppercase; margin-bottom: 2px;
+        letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px;
     }}
     .panel-title {{
-        font-size: 1.3rem; font-weight: 700; color: #F9FAFB;
+        font-size: 1.4rem; font-weight: 800; color: #F9FAFB;
         line-height: 1.2;
     }}
     
     /* Close Button Hack */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:has(.panel-header) + div[data-testid="element-container"] button {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(2) div[data-testid="element-container"]:has(.panel-header) + div[data-testid="element-container"] button {{
         position: absolute !important;
-        top: 20px !important;
+        top: 24px !important;
         right: 18px !important;
         width: 32px !important; height: 32px !important;
         border-radius: 8px !important;
-        background: rgba(255,255,255,0.06) !important;
-        border: none !important; color: #6B7280 !important;
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.05) !important;
+        color: #6B7280 !important;
         padding: 0 !important;
         display: flex !important; align-items: center !important; justify-content: center !important;
         z-index: 9999 !important;
+        transition: all 0.2s !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:has(.panel-header) + div[data-testid="element-container"] button p {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(2) div[data-testid="element-container"]:has(.panel-header) + div[data-testid="element-container"] button p {{
         font-size: 1rem !important; margin: 0 !important;
         color: inherit !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:has(.panel-header) + div[data-testid="element-container"] button:hover {{
-        background: rgba(255,255,255,0.12) !important; color: #D1D5DB !important;
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(2) div[data-testid="element-container"]:has(.panel-header) + div[data-testid="element-container"] button:hover {{
+        background: rgba(255,255,255,0.1) !important; color: #D1D5DB !important;
+        border-color: rgba(255,255,255,0.1) !important;
     }}
 
     /* Section label */
     .section-label {{
         font-size: 0.65rem; font-weight: 700; color: #6B7280;
         letter-spacing: 2px; text-transform: uppercase;
-        margin: 0 0 8px 0;
+        margin: 0 0 10px 0;
     }}
 
-    /* START SCAN button (primary CTA) */
+    /* START SCAN button (Figma spec: dark block card with left play icon in blue square) */
     .scan-cta button {{
-        background: #1E2030 !important;
+        background: #161e2e !important;
         border: 1px solid rgba(255,255,255,0.08) !important;
         color: #F9FAFB !important;
-        font-size: 1rem !important; font-weight: 700 !important;
-        letter-spacing: 1px !important;
-        border-radius: 14px !important;
-        height: 56px !important;
+        font-size: 0.95rem !important; font-weight: 700 !important;
+        letter-spacing: 0.5px !important;
+        border-radius: 12px !important;
+        height: 52px !important;
         width: 100% !important;
         transition: all 0.2s !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }}
     .scan-cta button:hover {{
-        background: #252840 !important;
+        background: #1b263b !important;
         border-color: rgba(255,255,255,0.15) !important;
     }}
-    .scan-cta button p, .scan-cta button div {{
-        font-size: 1rem !important; font-weight: 700 !important;
-        letter-spacing: 1px !important;
+    .scan-cta button p {{
+        display: inline-flex !important;
+        align-items: center !important;
     }}
+    .scan-cta button p::before {{
+        content: "\f04b";
+        font-family: "Font Awesome 6 Free", "FontAwesome";
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center; justify-content: center;
+        background: #3B82F6 !important;
+        color: #FFFFFF !important;
+        width: 22px; height: 22px;
+        border-radius: 6px;
+        margin-right: 12px;
+        font-size: 0.7rem;
+    }}
+
     .stop-cta button {{
         background: rgba(244, 63, 94, 0.12) !important;
         border: 1px solid rgba(244, 63, 94, 0.3) !important;
         color: #F43F5E !important;
-        border-radius: 14px !important; height: 56px !important;
-        font-weight: 700 !important; font-size: 1rem !important; letter-spacing: 1px !important;
+        border-radius: 12px !important; height: 52px !important;
+        font-weight: 700 !important; font-size: 0.95rem !important;
     }}
 
     /* LAST CACHE card */
     .cache-card {{
-        background: #161620;
-        border: 1px solid rgba(255,255,255,0.07);
+        background: #161e2e;
+        border: 1px solid rgba(255,255,255,0.06);
         border-radius: 12px;
-        padding: 10px 14px;
-        margin: 12px 0;
+        padding: 12px 16px;
+        margin: 16px 0;
     }}
-    .cache-label {{ font-size: 0.6rem; font-weight: 700; color: #6B7280; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }}
+    .cache-label {{ font-size: 0.6rem; font-weight: 700; color: #6B7280; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }}
     .cache-val {{ font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #10B981; font-weight: 500; }}
 
-    /* SYNC secondary button */
+    /* SYNC button (Figma spec: dark block card with left sync icon in blue square) */
     .sync-btn button {{
-        background: #1A1E2E !important;
+        background: #161e2e !important;
         border: 1px solid rgba(255,255,255,0.08) !important;
         color: #9CA3AF !important;
-        border-radius: 14px !important;
+        border-radius: 12px !important;
         height: 48px !important;
         transition: all 0.2s !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }}
-    .sync-btn button:hover {{ border-color: rgba(255,255,255,0.15) !important; color: #E5E7EB !important; }}
-    .sync-btn button p, .sync-btn button div {{ color: inherit !important; }}
+    .sync-btn button:hover {{ border-color: rgba(255,255,255,0.15) !important; color: #E5E7EB !important; background: #1b263b !important; }}
+    .sync-btn button p {{ display: inline-flex !important; align-items: center !important; }}
+    .sync-btn button p::before {{
+        content: "\f021";
+        font-family: "Font Awesome 6 Free", "FontAwesome";
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center; justify-content: center;
+        background: #3B82F6 !important;
+        color: #FFFFFF !important;
+        width: 20px; height: 20px;
+        border-radius: 6px;
+        margin-right: 12px;
+        font-size: 0.65rem;
+    }}
 
     /* ALARM CENTER */
     .alarm-region label {{ font-size: 0.75rem !important; color: #9CA3AF !important; }}
+    
+    /* SEND ALARM Button (Red solid with glow and bell) */
     .alarm-cta button {{
-        background: rgba(244, 63, 94, 0.12) !important;
-        border: 1px solid rgba(244, 63, 94, 0.3) !important;
-        color: #F43F5E !important;
-        border-radius: 14px !important; height: 50px !important;
-        font-weight: 700 !important;
-    }}
-    .alarm-cta button:hover {{ background: rgba(244, 63, 94, 0.2) !important; }}
-
-    /* Quick filter toggle list */
-    .qck-list-btn button {{
-        justify-content: flex-start !important;
-        text-align: left !important;
-        background: transparent !important;
-        border: 1px solid rgba(255,255,255,0.08) !important;
-        border-radius: 10px !important;
-        margin-bottom: 6px !important;
+        background: #EF4444 !important;
+        border: none !important;
+        color: #FFFFFF !important;
+        border-radius: 12px !important; height: 50px !important;
+        font-weight: 700 !important; font-size: 0.95rem !important; letter-spacing: 0.5px !important;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.3) !important;
         transition: all 0.2s !important;
-        height: 42px !important;
-        color: #9CA3AF !important;
+        display: inline-flex !important; align-items: center !important; justify-content: center !important;
     }}
-    .qck-list-btn button:hover {{ background: rgba(255,255,255,0.04) !important; color: #E5E7EB !important; }}
-    .qck-list-btn button p, .qck-list-btn button div {{ color: inherit !important; text-align: left !important; }}
-    .qck-active-Online button {{ border-color: rgba(16,185,129,0.5) !important; color: #10B981 !important; background: rgba(16,185,129,0.07) !important; }}
-    .qck-active-LOS button {{ border-color: rgba(244,63,94,0.5) !important; color: #F43F5E !important; background: rgba(244,63,94,0.07) !important; }}
-    .qck-active-BadRx button {{ border-color: rgba(245,158,11,0.5) !important; color: #F59E0B !important; background: rgba(245,158,11,0.07) !important; }}
-    .qck-active-Dyinggasp button {{ border-color: rgba(168,85,247,0.5) !important; color: #A855F7 !important; background: rgba(168,85,247,0.07) !important; }}
-    .qck-active-Suspend button {{ border-color: rgba(100,116,139,0.5) !important; color: #64748B !important; background: rgba(100,116,139,0.07) !important; }}
+    .alarm-cta button:hover {{
+        background: #DC2626 !important;
+        box-shadow: 0 0 20px rgba(220, 38, 38, 0.45) !important;
+    }}
+    .alarm-cta button p {{ display: inline-flex !important; align-items: center !important; }}
+    .alarm-cta button p::before {{
+        content: "\f0f3";
+        font-family: "Font Awesome 6 Free", "FontAwesome";
+        font-weight: 900;
+        color: #FBBF24 !important; /* Yellow bell */
+        margin-right: 12px;
+        font-size: 1rem;
+    }}
+
+    /* Link button styling as clean text link */
+    .link-btn-wrapper button {{
+        background: transparent !important;
+        border: none !important;
+        color: #3B82F6 !important;
+        padding: 0 !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        height: auto !important;
+        width: auto !important;
+        min-height: 0 !important;
+        cursor: pointer !important;
+        box-shadow: none !important;
+        text-align: right !important;
+        display: inline-block !important;
+    }}
+    .link-btn-wrapper button:hover {{
+        color: #60A5FA !important;
+        text-decoration: underline !important;
+    }}
 </style>
 """, unsafe_allow_html=True)
 with st.sidebar:
     rail_col, panel_col = st.columns([1, 4])
     
     with rail_col:
-        # Spacer at top
-        st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+        # LOGO (index 1)
+        st.markdown("<div class='logo-btn-marker'></div>", unsafe_allow_html=True)
+        if st.button("\uf7c0", key="rail_logo", help="NETWATCH OPS CENTER"):
+            st.session_state['active_panel'] = None
+            st.rerun()
+
+        # Spacer
+        st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
         
         # SYSTEM (index 3)
         st.markdown("<div class='sys-btn-marker'></div>", unsafe_allow_html=True)
@@ -439,18 +503,18 @@ with st.sidebar:
             
         # FILTERS (index 5)
         st.markdown("<div class='flt-btn-marker'></div>", unsafe_allow_html=True)
-        if st.button("\uf0b0", key="rail_flt", help="Data Filters"):
+        if st.button("\uf0db", key="rail_flt", help="Data Filters"):
             st.session_state['active_panel'] = 'filters' if active_panel != 'filters' else None
             st.rerun()
             
         # QUICK (index 6)
         st.markdown("<div class='qck-btn-marker'></div>", unsafe_allow_html=True)
-        if st.button("\uf00a", key="rail_qck", help="Quick Filters"):
+        if st.button("\uf219", key="rail_qck", help="Quick Filters"):
             st.session_state['active_panel'] = 'quick' if active_panel != 'quick' else None
             st.rerun()
             
         # Spacer (index 7)
-        st.markdown("<div style='height: 40vh;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height: 35vh;'></div>", unsafe_allow_html=True)
         
         # LOGOUT (index 8)
         st.markdown("<div class='out-btn-marker'></div>", unsafe_allow_html=True)
@@ -470,10 +534,12 @@ with st.sidebar:
         if m_name:
             dynamic_css += f"""
             [data-testid="stSidebar"] div[data-testid="element-container"]:has(.{m_name}-btn-marker) + div[data-testid="element-container"] button {{
-                background: #F59E0B !important; color: #1C1C1C !important;
+                background: rgba(255, 255, 255, 0.08) !important;
+                border: 1px solid rgba(255, 255, 255, 0.15) !important;
+                box-shadow: 0 0 10px rgba(255,255,255,0.03) !important;
             }}
             [data-testid="stSidebar"] div[data-testid="element-container"]:has(.{m_name}-btn-marker) + div[data-testid="element-container"] button p {{
-                color: #1C1C1C !important;
+                opacity: 1.0 !important;
             }}
             """
     if st.session_state.get('is_scanning', False):
@@ -490,7 +556,16 @@ with st.sidebar:
             content: ''; position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; background-color: #F43F5E; border-radius: 50%; border: 2px solid #0d0d12; z-index: 10;
         }}
         """
-    if st.session_state.get('filter_mode', 'All') != 'All':
+    
+    # Notification dot for Quick Filters if any categories are excluded
+    active_filters_dot = st.session_state.get('filter_mode', {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'})
+    is_filtered_dot = False
+    if isinstance(active_filters_dot, str):
+        is_filtered_dot = (active_filters_dot != 'All')
+    else:
+        is_filtered_dot = (len(active_filters_dot) < 5)
+        
+    if is_filtered_dot:
         dynamic_css += f"""
         [data-testid="stSidebar"] div[data-testid="element-container"]:has(.qck-btn-marker) + div[data-testid="element-container"] button {{ overflow: visible !important; }}
         [data-testid="stSidebar"] div[data-testid="element-container"]:has(.qck-btn-marker) + div[data-testid="element-container"] button::after {{
@@ -593,11 +668,13 @@ with st.sidebar:
             st.markdown("</div>", unsafe_allow_html=True)
             
         elif active_panel == 'alarm':
-            st.markdown("<h3 style='margin-top:0; font-size:1.1rem; color:#fff;'>ALARM CENTER</h3>", unsafe_allow_html=True)
             region_options = ["All Regions", "Fatmawati", "Cipedak", "Pinang/Kalijati", "Lenteng Agung", "Cinere", "Senopati"]
-            selected_region_alarm = st.selectbox("Target Alarm Region:", region_options)
+            st.markdown("<p style='color:#6B7280; font-size:0.65rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin:15px 0 5px 2px;'>TARGET REGION</p>", unsafe_allow_html=True)
+            selected_region_alarm = st.selectbox("Target Alarm Region:", region_options, label_visibility="collapsed")
+            
             btn_disabled = st.session_state.get('data_final', pd.DataFrame()).empty
-            st.markdown('<div class="alarm-btn">', unsafe_allow_html=True)
+            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+            st.markdown('<div class="alarm-cta">', unsafe_allow_html=True)
             if st.button("SEND ALARM", use_container_width=True, disabled=btn_disabled):
                 df_problems = st.session_state['data_final'][st.session_state['data_final']['Category'].isin(['LOS', 'BadRx'])]
                 if df_problems.empty:
@@ -617,105 +694,186 @@ with st.sidebar:
                         st.info("No new alarms to send (or already sent).")
             st.markdown('</div>', unsafe_allow_html=True)
             
-            # Mini Log Alarm
-            st.markdown("<h4 style='font-size:0.85rem; color:#8B949E; margin-top:20px;'>Recent Sent Alarms</h4>", unsafe_allow_html=True)
+            # Mini Log Alarm (Figma spec: modern badge/cards list)
+            st.markdown("<p style='color:#6B7280; font-size:0.65rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin:25px 0 12px 2px;'>RECENT ALARMS</p>", unsafe_allow_html=True)
             df_log = get_all_alarm_history().head(3)
             if not df_log.empty:
                 for _, log in df_log.iterrows():
-                    st.markdown(f"<div style='background:rgba(255,255,255,0.02); padding:8px; border-radius:6px; margin-bottom:5px; font-size:0.75rem;'><b style='color:#F43F5E'>{log.get('Category', log.get('category','ALARM'))}</b> - {log.get('Serial Number', log.get('sn',''))} <br><span style='color:#8B949E'>{log.get('Waktu Alarm Dikirim', log.get('timestamp',''))}</span></div>", unsafe_allow_html=True)
+                    cat = str(log.get('Category', log.get('category','ALARM'))).upper()
+                    sn = log.get('Serial Number', log.get('sn',''))
+                    ts = log.get('Waktu Alarm Dikirim', log.get('timestamp',''))
+                    
+                    try:
+                        t_str = ts.split(" ")[1][:5] if " " in str(ts) else str(ts)[:5]
+                    except:
+                        t_str = "08:00"
+                        
+                    sev = "HIGH" if cat in ['LOS', 'OFFLINE'] else ("MED" if cat in ['BADRX', 'WARNING'] else "LOW")
+                    sev_color = "#F43F5E" if sev == "HIGH" else ("#F59E0B" if sev == "MED" else "#3B82F6")
+                    sev_bg = "rgba(244,63,94,0.15)" if sev == "HIGH" else ("rgba(245,158,11,0.15)" if sev == "MED" else "rgba(59,130,246,0.15)")
+                    
+                    st.markdown(f"""
+                    <div style='display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:10px; border-radius:10px; margin-bottom:8px;'>
+                        <span style='background:{sev_bg}; color:{sev_color}; font-size:0.65rem; font-weight:700; padding:3px 8px; border-radius:6px; min-width:42px; text-align:center;'>{sev}</span>
+                        <span style='color:#E5E7EB; font-size:0.8rem; font-weight:500; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{sn}</span>
+                        <span style='color:#6B7280; font-size:0.75rem;'>{t_str}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
             else:
-                st.markdown("<p style='font-size:0.75rem; color:#8B949E;'>No recent logs.</p>", unsafe_allow_html=True)
+                st.markdown("<p style='font-size:0.75rem; color:#6B7280; margin-left:2px;'>No recent logs.</p>", unsafe_allow_html=True)
                 
         elif active_panel == 'filters':
-            st.markdown("<h3 style='margin-top:0; font-size:1.1rem; color:#fff;'>DATA FILTERS</h3>", unsafe_allow_html=True)
+            st.markdown("<p style='color:#6B7280; font-size:0.65rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin:15px 0 5px 2px;'>SELECT REGION</p>", unsafe_allow_html=True)
             data_final = st.session_state.get('data_final', pd.DataFrame())
             if not data_final.empty:
                 from components.telegram import get_region_from_olt
                 regions = sorted(list(set(data_final['OLT'].apply(get_region_from_olt))))
                 olt_options = ["All OLT"] + regions
-                selected_olt = st.selectbox("Select Region:", options=olt_options, index=olt_options.index(st.session_state.get('selected_olt', 'All OLT')))
+                selected_olt = st.selectbox("Select Region:", options=olt_options, index=olt_options.index(st.session_state.get('selected_olt', 'All OLT')), label_visibility="collapsed")
                 st.session_state['selected_olt'] = selected_olt
             else:
-                st.selectbox("Select Region:", options=["Waiting for Scan..."], disabled=True)
+                st.selectbox("Select Region:", options=["Waiting for Scan..."], disabled=True, label_visibility="collapsed")
             
-            s_term = st.text_input("Search SN / Name:", value=st.session_state.get('search_sn_sidebar', ''))
+            st.markdown("<p style='color:#6B7280; font-size:0.65rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin:20px 0 5px 2px;'>SEARCH SN / NAME</p>", unsafe_allow_html=True)
+            s_term = st.text_input("Search SN / Name:", value=st.session_state.get('search_sn_sidebar', ''), label_visibility="collapsed", placeholder="Search...")
             st.session_state['search_sn_sidebar'] = s_term
             
             if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'):
+                st.markdown("<div style='height:15px;'></div>", unsafe_allow_html=True)
                 if st.button("Clear Filters", use_container_width=True):
                     st.session_state['selected_olt'] = 'All OLT'
                     st.session_state['search_sn_sidebar'] = ''
                     st.rerun()
                     
         elif active_panel == 'quick':
-            current_mode = st.session_state.get('filter_mode', 'All')
+            active_filters = st.session_state.get('filter_mode', {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'})
+            if isinstance(active_filters, str):
+                if active_filters == 'All':
+                    active_filters = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
+                else:
+                    active_filters = {active_filters}
+                st.session_state['filter_mode'] = active_filters
 
-            # Color palette per filter
             filter_config = {
-                "All":       {"color": "#00F0FF", "bg": "rgba(0,240,255,0.08)",   "icon": "●", "label": "ALL"},
-                "Online":    {"color": "#10B981", "bg": "rgba(16,185,129,0.08)",  "icon": "●", "label": "ONLINE"},
-                "LOS":       {"color": "#F43F5E", "bg": "rgba(244,63,94,0.08)",   "icon": "●", "label": "LOS"},
-                "BadRx":     {"color": "#F59E0B", "bg": "rgba(245,158,11,0.08)",  "icon": "●", "label": "BAD RX"},
-                "Dyinggasp": {"color": "#A855F7", "bg": "rgba(168,85,247,0.08)",  "icon": "●", "label": "DYING GASP"},
-                "Suspend":   {"color": "#64748B", "bg": "rgba(100,116,139,0.08)", "icon": "●", "label": "SUSPEND"},
+                "Online":    {"color": "#10B981", "icon_bg": "rgba(16,185,129,0.08)",  "fa_icon": "\uf0ac", "label": "Online"},
+                "LOS":       {"color": "#F43F5E", "icon_bg": "rgba(244,63,94,0.08)",   "fa_icon": "\uf00d", "label": "Offline"},
+                "BadRx":     {"color": "#F59E0B", "icon_bg": "rgba(245,158,11,0.08)",  "fa_icon": "\uf071", "label": "Warning"},
+                "Dyinggasp": {"color": "#A855F7", "icon_bg": "rgba(168,85,247,0.08)",  "fa_icon": "\uf1e6", "label": "Power"},
+                "Suspend":   {"color": "#64748B", "icon_bg": "rgba(100,116,139,0.08)", "fa_icon": "\uf023", "label": "Locked"},
             }
 
-            # Build HTML chips
-            chips_html = "<div style='padding: 60px 12px 16px; display:flex; flex-direction:column; gap:8px;'>"
-            chips_html += "<p style='color:#6B7280; font-size:0.65rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin:0 0 10px 2px;'>QUICK FILTERS</p>"
-            for mode, cfg in filter_config.items():
-                is_active = (current_mode == mode)
-                bg      = cfg["color"] + "22" if is_active else "rgba(255,255,255,0.03)"
-                border  = f"1.5px solid {cfg['color']}" if is_active else "1px solid rgba(255,255,255,0.07)"
-                dot_col = cfg["color"] if is_active else "rgba(255,255,255,0.15)"
-                txt_col = cfg["color"] if is_active else "#9CA3AF"
-                check   = "✓" if is_active else ""
-                chips_html += f"""
-                <div style='
-                    display:flex; align-items:center; gap:10px;
-                    background:{bg}; border:{border};
-                    border-radius:10px; padding:9px 14px;
-                    cursor:pointer; transition:all 0.2s;
-                '>
-                    <span style='color:{dot_col}; font-size:0.6rem; flex-shrink:0;'>●</span>
-                    <span style='color:{txt_col}; font-size:0.8rem; font-weight:600; letter-spacing:0.5px; flex:1;'>{cfg["label"]}</span>
-                    <span style='color:{cfg["color"]}; font-size:0.75rem; font-weight:700;'>{check}</span>
-                </div>"""
-            chips_html += "</div>"
-            st.markdown(chips_html, unsafe_allow_html=True)
+            has_all = len(active_filters) == 5
+            lnk_label = "Clear all" if has_all else "Select all"
 
-            # Hidden buttons for interactivity — zero height, invisible
+            col_lbl, col_lnk = st.columns([3, 2])
+            with col_lbl:
+                st.markdown("<p style='color:#6B7280; font-size:0.65rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin:15px 0 0 2px;'>STATUS FILTERS</p>", unsafe_allow_html=True)
+            with col_lnk:
+                st.markdown("<div class='link-btn-wrapper' style='text-align:right; margin-top:10px;'>", unsafe_allow_html=True)
+                if st.button(lnk_label, key="qf_clear_all", use_container_width=False):
+                    if has_all:
+                        st.session_state['filter_mode'] = set()
+                    else:
+                        st.session_state['filter_mode'] = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
+                    st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
+
+            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+
+            # Style the chips and the overlay buttons
             st.markdown("""
             <style>
-            div[data-key="qf_All"],div[data-key="qf_Online"],div[data-key="qf_LOS"],
-            div[data-key="qf_BadRx"],div[data-key="qf_Dyinggasp"],div[data-key="qf_Suspend"] {
-                position:absolute; top:0; left:0; width:100%; opacity:0;
-                pointer-events:none; height:0; overflow:hidden;
+            div[data-testid="element-container"]:has(.qck-chip-marker) {
+                margin-bottom: -54px !important;
+                position: relative !important;
+                z-index: 1 !important;
             }
-            </style>""", unsafe_allow_html=True)
+            div[data-testid="element-container"]:has(.qck-chip-marker) + div[data-testid="element-container"] {
+                position: relative !important;
+                z-index: 2 !important;
+            }
+            div[data-testid="element-container"]:has(.qck-chip-marker) + div[data-testid="element-container"] button {
+                height: 54px !important;
+                background: transparent !important;
+                border: none !important;
+                color: transparent !important;
+                box-shadow: none !important;
+                opacity: 0 !important;
+                cursor: pointer !important;
+                width: 100% !important;
+            }
+            </style>
+            """, unsafe_allow_html=True)
 
-            # Overlay real clickable buttons on top of HTML chips via absolute rows
-            qck_btn_css = """
-            <style>
-            .qck-overlay-row { position: relative; margin-bottom: 8px; }
-            .qck-overlay-row > div[data-testid="element-container"] { position:absolute; inset:0; opacity:0; }
-            .qck-overlay-row button { width:100% !important; height:52px !important; cursor:pointer !important; }
-            </style>"""
-            st.markdown(qck_btn_css, unsafe_allow_html=True)
+            for mode, cfg in filter_config.items():
+                is_active = (mode in active_filters)
+                bg      = cfg["color"] + "15" if is_active else "rgba(255,255,255,0.03)"
+                border  = f"1px solid {cfg['color']}" if is_active else "1px solid rgba(255,255,255,0.06)"
+                txt_col = "#E5E7EB" if is_active else "#9CA3AF"
+                chk_bg = cfg["color"] if is_active else "rgba(255,255,255,0.1)"
+                chk_char = "✓" if is_active else ""
+                chk_col = "#FFFFFF" if is_active else "transparent"
+                
+                st.markdown(f"""
+                <div class="qck-chip-marker"></div>
+                <div style='
+                    display:flex; align-items:center; gap:12px;
+                    background:{bg}; border:{border};
+                    border-radius:12px; padding:10px 14px;
+                    cursor:pointer; transition:all 0.2s;
+                    box-sizing: border-box;
+                    height: 54px;
+                    margin-bottom: 8px;
+                '>
+                    <div style='
+                        display:flex; align-items:center; justify-content:center;
+                        width:32px; height:32px;
+                        background:{cfg["icon_bg"]}; border-radius:8px;
+                        color:{cfg["color"]}; font-size:1.1rem;
+                        font-family:"Font Awesome 6 Free", "FontAwesome"; font-weight:900;
+                    '>
+                        {cfg["fa_icon"]}
+                    </div>
+                    <span style='color:{txt_col}; font-size:0.9rem; font-weight:600; flex:1;'>{cfg["label"]}</span>
+                    <div style='
+                        width:18px; height:18px; border-radius:50%;
+                        background:{chk_bg}; display:flex; align-items:center;
+                        justify-content:center; color:{chk_col}; font-size:0.6rem; font-weight:bold;
+                    '>
+                        {chk_char}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
 
-            for f, cfg in filter_config.items():
-                if st.button(cfg["label"], key=f"qf_{f}", use_container_width=True):
-                    st.session_state['filter_mode'] = f if current_mode != f else 'All'
+                if st.button(f"toggle_{mode}", key=f"qf_toggle_{mode}", use_container_width=True):
+                    if mode in active_filters:
+                        active_filters.remove(mode)
+                    else:
+                        active_filters.add(mode)
+                    st.session_state['filter_mode'] = active_filters
                     st.rerun()
 
-# --- FILTER DATA FOR DISPLAY ---
+            st.markdown(f"""
+            <div style='padding: 10px 4px; font-size:0.75rem; color:#6B7280; font-weight:500;'>
+                {len(active_filters)} of 5 active
+            </div>
+            """, unsafe_allow_html=True)
+
 # --- FILTER DATA FOR DISPLAY ---
 df_raw = st.session_state['data_final']
 df_filtered = df_raw.copy()
 
 if not df_raw.empty:
-    if st.session_state.get('filter_mode', 'All') != "All":
-        df_filtered = df_filtered[df_filtered['Category'] == st.session_state.get('filter_mode', 'All')]
+    active_filters = st.session_state.get('filter_mode', {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'})
+    if isinstance(active_filters, str):
+        if active_filters == 'All':
+            active_filters = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
+        else:
+            active_filters = {active_filters}
+        st.session_state['filter_mode'] = active_filters
+    
+    if len(active_filters) < 5:
+        df_filtered = df_filtered[df_filtered['Category'].isin(active_filters)]
     if st.session_state.get('selected_olt', 'All OLT') != "All OLT":
         from components.telegram import get_region_from_olt
         df_filtered = df_filtered[df_filtered['OLT'].apply(get_region_from_olt) == st.session_state.get('selected_olt')]
