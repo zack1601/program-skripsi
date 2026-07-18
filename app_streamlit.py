@@ -648,53 +648,63 @@ with st.sidebar:
                     st.rerun()
                     
         elif active_panel == 'quick':
-            st.markdown("<h3 style='margin-top:0; font-size:1.1rem; color:#fff;'>QUICK FILTERS</h3>", unsafe_allow_html=True)
-            if st.button("✕", key="panel_close_qck"):
-                st.session_state['active_panel'] = None
-                st.rerun()
-                
-            st.markdown("<p style='color:#9CA3AF; font-size:0.85rem; margin-bottom:15px; margin-top:20px;'>QUICK FILTERS</p>", unsafe_allow_html=True)
-            
-            filters = ["All", "Online", "LOS", "BadRx", "Dyinggasp", "Suspend"]
             current_mode = st.session_state.get('filter_mode', 'All')
-            
-            # Inject structural CSS to style all filter buttons
-            qck_css = """
-            [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-of-type(n+4) button {
-                justify-content: flex-start !important;
-                text-align: left !important;
-                background: transparent !important;
-                border: 1px solid rgba(255,255,255,0.1) !important;
-                border-radius: 8px !important;
-                margin-bottom: 8px !important;
-                transition: all 0.2s !important;
-                height: 42px !important;
-                color: #9CA3AF !important;
+
+            # Color palette per filter
+            filter_config = {
+                "All":       {"color": "#00F0FF", "bg": "rgba(0,240,255,0.08)",   "icon": "●", "label": "ALL"},
+                "Online":    {"color": "#10B981", "bg": "rgba(16,185,129,0.08)",  "icon": "●", "label": "ONLINE"},
+                "LOS":       {"color": "#F43F5E", "bg": "rgba(244,63,94,0.08)",   "icon": "●", "label": "LOS"},
+                "BadRx":     {"color": "#F59E0B", "bg": "rgba(245,158,11,0.08)",  "icon": "●", "label": "BAD RX"},
+                "Dyinggasp": {"color": "#A855F7", "bg": "rgba(168,85,247,0.08)",  "icon": "●", "label": "DYING GASP"},
+                "Suspend":   {"color": "#64748B", "bg": "rgba(100,116,139,0.08)", "icon": "●", "label": "SUSPEND"},
             }
-            [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-of-type(n+4) button:hover {
-                background: rgba(255,255,255,0.05) !important;
-                color: #E5E7EB !important;
+
+            # Build HTML chips
+            chips_html = "<div style='padding: 60px 12px 16px; display:flex; flex-direction:column; gap:8px;'>"
+            chips_html += "<p style='color:#6B7280; font-size:0.65rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin:0 0 10px 2px;'>QUICK FILTERS</p>"
+            for mode, cfg in filter_config.items():
+                is_active = (current_mode == mode)
+                bg      = cfg["color"] + "22" if is_active else "rgba(255,255,255,0.03)"
+                border  = f"1.5px solid {cfg['color']}" if is_active else "1px solid rgba(255,255,255,0.07)"
+                dot_col = cfg["color"] if is_active else "rgba(255,255,255,0.15)"
+                txt_col = cfg["color"] if is_active else "#9CA3AF"
+                check   = "✓" if is_active else ""
+                chips_html += f"""
+                <div style='
+                    display:flex; align-items:center; gap:10px;
+                    background:{bg}; border:{border};
+                    border-radius:10px; padding:9px 14px;
+                    cursor:pointer; transition:all 0.2s;
+                '>
+                    <span style='color:{dot_col}; font-size:0.6rem; flex-shrink:0;'>●</span>
+                    <span style='color:{txt_col}; font-size:0.8rem; font-weight:600; letter-spacing:0.5px; flex:1;'>{cfg["label"]}</span>
+                    <span style='color:{cfg["color"]}; font-size:0.75rem; font-weight:700;'>{check}</span>
+                </div>"""
+            chips_html += "</div>"
+            st.markdown(chips_html, unsafe_allow_html=True)
+
+            # Hidden buttons for interactivity — zero height, invisible
+            st.markdown("""
+            <style>
+            div[data-key="qf_All"],div[data-key="qf_Online"],div[data-key="qf_LOS"],
+            div[data-key="qf_BadRx"],div[data-key="qf_Dyinggasp"],div[data-key="qf_Suspend"] {
+                position:absolute; top:0; left:0; width:100%; opacity:0;
+                pointer-events:none; height:0; overflow:hidden;
             }
-            """
-            
-            # Dynamic active style
-            for i, mode in enumerate(filters):
-                if current_mode == mode:
-                    color = {"All": "#00F0FF", "Online": "#10B981", "LOS": "#F43F5E", "BadRx": "#F59E0B", "Dyinggasp": "#A855F7", "Suspend": "#64748B"}.get(mode, "#fff")
-                    qck_css += f"""
-                    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-of-type({4+i}) button {{
-                        border-color: {color} !important;
-                        color: {color} !important;
-                        background: {color}1a !important; /* 10% opacity */
-                    }}
-                    """
-                    
-            st.markdown(f"<style>{qck_css}</style>", unsafe_allow_html=True)
-            
-            # Render the buttons sequentially without wrappers
-            for f in filters:
-                check = "✓ " if current_mode == f else "  "
-                if st.button(f"{check} {f.upper()}", key=f"qf_{f}", use_container_width=True):
+            </style>""", unsafe_allow_html=True)
+
+            # Overlay real clickable buttons on top of HTML chips via absolute rows
+            qck_btn_css = """
+            <style>
+            .qck-overlay-row { position: relative; margin-bottom: 8px; }
+            .qck-overlay-row > div[data-testid="element-container"] { position:absolute; inset:0; opacity:0; }
+            .qck-overlay-row button { width:100% !important; height:52px !important; cursor:pointer !important; }
+            </style>"""
+            st.markdown(qck_btn_css, unsafe_allow_html=True)
+
+            for f, cfg in filter_config.items():
+                if st.button(cfg["label"], key=f"qf_{f}", use_container_width=True):
                     st.session_state['filter_mode'] = f if current_mode != f else 'All'
                     st.rerun()
 
