@@ -748,135 +748,132 @@ with st.sidebar:
         elif active_panel == 'quick':
             active_filters = st.session_state.get('filter_mode', {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'})
             if isinstance(active_filters, str):
-                if active_filters == 'All':
-                    active_filters = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
-                else:
-                    active_filters = {active_filters}
+                active_filters = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'} if active_filters == 'All' else {active_filters}
                 st.session_state['filter_mode'] = active_filters
 
             filter_config = {
-                "Online":    {"color": "#10B981", "icon_bg": "rgba(16,185,129,0.08)",  "fa_icon": "\uf0ac", "label": "Online"},
-                "LOS":       {"color": "#F43F5E", "icon_bg": "rgba(244,63,94,0.08)",   "fa_icon": "\uf00d", "label": "Offline"},
-                "BadRx":     {"color": "#F59E0B", "icon_bg": "rgba(245,158,11,0.08)",  "fa_icon": "\uf071", "label": "Warning"},
-                "Dyinggasp": {"color": "#A855F7", "icon_bg": "rgba(168,85,247,0.08)",  "fa_icon": "\uf1e6", "label": "Power"},
-                "Suspend":   {"color": "#64748B", "icon_bg": "rgba(100,116,139,0.08)", "fa_icon": "\uf023", "label": "Locked"},
+                "Online":    {"color": "#10B981", "icon_bg": "rgba(16,185,129,0.14)",  "fa_code": "\\f0ac",  "label": "Online"},
+                "LOS":       {"color": "#F43F5E", "icon_bg": "rgba(244,63,94,0.14)",   "fa_code": "\\f00d",  "label": "Offline"},
+                "BadRx":     {"color": "#F59E0B", "icon_bg": "rgba(245,158,11,0.14)",  "fa_code": "\\f071",  "label": "Warning"},
+                "Dyinggasp": {"color": "#A855F7", "icon_bg": "rgba(168,85,247,0.14)",  "fa_code": "\\f1e6",  "label": "Power"},
+                "Suspend":   {"color": "#64748B", "icon_bg": "rgba(100,116,139,0.14)", "fa_code": "\\f023",  "label": "Locked"},
             }
 
             has_all = len(active_filters) == 5
-            lnk_label = "Clear all" if has_all else "Select all"
+            active_count = len(active_filters)
 
-            # Pure HTML header row – avoids nested st.columns() which is banned in sidebar
-            st.markdown(f"""
-            <style>
-            div[data-testid="element-container"]:has(.qck-hdr-marker) + div[data-testid="element-container"] button {{
-                background: transparent !important;
-                border: none !important;
-                color: #3B82F6 !important;
-                font-size: 0.72rem !important;
-                font-weight: 600 !important;
-                padding: 0 !important;
-                height: auto !important;
-                min-height: 0 !important;
-                box-shadow: none !important;
-                float: right !important;
-                margin-top: -24px !important;
-            }}
-            div[data-testid="element-container"]:has(.qck-hdr-marker) + div[data-testid="element-container"] button:hover {{
-                color: #60A5FA !important;
-                text-decoration: underline !important;
-            }}
-            </style>
-            <div class='qck-hdr-marker'></div>
-            <p style='color:#6B7280; font-size:0.65rem; font-weight:700; letter-spacing:2px;
-                text-transform:uppercase; margin:15px 0 8px 2px;'>STATUS FILTERS</p>
-            """, unsafe_allow_html=True)
-            if st.button(lnk_label, key="qf_clear_all", use_container_width=False):
-                if has_all:
-                    st.session_state['filter_mode'] = set()
-                else:
-                    st.session_state['filter_mode'] = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
-                st.rerun()
-
-            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-
-            # Style the chips and the overlay buttons
+            # Header label
             st.markdown("""
-            <style>
-            div[data-testid="element-container"]:has(.qck-chip-marker) {
-                margin-bottom: -54px !important;
-                position: relative !important;
-                z-index: 1 !important;
-            }
-            div[data-testid="element-container"]:has(.qck-chip-marker) + div[data-testid="element-container"] {
-                position: relative !important;
-                z-index: 2 !important;
-            }
-            div[data-testid="element-container"]:has(.qck-chip-marker) + div[data-testid="element-container"] button {
-                height: 54px !important;
-                background: transparent !important;
-                border: none !important;
-                color: transparent !important;
-                box-shadow: none !important;
-                opacity: 0 !important;
-                cursor: pointer !important;
-                width: 100% !important;
-            }
-            </style>
+            <p style='color:#6B7280; font-size:0.65rem; font-weight:700; letter-spacing:2px;
+                text-transform:uppercase; margin:15px 0 14px 2px;'>STATUS FILTERS</p>
             """, unsafe_allow_html=True)
 
+            # Build per-button CSS using marker+adjacent sibling selector pattern
+            css = "<style>"
             for mode, cfg in filter_config.items():
                 is_active = (mode in active_filters)
-                bg      = cfg["color"] + "15" if is_active else "rgba(255,255,255,0.03)"
+                bg      = f"{cfg['color']}18" if is_active else "rgba(255,255,255,0.03)"
                 border  = f"1px solid {cfg['color']}" if is_active else "1px solid rgba(255,255,255,0.06)"
                 txt_col = "#E5E7EB" if is_active else "#9CA3AF"
-                chk_bg = cfg["color"] if is_active else "rgba(255,255,255,0.1)"
-                chk_char = "✓" if is_active else ""
-                chk_col = "#FFFFFF" if is_active else "transparent"
-                
-                st.markdown(f"""
-                <div class="qck-chip-marker"></div>
-                <div style='
-                    display:flex; align-items:center; gap:12px;
-                    background:{bg}; border:{border};
-                    border-radius:12px; padding:10px 14px;
-                    cursor:pointer; transition:all 0.2s;
-                    box-sizing: border-box;
-                    height: 54px;
-                    margin-bottom: 8px;
-                '>
-                    <div style='
-                        display:flex; align-items:center; justify-content:center;
-                        width:32px; height:32px;
-                        background:{cfg["icon_bg"]}; border-radius:8px;
-                        color:{cfg["color"]}; font-size:1.1rem;
-                        font-family:"Font Awesome 6 Free", "FontAwesome"; font-weight:900;
-                    '>
-                        {cfg["fa_icon"]}
-                    </div>
-                    <span style='color:{txt_col}; font-size:0.9rem; font-weight:600; flex:1;'>{cfg["label"]}</span>
-                    <div style='
-                        width:18px; height:18px; border-radius:50%;
-                        background:{chk_bg}; display:flex; align-items:center;
-                        justify-content:center; color:{chk_col}; font-size:0.6rem; font-weight:bold;
-                    '>
-                        {chk_char}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+                chk_bg  = cfg['color'] if is_active else "rgba(255,255,255,0.10)"
+                chk_ch  = "\\2713" if is_active else " "   # CSS hex for ✓
+                chk_col = "#fff" if is_active else "transparent"
+                m       = f"qck-m-{mode.lower()}"
 
-                if st.button(f"toggle_{mode}", key=f"qf_toggle_{mode}", use_container_width=True):
+                css += f"""
+                div[data-testid="element-container"]:has(.{m}) + div[data-testid="element-container"] button {{
+                    background: {bg} !important;
+                    border: {border} !important;
+                    border-radius: 12px !important;
+                    height: 54px !important;
+                    width: 100% !important;
+                    padding: 0 14px !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: flex-start !important;
+                    gap: 10px !important;
+                    cursor: pointer !important;
+                    transition: all 0.2s !important;
+                    margin-bottom: 0 !important;
+                }}
+                div[data-testid="element-container"]:has(.{m}) + div[data-testid="element-container"] button::before {{
+                    content: "{cfg['fa_code']}";
+                    font-family: "Font Awesome 6 Free", "FontAwesome";
+                    font-weight: 900;
+                    background: {cfg['icon_bg']};
+                    color: {cfg['color']};
+                    min-width: 32px; width: 32px; height: 32px;
+                    border-radius: 8px;
+                    display: inline-flex;
+                    align-items: center; justify-content: center;
+                    font-size: 0.85rem;
+                    flex-shrink: 0;
+                }}
+                div[data-testid="element-container"]:has(.{m}) + div[data-testid="element-container"] button p {{
+                    flex: 1 !important;
+                    text-align: left !important;
+                    color: {txt_col} !important;
+                    font-size: 0.9rem !important;
+                    font-weight: 600 !important;
+                    margin: 0 !important;
+                }}
+                div[data-testid="element-container"]:has(.{m}) + div[data-testid="element-container"] button::after {{
+                    content: "{chk_ch}";
+                    background: {chk_bg};
+                    color: {chk_col};
+                    min-width: 20px; width: 20px; height: 20px;
+                    border-radius: 50%;
+                    display: inline-flex;
+                    align-items: center; justify-content: center;
+                    font-size: 0.6rem; font-weight: 800;
+                    margin-left: auto;
+                    flex-shrink: 0;
+                }}
+                div[data-testid="element-container"]:has(.{m}) {{
+                    margin-bottom: 8px !important;
+                }}
+                """
+            css += "</style>"
+            st.markdown(css, unsafe_allow_html=True)
+
+            # Render each chip as a real button (label-only, icon/check via CSS ::before/::after)
+            for mode, cfg in filter_config.items():
+                m = f"qck-m-{mode.lower()}"
+                st.markdown(f"<div class='{m}'></div>", unsafe_allow_html=True)
+                if st.button(cfg["label"], key=f"qf_toggle_{mode}", use_container_width=True):
                     if mode in active_filters:
-                        active_filters.remove(mode)
+                        active_filters.discard(mode)
                     else:
                         active_filters.add(mode)
                     st.session_state['filter_mode'] = active_filters
                     st.rerun()
 
+            # Footer: count + clear/select all link
+            lnk_label = "Clear all" if has_all else "Select all"
             st.markdown(f"""
-            <div style='padding: 10px 4px; font-size:0.75rem; color:#6B7280; font-weight:500;'>
-                {len(active_filters)} of 5 active
+            <style>
+            div[data-testid="element-container"]:has(.qck-footer-marker) + div[data-testid="element-container"] button {{
+                background: transparent !important; border: none !important;
+                color: #3B82F6 !important; font-size: 0.72rem !important;
+                font-weight: 600 !important; padding: 0 !important;
+                height: auto !important; min-height: 0 !important;
+                box-shadow: none !important; cursor: pointer !important;
+            }}
+            div[data-testid="element-container"]:has(.qck-footer-marker) + div[data-testid="element-container"] button:hover {{
+                color: #60A5FA !important; text-decoration: underline !important;
+            }}
+            div[data-testid="element-container"]:has(.qck-footer-marker) + div[data-testid="element-container"] button p {{
+                color: inherit !important; font-size: inherit !important;
+            }}
+            </style>
+            <div style='display:flex; align-items:center; justify-content:space-between; margin-top:12px;'>
+                <span style='font-size:0.75rem; color:#6B7280; font-weight:500;'>{active_count} of 5 active</span>
             </div>
+            <div class='qck-footer-marker'></div>
             """, unsafe_allow_html=True)
+            if st.button(lnk_label, key="qf_clear_all", use_container_width=False):
+                st.session_state['filter_mode'] = set() if has_all else {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
+                st.rerun()
 
 # --- FILTER DATA FOR DISPLAY ---
 df_raw = st.session_state['data_final']
