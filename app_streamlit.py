@@ -765,18 +765,37 @@ with st.sidebar:
             has_all = len(active_filters) == 5
             lnk_label = "Clear all" if has_all else "Select all"
 
-            col_lbl, col_lnk = st.columns([3, 2])
-            with col_lbl:
-                st.markdown("<p style='color:#6B7280; font-size:0.65rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin:15px 0 0 2px;'>STATUS FILTERS</p>", unsafe_allow_html=True)
-            with col_lnk:
-                st.markdown("<div class='link-btn-wrapper' style='text-align:right; margin-top:10px;'>", unsafe_allow_html=True)
-                if st.button(lnk_label, key="qf_clear_all", use_container_width=False):
-                    if has_all:
-                        st.session_state['filter_mode'] = set()
-                    else:
-                        st.session_state['filter_mode'] = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
-                    st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
+            # Pure HTML header row – avoids nested st.columns() which is banned in sidebar
+            st.markdown(f"""
+            <style>
+            div[data-testid="element-container"]:has(.qck-hdr-marker) + div[data-testid="element-container"] button {{
+                background: transparent !important;
+                border: none !important;
+                color: #3B82F6 !important;
+                font-size: 0.72rem !important;
+                font-weight: 600 !important;
+                padding: 0 !important;
+                height: auto !important;
+                min-height: 0 !important;
+                box-shadow: none !important;
+                float: right !important;
+                margin-top: -24px !important;
+            }}
+            div[data-testid="element-container"]:has(.qck-hdr-marker) + div[data-testid="element-container"] button:hover {{
+                color: #60A5FA !important;
+                text-decoration: underline !important;
+            }}
+            </style>
+            <div class='qck-hdr-marker'></div>
+            <p style='color:#6B7280; font-size:0.65rem; font-weight:700; letter-spacing:2px;
+                text-transform:uppercase; margin:15px 0 8px 2px;'>STATUS FILTERS</p>
+            """, unsafe_allow_html=True)
+            if st.button(lnk_label, key="qf_clear_all", use_container_width=False):
+                if has_all:
+                    st.session_state['filter_mode'] = set()
+                else:
+                    st.session_state['filter_mode'] = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
+                st.rerun()
 
             st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
