@@ -212,7 +212,7 @@ st.markdown(f"""
         margin: 0 !important;
         height: 100vh !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) {{
         min-width: 64px !important; max-width: 64px !important; flex: 0 0 64px !important;
         background-color: #0d0d12 !important;
         border-right: 1px solid rgba(255,255,255,0.06) !important;
@@ -221,7 +221,7 @@ st.markdown(f"""
         flex-direction: column !important;
         align-items: center !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(2) {{
         min-width: 256px !important; max-width: 256px !important; flex: 0 0 256px !important;
         background-color: #111118 !important;
         padding: 0 !important;
@@ -229,7 +229,7 @@ st.markdown(f"""
     }}
 
     /* ── RAIL ICON BUTTONS (Structural) ── */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) button {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) button {{
         width: 44px !important; height: 44px !important;
         border-radius: 14px !important;
         background: rgba(255,255,255,0.06) !important;
@@ -242,11 +242,10 @@ st.markdown(f"""
         margin: 0 auto 10px auto !important;
         position: relative !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) button:hover {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) button:hover {{
         background: rgba(255,255,255,0.10) !important;
-        color: #D1D5DB !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) button p {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) button p {{
         font-family: "Font Awesome 6 Free", "FontAwesome" !important;
         font-weight: 900 !important;
         font-size: 1.2rem !important;
@@ -255,20 +254,38 @@ st.markdown(f"""
         color: inherit !important;
     }}
 
+    /* Specific Inactive Icon Colors */
+    /* System (Index 3) - Amber */
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(3) button p {{
+        color: #F59E0B !important;
+    }}
+    /* Alarm (Index 4) - Red */
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(4) button p {{
+        color: #F43F5E !important;
+    }}
+    /* Filters (Index 5) - Cyan */
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(5) button p {{
+        color: #00F0FF !important;
+    }}
+    /* Quick (Index 6) - Purple */
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(6) button p {{
+        color: #A855F7 !important;
+    }}
+
     /* LOGO BUTTON: index 1 */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(1) button {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(1) button {{
         background: linear-gradient(135deg, #7C3AED, #4F46E5) !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(1) button p {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(1) button p {{
         color: #fff !important; font-size: 1.4rem !important;
     }}
 
     /* LOGOUT BUTTON: index 8 */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(8) button {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(8) button {{
         background: rgba(59, 130, 246, 0.15) !important;
         color: #3B82F6 !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(8) button:hover {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) div[data-testid="element-container"]:nth-of-type(8) button:hover {{
         background: rgba(59, 130, 246, 0.3) !important;
         color: #60A5FA !important;
     }}
