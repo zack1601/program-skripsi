@@ -422,13 +422,7 @@ with st.sidebar:
     rail_col, panel_col = st.columns([1, 4])
     
     with rail_col:
-        # LOGO (index 1)
-        st.markdown("<div class='logo-btn-marker'></div>", unsafe_allow_html=True)
-        if st.button("\uf0e8", key="rail_logo", help="NETWATCH OPS CENTER"):
-            st.session_state['active_panel'] = None
-            st.rerun()
-            
-        # Spacer (index 2)
+        # Spacer at top
         st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
         
         # SYSTEM (index 3)
@@ -725,7 +719,7 @@ if not st.session_state.get('is_scanning', False):
     st.markdown("""
     <div style='margin-bottom: 25px;'>
         <h1 style='color: #00F0FF; font-size: 2rem; font-weight: 800; margin-bottom: 5px; text-shadow: 0 0 10px rgba(0, 240, 255, 0.2);'>
-            🛡️ NETWATCH OPS CENTER
+            NETWATCH OPS CENTER
         </h1>
         <p style='color: #8B949E; font-size: 0.9rem; margin-top: 0px;'>
             Enterprise Cybersecurity Command Center | Integrated OLT Monitoring System
