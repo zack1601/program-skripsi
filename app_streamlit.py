@@ -256,19 +256,19 @@ st.markdown(f"""
     }}
 
     /* LOGO BUTTON: index 1 */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-child(1) button {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(1) button {{
         background: linear-gradient(135deg, #7C3AED, #4F46E5) !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-child(1) button p {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(1) button p {{
         color: #fff !important; font-size: 1.4rem !important;
     }}
 
     /* LOGOUT BUTTON: index 8 */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-child(8) button {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(8) button {{
         background: rgba(59, 130, 246, 0.15) !important;
         color: #3B82F6 !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-child(8) button:hover {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(8) button:hover {{
         background: rgba(59, 130, 246, 0.3) !important;
         color: #60A5FA !important;
     }}
@@ -290,7 +290,7 @@ st.markdown(f"""
     }}
     
     /* Close Button Hack */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-child(2) button {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-of-type(2) button {{
         position: absolute !important;
         top: 20px !important;
         right: 18px !important;
@@ -301,11 +301,11 @@ st.markdown(f"""
         padding: 0 !important;
         display: flex !important; align-items: center !important; justify-content: center !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-child(2) button p {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-of-type(2) button p {{
         font-size: 1rem !important; margin: 0 !important;
         color: inherit !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-child(2) button:hover {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-of-type(2) button:hover {{
         background: rgba(255,255,255,0.12) !important; color: #D1D5DB !important;
     }}
 
@@ -448,31 +448,31 @@ with st.sidebar:
     dynamic_css = ""
     if active_idx:
         dynamic_css += f"""
-        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child({active_idx}) button {{
+        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type({active_idx}) button {{
             background: #F59E0B !important; color: #1C1C1C !important;
         }}
-        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child({active_idx}) button p {{
+        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type({active_idx}) button p {{
             color: #1C1C1C !important;
         }}
         """
     if st.session_state.get('is_scanning', False):
         dynamic_css += f"""
-        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(3) button {{ overflow: visible !important; }}
-        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(3) button::after {{
+        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(3) button {{ overflow: visible !important; }}
+        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(3) button::after {{
             content: ''; position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; background-color: #00F0FF; border-radius: 50%; border: 2px solid #0d0d12; z-index: 10;
         }}
         """
     if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'):
         dynamic_css += f"""
-        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(5) button {{ overflow: visible !important; }}
-        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(5) button::after {{
+        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(5) button {{ overflow: visible !important; }}
+        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(5) button::after {{
             content: ''; position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; background-color: #F43F5E; border-radius: 50%; border: 2px solid #0d0d12; z-index: 10;
         }}
         """
     if st.session_state.get('filter_mode', 'All') != 'All':
         dynamic_css += f"""
-        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(6) button {{ overflow: visible !important; }}
-        [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) [data-testid="element-container"]:nth-child(6) button::after {{
+        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(6) button {{ overflow: visible !important; }}
+        [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) div[data-testid="element-container"]:nth-of-type(6) button::after {{
             content: ''; position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; background-color: #F43F5E; border-radius: 50%; border: 2px solid #0d0d12; z-index: 10;
         }}
         """
@@ -628,47 +628,54 @@ with st.sidebar:
                     
         elif active_panel == 'quick':
             st.markdown("<h3 style='margin-top:0; font-size:1.1rem; color:#fff;'>QUICK FILTERS</h3>", unsafe_allow_html=True)
+            if st.button("✕", key="panel_close_qck"):
+                st.session_state['active_panel'] = None
+                st.rerun()
+                
+            st.markdown("<p style='color:#9CA3AF; font-size:0.85rem; margin-bottom:15px; margin-top:20px;'>QUICK FILTERS</p>", unsafe_allow_html=True)
             
-            # Vertical Toggle List
-            st.markdown("""
-            <style>
-                .qck-list-btn button {
-                    justify-content: flex-start !important;
-                    text-align: left !important;
-                    background: transparent !important;
-                    border: 1px solid rgba(255,255,255,0.1) !important;
-                    border-radius: 8px !important;
-                    margin-bottom: 8px !important;
-                    transition: all 0.2s !important;
-                }
-                .qck-list-btn button:hover {
-                    background: rgba(255,255,255,0.05) !important;
-                }
-                .qck-active-Online button { border-color: #10B981 !important; color: #10B981 !important; background: rgba(16,185,129,0.1) !important; }
-                .qck-active-LOS button { border-color: #F43F5E !important; color: #F43F5E !important; background: rgba(244,63,94,0.1) !important; }
-                .qck-active-BadRx button { border-color: #F59E0B !important; color: #F59E0B !important; background: rgba(245,158,11,0.1) !important; }
-                .qck-active-Dyinggasp button { border-color: #A855F7 !important; color: #A855F7 !important; background: rgba(168,85,247,0.1) !important; }
-                .qck-active-Suspend button { border-color: #64748B !important; color: #64748B !important; background: rgba(100,116,139,0.1) !important; }
-            </style>
-            """, unsafe_allow_html=True)
-            
+            filters = ["All", "Online", "LOS", "BadRx", "Dyinggasp", "Suspend"]
             current_mode = st.session_state.get('filter_mode', 'All')
             
-            def make_qck_btn(label, mode):
-                is_active = (current_mode == mode)
-                check = "✓ " if is_active else "  "
-                cls_val = f"qck-list-btn qck-active-{mode}" if is_active else "qck-list-btn"
-                st.markdown(f"<div class='{cls_val}'>", unsafe_allow_html=True)
-                if st.button(f"{check} {label}", key=f"qf_{mode}", use_container_width=True):
-                    st.session_state['filter_mode'] = mode if not is_active else 'All'
+            # Inject structural CSS to style all filter buttons
+            qck_css = """
+            [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-of-type(n+4) button {
+                justify-content: flex-start !important;
+                text-align: left !important;
+                background: transparent !important;
+                border: 1px solid rgba(255,255,255,0.1) !important;
+                border-radius: 8px !important;
+                margin-bottom: 8px !important;
+                transition: all 0.2s !important;
+                height: 42px !important;
+                color: #9CA3AF !important;
+            }
+            [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-of-type(n+4) button:hover {
+                background: rgba(255,255,255,0.05) !important;
+                color: #E5E7EB !important;
+            }
+            """
+            
+            # Dynamic active style
+            for i, mode in enumerate(filters):
+                if current_mode == mode:
+                    color = {"All": "#00F0FF", "Online": "#10B981", "LOS": "#F43F5E", "BadRx": "#F59E0B", "Dyinggasp": "#A855F7", "Suspend": "#64748B"}.get(mode, "#fff")
+                    qck_css += f"""
+                    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-of-type({4+i}) button {{
+                        border-color: {color} !important;
+                        color: {color} !important;
+                        background: {color}1a !important; /* 10% opacity */
+                    }}
+                    """
+                    
+            st.markdown(f"<style>{qck_css}</style>", unsafe_allow_html=True)
+            
+            # Render the buttons sequentially without wrappers
+            for f in filters:
+                check = "✓ " if current_mode == f else "  "
+                if st.button(f"{check} {f.upper()}", key=f"qf_{f}", use_container_width=True):
+                    st.session_state['filter_mode'] = f if current_mode != f else 'All'
                     st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
-                
-            make_qck_btn("Online", "Online")
-            make_qck_btn("LOS", "LOS")
-            make_qck_btn("BadRx", "BadRx")
-            make_qck_btn("Dyinggasp", "Dyinggasp")
-            make_qck_btn("Suspend", "Suspend")
 
 # --- FILTER DATA FOR DISPLAY ---
 # --- FILTER DATA FOR DISPLAY ---
