@@ -662,7 +662,7 @@ with st.sidebar:
             is_running = st.session_state.get('is_scanning', False)
             if is_running:
                 st.markdown("<div class='stop-cta'>", unsafe_allow_html=True)
-                if st.button("⏹  STOP SCANNING", use_container_width=True):
+                if st.button("⏹  STOP SCANNING", use_container_width=True, key="sys_stop_scanning_btn"):
                     st.session_state['is_scanning'] = False
                     st.session_state['stop_scanning'] = True
                     if 'temp_results' in st.session_state and st.session_state['temp_results']:
@@ -677,7 +677,7 @@ with st.sidebar:
                 st.markdown("</div>", unsafe_allow_html=True)
             else:
                 st.markdown("<div class='scan-cta'>", unsafe_allow_html=True)
-                if st.button("START SCAN", use_container_width=True):
+                if st.button("START SCAN", use_container_width=True, key="sys_start_scan_btn"):
                     st.session_state['is_scanning'] = True
                     st.session_state['stop_scanning'] = False
                     st.session_state['temp_results'] = []
@@ -694,7 +694,7 @@ with st.sidebar:
             """, unsafe_allow_html=True)
             
             st.markdown("<div class='sync-btn'>", unsafe_allow_html=True)
-            if st.button("Sync Google Sheets", use_container_width=True):
+            if st.button("Sync Google Sheets", use_container_width=True, key="sys_sync_sheets_btn"):
 
                 with st.spinner("Fetching data from all Google Sheets tabs..."):
                     try:
@@ -738,12 +738,12 @@ with st.sidebar:
         elif active_panel == 'alarm':
             region_options = ["All Regions", "Fatmawati", "Cipedak", "Pinang/Kalijati", "Lenteng Agung", "Cinere", "Senopati"]
             st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:12px 0 5px 0;'>TARGET REGION</p>", unsafe_allow_html=True)
-            selected_region_alarm = st.selectbox("Target Alarm Region:", region_options, label_visibility="collapsed")
+            selected_region_alarm = st.selectbox("Target Alarm Region:", region_options, label_visibility="collapsed", key="alr_target_region_select")
             
             btn_disabled = st.session_state.get('data_final', pd.DataFrame()).empty
             st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
             st.markdown('<div class="alarm-cta">', unsafe_allow_html=True)
-            if st.button("SEND ALARM", use_container_width=True, disabled=btn_disabled):
+            if st.button("SEND ALARM", use_container_width=True, disabled=btn_disabled, key="alr_send_alarm_btn"):
                 df_problems = st.session_state['data_final'][st.session_state['data_final']['Category'].isin(['LOS', 'BadRx'])]
                 if df_problems.empty:
                     st.sidebar.info("System Healthy: No Alarms Needed")
@@ -805,18 +805,18 @@ with st.sidebar:
                 from components.telegram import get_region_from_olt
                 regions = sorted(list(set(data_final['OLT'].apply(get_region_from_olt))))
                 olt_options = ["All OLT"] + regions
-                selected_olt = st.selectbox("Select Region:", options=olt_options, index=olt_options.index(st.session_state.get('selected_olt', 'All OLT')), label_visibility="collapsed")
+                selected_olt = st.selectbox("Select Region:", options=olt_options, index=olt_options.index(st.session_state.get('selected_olt', 'All OLT')), label_visibility="collapsed", key="flt_region_select")
                 st.session_state['selected_olt'] = selected_olt
             else:
-                st.selectbox("Select Region:", options=["Waiting for Scan..."], disabled=True, label_visibility="collapsed")
+                st.selectbox("Select Region:", options=["Waiting for Scan..."], disabled=True, label_visibility="collapsed", key="flt_region_select_waiting")
             
             st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:20px 0 5px 0;'>SEARCH SN / NAME</p>", unsafe_allow_html=True)
-            s_term = st.text_input("Search SN / Name:", value=st.session_state.get('search_sn_sidebar', ''), label_visibility="collapsed", placeholder="🔍  Search...")
+            s_term = st.text_input("Search SN / Name:", value=st.session_state.get('search_sn_sidebar', ''), label_visibility="collapsed", placeholder="🔍  Search...", key="flt_search_input")
             st.session_state['search_sn_sidebar'] = s_term
             
             if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'):
                 st.markdown("<div style='height:15px;'></div>", unsafe_allow_html=True)
-                if st.button("Clear Filters", use_container_width=True):
+                if st.button("Clear Filters", use_container_width=True, key="flt_clear_filters_btn"):
                     st.session_state['selected_olt'] = 'All OLT'
                     st.session_state['search_sn_sidebar'] = ''
                     st.rerun()
