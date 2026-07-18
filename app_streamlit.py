@@ -212,7 +212,7 @@ st.markdown(f"""
         margin: 0 !important;
         height: 100vh !important;
     }}
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(1) {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(1) {{
         min-width: 64px !important; max-width: 64px !important; flex: 0 0 64px !important;
         background-color: #0d0d12 !important;
         border-right: 1px solid rgba(255,255,255,0.06) !important;
@@ -221,7 +221,7 @@ st.markdown(f"""
         flex-direction: column !important;
         align-items: center !important;
     }}
-    [data-testid="stSidebar"] [data-testid="column"]:nth-child(2) {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) {{
         min-width: 256px !important; max-width: 256px !important; flex: 0 0 256px !important;
         background-color: #111118 !important;
         padding: 0 !important;
@@ -290,7 +290,7 @@ st.markdown(f"""
     }}
     
     /* Close Button Hack */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-of-type(2) button {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:has(.panel-header) + div[data-testid="element-container"] button {{
         position: absolute !important;
         top: 20px !important;
         right: 18px !important;
@@ -300,12 +300,13 @@ st.markdown(f"""
         border: none !important; color: #6B7280 !important;
         padding: 0 !important;
         display: flex !important; align-items: center !important; justify-content: center !important;
+        z-index: 9999 !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-of-type(2) button p {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:has(.panel-header) + div[data-testid="element-container"] button p {{
         font-size: 1rem !important; margin: 0 !important;
         color: inherit !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:nth-of-type(2) button:hover {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="element-container"]:has(.panel-header) + div[data-testid="element-container"] button:hover {{
         background: rgba(255,255,255,0.12) !important; color: #D1D5DB !important;
     }}
 
@@ -694,6 +695,18 @@ if not df_raw.empty:
 
 # --- RENDER DASHBOARD (Hanya tampil jika TIDAK sedang proses scan) ---
 if not st.session_state.get('is_scanning', False):
+    # Brand Header
+    st.markdown("""
+    <div style='margin-bottom: 25px;'>
+        <h1 style='color: #00F0FF; font-size: 2rem; font-weight: 800; margin-bottom: 5px; text-shadow: 0 0 10px rgba(0, 240, 255, 0.2);'>
+            🛡️ NETWATCH OPS CENTER
+        </h1>
+        <p style='color: #8B949E; font-size: 0.9rem; margin-top: 0px;'>
+            Enterprise Cybersecurity Command Center | Integrated OLT Monitoring System
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
     # --- RENDER METRICS & RISK SCORE GAUGE (STICKY HEADER) ---
     render_metrics(df_filtered)
 
