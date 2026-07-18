@@ -239,6 +239,7 @@ st.markdown(f"""
         background-color: #11151C !important;
         padding: 0 !important;
         overflow-y: auto !important;
+        position: relative !important;
     }}
 
     /* ══════════════════════════════════════════════════
@@ -264,7 +265,7 @@ st.markdown(f"""
         border-color: rgba(255,255,255,0.10) !important;
         transform: scale(1.05) !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) button p {{
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) button * {{
         font-family: "Font Awesome 6 Free", "FontAwesome" !important;
         font-weight: 900 !important;
         font-size: 1.15rem !important;
@@ -275,45 +276,45 @@ st.markdown(f"""
 
     /* ── INDIVIDUAL RAIL ICON COLORS (Inactive default) ── */
     /* LOGO — Purple glowing satellite dish */
-    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.logo-btn-marker) + div[data-testid="element-container"] button {{
+    .st-key-rail_logo button {{
         background: linear-gradient(145deg, #7C3AED, #5B21B6) !important;
         border: none !important;
         box-shadow: 0 0 16px rgba(124, 58, 237, 0.45),
                     0 0 40px rgba(124, 58, 237, 0.15) !important;
     }}
-    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.logo-btn-marker) + div[data-testid="element-container"] button:hover {{
+    .st-key-rail_logo button:hover {{
         box-shadow: 0 0 22px rgba(124, 58, 237, 0.6),
                     0 0 50px rgba(124, 58, 237, 0.2) !important;
     }}
-    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.logo-btn-marker) + div[data-testid="element-container"] button p {{
+    .st-key-rail_logo button, .st-key-rail_logo button * {{
         color: #FFFFFF !important; font-size: 1.25rem !important;
     }}
 
     /* System — Red Lightning */
-    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.sys-btn-marker) + div[data-testid="element-container"] button p {{
+    .st-key-rail_sys button, .st-key-rail_sys button * {{
         color: #EF4444 !important;
     }}
     /* Alarm — Yellow Bell */
-    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.alr-btn-marker) + div[data-testid="element-container"] button p {{
+    .st-key-rail_alr button, .st-key-rail_alr button * {{
         color: #FBBF24 !important;
     }}
     /* Filters — Cyan Grid */
-    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.flt-btn-marker) + div[data-testid="element-container"] button p {{
+    .st-key-rail_flt button, .st-key-rail_flt button * {{
         color: #22D3EE !important;
     }}
     /* Quick — Purple Diamond */
-    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.qck-btn-marker) + div[data-testid="element-container"] button p {{
+    .st-key-rail_qck button, .st-key-rail_qck button * {{
         color: #A78BFA !important;
     }}
     /* Logout — Muted Blue */
-    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.out-btn-marker) + div[data-testid="element-container"] button {{
+    .st-key-rail_out button {{
         background: rgba(59, 130, 246, 0.08) !important;
         border-color: rgba(59, 130, 246, 0.12) !important;
     }}
-    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.out-btn-marker) + div[data-testid="element-container"] button p {{
+    .st-key-rail_out button, .st-key-rail_out button * {{
         color: #3B82F6 !important;
     }}
-    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.out-btn-marker) + div[data-testid="element-container"] button:hover {{
+    .st-key-rail_out button:hover {{
         background: rgba(59, 130, 246, 0.18) !important;
     }}
 
@@ -339,10 +340,13 @@ st.markdown(f"""
     }}
 
     /* Close Button — absolute top-right ✕ */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(2) div[data-testid="element-container"]:has(.panel-header) + div[data-testid="element-container"] button {{
+    .st-key-panel_close {{
         position: absolute !important;
         top: 22px !important;
         right: 18px !important;
+        z-index: 9999 !important;
+    }}
+    .st-key-panel_close button {{
         width: 30px !important; height: 30px !important;
         border-radius: 8px !important;
         background: rgba(255,255,255,0.04) !important;
@@ -350,13 +354,12 @@ st.markdown(f"""
         color: #6B7280 !important;
         padding: 0 !important;
         display: flex !important; align-items: center !important; justify-content: center !important;
-        z-index: 9999 !important;
         transition: all 0.2s !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(2) div[data-testid="element-container"]:has(.panel-header) + div[data-testid="element-container"] button p {{
+    .st-key-panel_close button * {{
         font-size: 0.9rem !important; margin: 0 !important; color: inherit !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(2) div[data-testid="element-container"]:has(.panel-header) + div[data-testid="element-container"] button:hover {{
+    .st-key-panel_close button:hover {{
         background: rgba(255,255,255,0.08) !important; color: #D1D5DB !important;
     }}
 
@@ -388,8 +391,8 @@ st.markdown(f"""
         border-color: rgba(59,130,246,0.25) !important;
         box-shadow: 0 0 14px rgba(59,130,246,0.08) !important;
     }}
-    .scan-cta button p {{ display: inline-flex !important; align-items: center !important; }}
-    .scan-cta button p::before {{
+    .scan-cta button p, .scan-cta button span {{ display: inline-flex !important; align-items: center !important; }}
+    .scan-cta button p::before, .scan-cta button span::before {{
         content: "\\f04b";
         font-family: "Font Awesome 6 Free", "FontAwesome"; font-weight: 900;
         display: inline-flex; align-items: center; justify-content: center;
@@ -445,8 +448,8 @@ st.markdown(f"""
         border-color: rgba(59,130,246,0.2) !important;
         color: #E5E7EB !important; background: #1D2440 !important;
     }}
-    .sync-btn button p {{ display: inline-flex !important; align-items: center !important; }}
-    .sync-btn button p::before {{
+    .sync-btn button p, .sync-btn button span {{ display: inline-flex !important; align-items: center !important; }}
+    .sync-btn button p::before, .sync-btn button span::before {{
         content: "\\f021";
         font-family: "Font Awesome 6 Free", "FontAwesome"; font-weight: 900;
         display: inline-flex; align-items: center; justify-content: center;
@@ -476,8 +479,8 @@ st.markdown(f"""
                     0 0 50px rgba(220, 38, 38, 0.15) !important;
         transform: translateY(-1px) !important;
     }}
-    .alarm-cta button p {{ display: inline-flex !important; align-items: center !important; }}
-    .alarm-cta button p::before {{
+    .alarm-cta button p, .alarm-cta button span {{ display: inline-flex !important; align-items: center !important; }}
+    .alarm-cta button p::before, .alarm-cta button span::before {{
         content: "\\f0f3";
         font-family: "Font Awesome 6 Free", "FontAwesome"; font-weight: 900;
         color: #FBBF24 !important;
@@ -524,7 +527,6 @@ with st.sidebar:
     
     with rail_col:
         # LOGO — Glowing Purple Satellite Dish
-        st.markdown("<div class='logo-btn-marker'></div>", unsafe_allow_html=True)
         if st.button("\uf7c0", key="rail_logo", help="NETWATCH OPS CENTER"):
             st.session_state['active_panel'] = None
             st.rerun()
@@ -532,25 +534,21 @@ with st.sidebar:
         st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
         
         # SYSTEM — Red Lightning Bolt
-        st.markdown("<div class='sys-btn-marker'></div>", unsafe_allow_html=True)
         if st.button("\uf0e7", key="rail_sys", help="System Controls"):
             st.session_state['active_panel'] = 'system' if active_panel != 'system' else None
             st.rerun()
             
         # ALARM — Yellow Bell
-        st.markdown("<div class='alr-btn-marker'></div>", unsafe_allow_html=True)
         if st.button("\uf0f3", key="rail_alr", help="Alarm Center"):
             st.session_state['active_panel'] = 'alarm' if active_panel != 'alarm' else None
             st.rerun()
             
         # FILTERS — Cyan Grid/Layout
-        st.markdown("<div class='flt-btn-marker'></div>", unsafe_allow_html=True)
         if st.button("\uf0db", key="rail_flt", help="Data Filters"):
             st.session_state['active_panel'] = 'filters' if active_panel != 'filters' else None
             st.rerun()
             
         # QUICK — Purple Diamond
-        st.markdown("<div class='qck-btn-marker'></div>", unsafe_allow_html=True)
         if st.button("\uf219", key="rail_qck", help="Quick Filters"):
             st.session_state['active_panel'] = 'quick' if active_panel != 'quick' else None
             st.rerun()
@@ -559,7 +557,6 @@ with st.sidebar:
         st.markdown("<div style='flex:1; min-height: 30vh;'></div>", unsafe_allow_html=True)
         
         # LOGOUT — Muted Blue Sign-out
-        st.markdown("<div class='out-btn-marker'></div>", unsafe_allow_html=True)
         if st.button("\uf2f5", key="rail_out", help="Logout"):
             _delete_session(st.session_state.get('session_token', ''))
             st.session_state['logged_in'] = False
@@ -576,7 +573,7 @@ with st.sidebar:
         if m_name:
             # Active icon gets brighter bg + subtle glow
             dynamic_css += f"""
-            [data-testid="stSidebar"] div[data-testid="element-container"]:has(.{m_name}-btn-marker) + div[data-testid="element-container"] button {{
+            .st-key-rail_{m_name} button {{
                 background: rgba(255, 255, 255, 0.10) !important;
                 border: 1px solid rgba(255, 255, 255, 0.18) !important;
                 box-shadow: 0 0 12px rgba(255,255,255,0.04) !important;
@@ -586,8 +583,8 @@ with st.sidebar:
     # Scanning indicator dot on System
     if st.session_state.get('is_scanning', False):
         dynamic_css += """
-        [data-testid="stSidebar"] div[data-testid="element-container"]:has(.sys-btn-marker) + div[data-testid="element-container"] button { overflow: visible !important; }
-        [data-testid="stSidebar"] div[data-testid="element-container"]:has(.sys-btn-marker) + div[data-testid="element-container"] button::after {
+        .st-key-rail_sys button { overflow: visible !important; }
+        .st-key-rail_sys button::after {
             content: ''; position: absolute; top: 5px; right: 5px;
             width: 10px; height: 10px; background: #00F0FF;
             border-radius: 50%; border: 2px solid #0B0E14; z-index: 10;
@@ -598,8 +595,8 @@ with st.sidebar:
     # Filter active dot on Filters icon
     if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'):
         dynamic_css += """
-        [data-testid="stSidebar"] div[data-testid="element-container"]:has(.flt-btn-marker) + div[data-testid="element-container"] button { overflow: visible !important; }
-        [data-testid="stSidebar"] div[data-testid="element-container"]:has(.flt-btn-marker) + div[data-testid="element-container"] button::after {
+        .st-key-rail_flt button { overflow: visible !important; }
+        .st-key-rail_flt button::after {
             content: ''; position: absolute; top: 5px; right: 5px;
             width: 10px; height: 10px; background: #F43F5E;
             border-radius: 50%; border: 2px solid #0B0E14; z-index: 10;
@@ -617,8 +614,8 @@ with st.sidebar:
         
     if is_filtered_dot:
         dynamic_css += """
-        [data-testid="stSidebar"] div[data-testid="element-container"]:has(.qck-btn-marker) + div[data-testid="element-container"] button { overflow: visible !important; }
-        [data-testid="stSidebar"] div[data-testid="element-container"]:has(.qck-btn-marker) + div[data-testid="element-container"] button::after {
+        .st-key-rail_qck button { overflow: visible !important; }
+        .st-key-rail_qck button::after {
             content: ''; position: absolute; top: 5px; right: 5px;
             width: 10px; height: 10px; background: #F43F5E;
             border-radius: 50%; border: 2px solid #0B0E14; z-index: 10;
@@ -628,8 +625,8 @@ with st.sidebar:
 
     # Alarm bell notification dot (always show on alarm icon)
     dynamic_css += """
-    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.alr-btn-marker) + div[data-testid="element-container"] button { overflow: visible !important; }
-    [data-testid="stSidebar"] div[data-testid="element-container"]:has(.alr-btn-marker) + div[data-testid="element-container"] button::after {
+    .st-key-rail_alr button { overflow: visible !important; }
+    .st-key-rail_alr button::after {
         content: ''; position: absolute; top: 5px; right: 5px;
         width: 10px; height: 10px; background: #EF4444;
         border-radius: 50%; border: 2px solid #0B0E14; z-index: 10;
@@ -860,20 +857,13 @@ with st.sidebar:
                 chk_bg  = cfg['color'] if is_active else "rgba(255,255,255,0.06)"
                 chk_ch  = "\\2713" if is_active else ""
                 chk_col = "#fff" if is_active else "transparent"
-                m       = f"qck-m-{mode.lower()}"
 
                 chip_css += f"""
                 /* ── {cfg['label']} chip ── */
-                div[data-testid="element-container"]:has(.{m}) {{
-                    margin-bottom: 0 !important;
-                    padding: 0 !important;
-                    height: 0 !important;
-                    overflow: visible !important;
-                }}
-                div[data-testid="element-container"]:has(.{m}) + div[data-testid="element-container"] {{
+                .st-key-qf_toggle_{mode} {{
                     margin-bottom: 10px !important;
                 }}
-                div[data-testid="element-container"]:has(.{m}) + div[data-testid="element-container"] button {{
+                .st-key-qf_toggle_{mode} button {{
                     background: {bg} !important;
                     border: {border_active} !important;
                     border-radius: 14px !important;
@@ -888,11 +878,11 @@ with st.sidebar:
                     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
                     box-shadow: none !important;
                 }}
-                div[data-testid="element-container"]:has(.{m}) + div[data-testid="element-container"] button:hover {{
+                .st-key-qf_toggle_{mode} button:hover {{
                     background: {cfg['color']}20 !important;
                     border-color: {cfg['color']}80 !important;
                 }}
-                div[data-testid="element-container"]:has(.{m}) + div[data-testid="element-container"] button::before {{
+                .st-key-qf_toggle_{mode} button::before {{
                     content: "{cfg['fa_code']}";
                     font-family: "Font Awesome 6 Free", "FontAwesome";
                     font-weight: 900;
@@ -905,7 +895,9 @@ with st.sidebar:
                     font-size: 0.85rem;
                     flex-shrink: 0;
                 }}
-                div[data-testid="element-container"]:has(.{m}) + div[data-testid="element-container"] button p {{
+                .st-key-qf_toggle_{mode} button span,
+                .st-key-qf_toggle_{mode} button p,
+                .st-key-qf_toggle_{mode} button div {{
                     flex: 1 !important;
                     text-align: left !important;
                     color: {txt_col} !important;
@@ -914,7 +906,7 @@ with st.sidebar:
                     margin: 0 !important;
                     font-family: 'Inter', sans-serif !important;
                 }}
-                div[data-testid="element-container"]:has(.{m}) + div[data-testid="element-container"] button::after {{
+                .st-key-qf_toggle_{mode} button::after {{
                     content: "{chk_ch}";
                     background: {chk_bg};
                     color: {chk_col};
@@ -933,8 +925,6 @@ with st.sidebar:
 
             # ── Render each chip as a real st.button ──
             for mode, cfg in filter_config.items():
-                m = f"qck-m-{mode.lower()}"
-                st.markdown(f"<div class='{m}'></div>", unsafe_allow_html=True)
                 if st.button(cfg["label"], key=f"qf_toggle_{mode}", use_container_width=True):
                     if mode in active_filters:
                         active_filters.discard(mode)
@@ -948,17 +938,17 @@ with st.sidebar:
             lnk_label = "Clear all" if has_all else "Select all"
             st.markdown(f"""
             <style>
-            div[data-testid="element-container"]:has(.qck-footer-marker) + div[data-testid="element-container"] button {{
+            .st-key-qf_clear_all button {{
                 background: transparent !important; border: none !important;
                 color: #3B82F6 !important; font-size: 0.7rem !important;
                 font-weight: 600 !important; padding: 0 !important;
                 height: auto !important; min-height: 0 !important;
                 box-shadow: none !important; cursor: pointer !important;
             }}
-            div[data-testid="element-container"]:has(.qck-footer-marker) + div[data-testid="element-container"] button:hover {{
+            .st-key-qf_clear_all button:hover {{
                 color: #60A5FA !important; text-decoration: underline !important;
             }}
-            div[data-testid="element-container"]:has(.qck-footer-marker) + div[data-testid="element-container"] button p {{
+            .st-key-qf_clear_all button * {{
                 color: inherit !important; font-size: inherit !important;
             }}
             </style>
@@ -966,7 +956,6 @@ with st.sidebar:
                 <span style='font-size:0.72rem; color:#4B5563; font-weight:500;
                     font-family:Inter,sans-serif;'>{active_count} of 5 active</span>
             </div>
-            <div class='qck-footer-marker'></div>
             """, unsafe_allow_html=True)
             if st.button(lnk_label, key="qf_clear_all", use_container_width=False):
                 st.session_state['filter_mode'] = set() if has_all else {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
