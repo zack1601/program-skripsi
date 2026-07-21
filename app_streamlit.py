@@ -319,12 +319,8 @@ st.markdown(f"""
         line-height: 1.2;
     }}
 
-    /* Close Button — pinned to top right */
+    /* Close Button — in header columns layout */
     .st-key-panel_close {{
-        position: absolute !important;
-        top: 20px !important;
-        right: 14px !important;
-        z-index: 9999 !important;
         margin: 0 !important; padding: 0 !important;
     }}
     .st-key-panel_close button {{
@@ -589,24 +585,28 @@ with st.sidebar:
         st.markdown(f"<style>{dynamic_css}</style>", unsafe_allow_html=True)
         
     with panel_col:
-        # ── Panel Header: MODULE label + title + close ──
         if active_panel:
+            # ── Panel Header Row: Title left, Close button right ──
             panel_titles = {'system': 'System', 'alarm': 'Alarm', 'filters': 'Filters', 'quick': 'Quick'}
-            st.markdown(f"""
-            <div class='panel-header'>
-                <div>
+            hdr_left, hdr_right = st.columns([5, 1])
+            with hdr_left:
+                st.markdown(f"""
+                <div style='padding: 18px 0 10px 0;'>
                     <div class='panel-module-label'>MODULE</div>
                     <div class='panel-title'>{panel_titles.get(active_panel, '')}</div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button("✕", key="panel_close"):
-                st.session_state['active_panel'] = None
-                st.rerun()
+                """, unsafe_allow_html=True)
+            with hdr_right:
+                st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
+                if st.button("✕", key="panel_close"):
+                    st.session_state['active_panel'] = None
+                    st.rerun()
 
-            # Dynamic Panel Container with key to unmount cleanly on switch
-            with st.container(key=f"panel_container_{active_panel}"):
+            st.markdown("<div style='border-bottom:1px solid rgba(255,255,255,0.05); margin-bottom:14px;'></div>", unsafe_allow_html=True)
+
+            # ── Use st.empty() for panel content — forces full teardown on switch ──
+            panel_slot = st.empty()
+            with panel_slot.container():
                 # ════════════════════════════════════════════════
                 # STATE A — SYSTEM MODULE
                 # ════════════════════════════════════════════════
@@ -776,11 +776,11 @@ with st.sidebar:
                         st.session_state['filter_mode'] = active_filters
 
                     filter_config = {
-                        "Online":    {"color": "#10B981", "icon_bg": "rgba(16,185,129,0.15)",  "fa_code": "\\f0ac",  "label": "Online"},
-                        "LOS":       {"color": "#EF4444", "icon_bg": "rgba(239,68,68,0.15)",   "fa_code": "\\f00d",  "label": "Offline"},
-                        "BadRx":     {"color": "#F59E0B", "icon_bg": "rgba(245,158,11,0.15)",  "fa_code": "\\f071",  "label": "Warning"},
-                        "Dyinggasp": {"color": "#A855F7", "icon_bg": "rgba(168,85,247,0.15)",  "fa_code": "\\f1e6",  "label": "Power"},
-                        "Suspend":   {"color": "#6B7280", "icon_bg": "rgba(107,114,128,0.15)", "fa_code": "\\f023",  "label": "Locked"},
+                        "Online":    {"color": "#10B981", "icon_bg": "rgba(16,185,129,0.15)",  "fa_code": "\\\\f0ac",  "label": "Online"},
+                        "LOS":       {"color": "#EF4444", "icon_bg": "rgba(239,68,68,0.15)",   "fa_code": "\\\\f00d",  "label": "Offline"},
+                        "BadRx":     {"color": "#F59E0B", "icon_bg": "rgba(245,158,11,0.15)",  "fa_code": "\\\\f071",  "label": "Warning"},
+                        "Dyinggasp": {"color": "#A855F7", "icon_bg": "rgba(168,85,247,0.15)",  "fa_code": "\\\\f1e6",  "label": "Power"},
+                        "Suspend":   {"color": "#6B7280", "icon_bg": "rgba(107,114,128,0.15)", "fa_code": "\\\\f023",  "label": "Locked"},
                     }
 
                     active_count = len(active_filters)
@@ -795,7 +795,7 @@ with st.sidebar:
                         border_active = f"1.5px solid {cfg['color']}" if is_active else border
                         txt_col = "#F3F4F6" if is_active else "#6B7280"
                         chk_bg  = cfg['color'] if is_active else "rgba(255,255,255,0.06)"
-                        chk_ch  = "\\2713" if is_active else ""
+                        chk_ch  = "\\\\2713" if is_active else ""
                         chk_col = "#fff" if is_active else "transparent"
 
                         chip_css += f"""
