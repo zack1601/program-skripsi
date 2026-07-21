@@ -26,7 +26,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pandas as pd
 
-import re
+import re # Pindahkan ke atas
 from config import INPUT_FILE, OUTPUT_DIR, MAX_WORKERS
 from connection import OLTConnection
 from parser import parse_ont_summary, parse_ont_detail
@@ -165,7 +165,6 @@ def main():
         
         if olt_ip and raw_port and raw_port.lower() != "nan":
             # Ekstrak F/S/P dan ONT ID
-            import re
             match = re.search(r'(\d+)\s*/\s*(\d+)\s*/\s*(\d+)\s+(\d+)', raw_port)
             if match:
                 f, s, p, ont_id = match.groups()

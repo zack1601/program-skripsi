@@ -196,7 +196,6 @@ st.markdown(f"""
 <style>
     /* ══════════════════════════════════════════════════
        DESIGN SYSTEM — CYBERSECURITY COMMAND CENTER
-       Color tokens, spacing, radius, typography
        ══════════════════════════════════════════════════ */
 
     /* ── SIDEBAR CONTAINER ── */
@@ -243,8 +242,7 @@ st.markdown(f"""
     }}
 
     /* ══════════════════════════════════════════════════
-       RAIL ICON BUTTONS — Base structure
-       Squircle 44×44, 14px radius, centered
+       RAIL ICON BUTTONS
        ══════════════════════════════════════════════════ */
     [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(1) button {{
         width: 44px !important; height: 44px !important;
@@ -274,8 +272,7 @@ st.markdown(f"""
         color: inherit !important;
     }}
 
-    /* ── INDIVIDUAL RAIL ICON COLORS (Inactive default) ── */
-    /* LOGO — Purple glowing satellite dish */
+    /* INDIVIDUAL RAIL ICON COLORS */
     .st-key-rail_logo button {{
         background: linear-gradient(145deg, #7C3AED, #5B21B6) !important;
         border: none !important;
@@ -290,43 +287,26 @@ st.markdown(f"""
         color: #FFFFFF !important; font-size: 1.25rem !important;
     }}
 
-    /* System — Red Lightning */
-    .st-key-rail_sys button, .st-key-rail_sys button * {{
-        color: #EF4444 !important;
-    }}
-    /* Alarm — Yellow Bell */
-    .st-key-rail_alr button, .st-key-rail_alr button * {{
-        color: #FBBF24 !important;
-    }}
-    /* Filters — Cyan Grid */
-    .st-key-rail_flt button, .st-key-rail_flt button * {{
-        color: #22D3EE !important;
-    }}
-    /* Quick — Purple Diamond */
-    .st-key-rail_qck button, .st-key-rail_qck button * {{
-        color: #A78BFA !important;
-    }}
-    /* Logout — Muted Blue */
+    .st-key-rail_sys button, .st-key-rail_sys button * {{ color: #EF4444 !important; }}
+    .st-key-rail_alr button, .st-key-rail_alr button * {{ color: #FBBF24 !important; }}
+    .st-key-rail_flt button, .st-key-rail_flt button * {{ color: #22D3EE !important; }}
+    .st-key-rail_qck button, .st-key-rail_qck button * {{ color: #A78BFA !important; }}
+    
     .st-key-rail_out button {{
         background: rgba(59, 130, 246, 0.08) !important;
         border-color: rgba(59, 130, 246, 0.12) !important;
     }}
-    .st-key-rail_out button, .st-key-rail_out button * {{
-        color: #3B82F6 !important;
-    }}
-    .st-key-rail_out button:hover {{
-        background: rgba(59, 130, 246, 0.18) !important;
-    }}
+    .st-key-rail_out button, .st-key-rail_out button * {{ color: #3B82F6 !important; }}
+    .st-key-rail_out button:hover {{ background: rgba(59, 130, 246, 0.18) !important; }}
 
     /* ══════════════════════════════════════════════════
-       PANEL CONTENT — Headers, labels, cards
+       PANEL CONTENT & HEADERS
        ══════════════════════════════════════════════════ */
     .panel-header {{
-        display: flex; align-items: flex-start; justify-content: space-between;
-        padding: 22px 18px 14px 18px;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 20px 18px 14px 18px;
         border-bottom: 1px solid rgba(255,255,255,0.05);
-        margin-bottom: 18px;
-        position: relative;
+        margin-bottom: 16px;
     }}
     .panel-module-label {{
         font-family: 'Inter', sans-serif;
@@ -339,31 +319,35 @@ st.markdown(f"""
         line-height: 1.2;
     }}
 
-    /* Close Button — absolute top-right ✕ */
+    /* Close Button — pinned to top right */
     .st-key-panel_close {{
         position: absolute !important;
-        top: 22px !important;
-        right: 18px !important;
+        top: 20px !important;
+        right: 14px !important;
         z-index: 9999 !important;
+        margin: 0 !important; padding: 0 !important;
     }}
     .st-key-panel_close button {{
-        width: 30px !important; height: 30px !important;
+        width: 32px !important; height: 32px !important;
+        min-height: 32px !important;
         border-radius: 8px !important;
         background: rgba(255,255,255,0.04) !important;
-        border: 1px solid rgba(255,255,255,0.06) !important;
-        color: #6B7280 !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        color: #9CA3AF !important;
         padding: 0 !important;
         display: flex !important; align-items: center !important; justify-content: center !important;
         transition: all 0.2s !important;
+        box-shadow: none !important;
     }}
     .st-key-panel_close button * {{
         font-size: 0.9rem !important; margin: 0 !important; color: inherit !important;
     }}
     .st-key-panel_close button:hover {{
-        background: rgba(255,255,255,0.08) !important; color: #D1D5DB !important;
+        background: rgba(255,255,255,0.1) !important; color: #F3F4F6 !important;
+        border-color: rgba(255,255,255,0.18) !important;
     }}
 
-    /* Section label (reusable) */
+    /* Section label */
     .section-label {{
         font-family: 'Inter', sans-serif;
         font-size: 0.6rem; font-weight: 700; color: #4B5563;
@@ -371,10 +355,8 @@ st.markdown(f"""
         margin: 0 0 10px 0;
     }}
 
-    /* ══════════════════════════════════════════════════
-       SYSTEM MODULE — Scan CTA, Cache Card, Sync Btn
-       ══════════════════════════════════════════════════ */
-    .scan-cta button {{
+    /* ── SYSTEM MODULE BUTTONS ── */
+    .st-key-sys_start_scan_btn button {{
         background: #161B2E !important;
         border: 1px solid rgba(255,255,255,0.07) !important;
         color: #F9FAFB !important;
@@ -386,36 +368,26 @@ st.markdown(f"""
         transition: all 0.25s !important;
         display: inline-flex !important; align-items: center !important; justify-content: center !important;
     }}
-    .scan-cta button:hover {{
+    .st-key-sys_start_scan_btn button:hover {{
         background: #1D2440 !important;
         border-color: rgba(59,130,246,0.25) !important;
         box-shadow: 0 0 14px rgba(59,130,246,0.08) !important;
     }}
-    .scan-cta button p, .scan-cta button span {{ display: inline-flex !important; align-items: center !important; }}
-    .scan-cta button p::before, .scan-cta button span::before {{
-        content: "\\f04b";
-        font-family: "Font Awesome 6 Free", "FontAwesome"; font-weight: 900;
-        display: inline-flex; align-items: center; justify-content: center;
-        background: #3B82F6 !important; color: #FFFFFF !important;
-        width: 24px; height: 24px; border-radius: 7px;
-        margin-right: 12px; font-size: 0.65rem;
-    }}
 
-    .stop-cta button {{
+    .st-key-sys_stop_scanning_btn button {{
         background: rgba(244, 63, 94, 0.10) !important;
         border: 1px solid rgba(244, 63, 94, 0.25) !important;
         color: #F43F5E !important;
-        border-radius: 14px !important; height: 52px !important;
+        border-radius: 14px !important; height: 52px !important; width: 100% !important;
         font-family: 'Inter', sans-serif !important;
         font-weight: 700 !important; font-size: 0.9rem !important;
         box-shadow: 0 0 12px rgba(244,63,94,0.1) !important;
     }}
-    .stop-cta button:hover {{
+    .st-key-sys_stop_scanning_btn button:hover {{
         background: rgba(244, 63, 94, 0.18) !important;
         box-shadow: 0 0 20px rgba(244,63,94,0.2) !important;
     }}
 
-    /* LAST CACHE card */
     .cache-card {{
         background: #161B2E;
         border: 1px solid rgba(255,255,255,0.05);
@@ -434,38 +406,26 @@ st.markdown(f"""
         text-shadow: 0 0 8px rgba(16,185,129,0.3);
     }}
 
-    /* SYNC button */
-    .sync-btn button {{
+    .st-key-sys_sync_sheets_btn button {{
         background: #161B2E !important;
         border: 1px solid rgba(255,255,255,0.07) !important;
         color: #9CA3AF !important;
-        border-radius: 14px !important; height: 48px !important;
+        border-radius: 14px !important; height: 48px !important; width: 100% !important;
         font-family: 'Inter', sans-serif !important;
         transition: all 0.25s !important;
         display: inline-flex !important; align-items: center !important; justify-content: center !important;
     }}
-    .sync-btn button:hover {{
+    .st-key-sys_sync_sheets_btn button:hover {{
         border-color: rgba(59,130,246,0.2) !important;
         color: #E5E7EB !important; background: #1D2440 !important;
     }}
-    .sync-btn button p, .sync-btn button span {{ display: inline-flex !important; align-items: center !important; }}
-    .sync-btn button p::before, .sync-btn button span::before {{
-        content: "\\f021";
-        font-family: "Font Awesome 6 Free", "FontAwesome"; font-weight: 900;
-        display: inline-flex; align-items: center; justify-content: center;
-        background: #3B82F6 !important; color: #FFFFFF !important;
-        width: 22px; height: 22px; border-radius: 6px;
-        margin-right: 12px; font-size: 0.6rem;
-    }}
 
-    /* ══════════════════════════════════════════════════
-       ALARM MODULE — Send Alarm CTA, Recent Cards
-       ══════════════════════════════════════════════════ */
-    .alarm-cta button {{
+    /* ── ALARM MODULE BUTTONS ── */
+    .st-key-alr_send_alarm_btn button {{
         background: #EF4444 !important;
         border: none !important;
         color: #FFFFFF !important;
-        border-radius: 14px !important; height: 52px !important;
+        border-radius: 14px !important; height: 52px !important; width: 100% !important;
         font-family: 'Inter', sans-serif !important;
         font-weight: 700 !important; font-size: 0.9rem !important; letter-spacing: 0.5px !important;
         box-shadow: 0 0 18px rgba(239, 68, 68, 0.35),
@@ -473,26 +433,25 @@ st.markdown(f"""
         transition: all 0.25s !important;
         display: inline-flex !important; align-items: center !important; justify-content: center !important;
     }}
-    .alarm-cta button:hover {{
+    .st-key-alr_send_alarm_btn button:hover {{
         background: #DC2626 !important;
         box-shadow: 0 0 25px rgba(220, 38, 38, 0.5),
                     0 0 50px rgba(220, 38, 38, 0.15) !important;
-        transform: translateY(-1px) !important;
-    }}
-    .alarm-cta button p, .alarm-cta button span {{ display: inline-flex !important; align-items: center !important; }}
-    .alarm-cta button p::before, .alarm-cta button span::before {{
-        content: "\\f0f3";
-        font-family: "Font Awesome 6 Free", "FontAwesome"; font-weight: 900;
-        color: #FBBF24 !important;
-        margin-right: 12px; font-size: 1rem;
     }}
 
-    /* ══════════════════════════════════════════════════
-       FILTERS MODULE — Inputs & Dropdowns
-       ══════════════════════════════════════════════════ */
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(2) [data-testid="stSelectbox"] {{
-        font-family: 'Inter', sans-serif !important;
+    /* ── FILTERS MODULE ── */
+    .st-key-flt_clear_filters_btn button {{
+        background: rgba(255,255,255,0.04) !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        color: #9CA3AF !important;
+        border-radius: 12px !important; height: 42px !important; width: 100% !important;
+        font-family: 'Inter', sans-serif !important; font-size: 0.8rem !important;
     }}
+    .st-key-flt_clear_filters_btn button:hover {{
+        background: rgba(255,255,255,0.08) !important;
+        color: #F3F4F6 !important;
+    }}
+
     [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(2) [data-testid="stSelectbox"] > div > div {{
         background: #161B2E !important;
         border: 1px solid rgba(255,255,255,0.07) !important;
@@ -506,50 +465,47 @@ st.markdown(f"""
         color: #E5E7EB !important;
         font-family: 'Inter', sans-serif !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(2) [data-testid="stTextInput"] input:focus {{
-        border-color: rgba(59,130,246,0.4) !important;
-        box-shadow: 0 0 0 2px rgba(59,130,246,0.1) !important;
-    }}
 
-    /* ══════════════════════════════════════════════════
-       GLOBAL STREAMLIT OVERRIDES for sidebar
-       ══════════════════════════════════════════════════ */
+    /* ── GLOBAL STREAMLIT SIDEBAR OVERRIDES ── */
     [data-testid="stSidebar"] * {{
         font-family: 'Inter', sans-serif !important;
     }}
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(2) [data-testid="stVerticalBlockBorderWrapper"] {{
-        padding: 0 18px !important;
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(2) [data-testid="stVerticalBlockBorderWrapper"],
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] div[data-testid*="olumn"]:nth-of-type(2) [data-testid="stElementContainer"] {{
+        padding-left: 18px !important;
+        padding-right: 18px !important;
     }}
 </style>
 """, unsafe_allow_html=True)
+
 with st.sidebar:
     rail_col, panel_col = st.columns([1, 4])
     
     with rail_col:
         # LOGO — Glowing Purple Satellite Dish
-        if st.button("\uf7c0", key="rail_logo", help="NETWATCH OPS CENTER"):
+        if st.button("", key="rail_logo", help="NETWATCH OPS CENTER"):
             st.session_state['active_panel'] = None
             st.rerun()
 
         st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
         
         # SYSTEM — Red Lightning Bolt
-        if st.button("\uf0e7", key="rail_sys", help="System Controls"):
+        if st.button("", key="rail_sys", help="System Controls"):
             st.session_state['active_panel'] = 'system' if active_panel != 'system' else None
             st.rerun()
             
         # ALARM — Yellow Bell
-        if st.button("\uf0f3", key="rail_alr", help="Alarm Center"):
+        if st.button("", key="rail_alr", help="Alarm Center"):
             st.session_state['active_panel'] = 'alarm' if active_panel != 'alarm' else None
             st.rerun()
             
         # FILTERS — Cyan Grid/Layout
-        if st.button("\uf0db", key="rail_flt", help="Data Filters"):
+        if st.button("", key="rail_flt", help="Data Filters"):
             st.session_state['active_panel'] = 'filters' if active_panel != 'filters' else None
             st.rerun()
             
         # QUICK — Purple Diamond
-        if st.button("\uf219", key="rail_qck", help="Quick Filters"):
+        if st.button("", key="rail_qck", help="Quick Filters"):
             st.session_state['active_panel'] = 'quick' if active_panel != 'quick' else None
             st.rerun()
             
@@ -557,7 +513,7 @@ with st.sidebar:
         st.markdown("<div style='flex:1; min-height: 30vh;'></div>", unsafe_allow_html=True)
         
         # LOGOUT — Muted Blue Sign-out
-        if st.button("\uf2f5", key="rail_out", help="Logout"):
+        if st.button("", key="rail_out", help="Logout"):
             _delete_session(st.session_state.get('session_token', ''))
             st.session_state['logged_in'] = False
             st.session_state['session_token'] = None
@@ -571,7 +527,6 @@ with st.sidebar:
         marker_map = {'system': 'sys', 'alarm': 'alr', 'filters': 'flt', 'quick': 'qck'}
         m_name = marker_map.get(active_panel)
         if m_name:
-            # Active icon gets brighter bg + subtle glow
             dynamic_css += f"""
             .st-key-rail_{m_name} button {{
                 background: rgba(255, 255, 255, 0.10) !important;
@@ -580,7 +535,6 @@ with st.sidebar:
             }}
             """
 
-    # Scanning indicator dot on System
     if st.session_state.get('is_scanning', False):
         dynamic_css += """
         .st-key-rail_sys button { overflow: visible !important; }
@@ -592,7 +546,6 @@ with st.sidebar:
         }
         """
 
-    # Filter active dot on Filters icon
     if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'):
         dynamic_css += """
         .st-key-rail_flt button { overflow: visible !important; }
@@ -604,7 +557,6 @@ with st.sidebar:
         }
         """
     
-    # Quick filter active dot
     active_filters_dot = st.session_state.get('filter_mode', {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'})
     is_filtered_dot = False
     if isinstance(active_filters_dot, str):
@@ -623,7 +575,6 @@ with st.sidebar:
         }
         """
 
-    # Alarm bell notification dot (always show on alarm icon)
     dynamic_css += """
     .st-key-rail_alr button { overflow: visible !important; }
     .st-key-rail_alr button::after {
@@ -649,317 +600,306 @@ with st.sidebar:
                 </div>
             </div>
             """, unsafe_allow_html=True)
+            
             if st.button("✕", key="panel_close"):
                 st.session_state['active_panel'] = None
                 st.rerun()
 
-        # ════════════════════════════════════════════════
-        # STATE A — SYSTEM MODULE
-        # ════════════════════════════════════════════════
-        if active_panel == 'system':
-            st.markdown("<div class='section-label' style='padding: 0 0;'>SCAN ENGINE</div>", unsafe_allow_html=True)
-            
-            is_running = st.session_state.get('is_scanning', False)
-            if is_running:
-                st.markdown("<div class='stop-cta'>", unsafe_allow_html=True)
-                if st.button("⏹  STOP SCANNING", use_container_width=True, key="sys_stop_scanning_btn"):
-                    st.session_state['is_scanning'] = False
-                    st.session_state['stop_scanning'] = True
-                    if 'temp_results' in st.session_state and st.session_state['temp_results']:
-                        final_df = pd.DataFrame(st.session_state['temp_results'])
-                        if not final_df.empty:
-                            final_df['Serial Number'] = final_df['Serial Number'].astype(str).str.strip().str.upper()
-                            final_df['Nama/ID Pelanggan'] = final_df['Nama/ID Pelanggan'].astype(str).str.strip().str.upper()
-                            final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
-                            st.session_state['data_final'] = final_df
-                            save_scan_results(final_df)
-                    st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
-            else:
-                st.markdown("<div class='scan-cta'>", unsafe_allow_html=True)
-                if st.button("START SCAN", use_container_width=True, key="sys_start_scan_btn"):
-                    st.session_state['is_scanning'] = True
-                    st.session_state['stop_scanning'] = False
-                    st.session_state['temp_results'] = []
-                    st.session_state['data_final'] = pd.DataFrame()
-                    st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
-
-            _last_sync = get_last_sync_time()
-            st.markdown(f"""
-            <div class='cache-card'>
-                <div class='cache-label'>LAST CACHE</div>
-                <div class='cache-val'>{_last_sync}</div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("<div class='sync-btn'>", unsafe_allow_html=True)
-            if st.button("Sync Google Sheets", use_container_width=True, key="sys_sync_sheets_btn"):
-
-                with st.spinner("Fetching data from all Google Sheets tabs..."):
-                    try:
-                        _gconn = st.connection("gsheets", type=GSheetsConnection)
-                        from io import StringIO
-                        import pandas as pd
-                        SPREADSHEET_ID = "1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw"
-                        target_sheets_gid = {
-                            "Fatmawati": "0", "Senopati": "570642648", "Cinere": "912514856",
-                            "Lenteng Agung": "162726682", "Cipedak": "2107355748", "Pinang/kalijati": "1647719979"
-                        }
-                        all_data = []
-                        _sheet_errors = {}
-                        for sheet_name, _gid in target_sheets_gid.items():
-                            try:
-                                _csv_url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/export?format=csv&gid={_gid}"
-                                df_sheet = pd.read_csv(_csv_url)
-                                if df_sheet is not None and not df_sheet.empty:
-                                    if sheet_name == "Senopati" and str(df_sheet.columns[0]).startswith("Unnamed:"):
-                                        expected_cols = ['OLT', 'IP_OLT', 'SN', 'PORT', 'NAMA_ID PELANGGAN', 'Unnamed: 5', 'NAMA PELANGGAN', 'ID_PELANGGAN', 'ID SPLITTER', 'ALAMAT', 'Latitude', 'Longitude', 'Link Maps']
-                                        df_sheet.columns = expected_cols[:len(df_sheet.columns)]
-                                    all_data.append(df_sheet)
-                            except Exception as e_sheet:
-                                _sheet_errors[sheet_name] = str(e_sheet)
-                        if _sheet_errors:
-                            for _sn, _se in _sheet_errors.items(): st.error(f"❌ Tab '{_sn}': {_se}")
-                        if all_data:
-                            _df_sync_combined = pd.concat(all_data, ignore_index=True)
-                            cache_input_from_gsheets(_df_sync_combined)
-                            st.success(f"✅ {len(_df_sync_combined)} rows from {len(all_data)} regions successfully cached to SQLite!")
-                        else:
-                            st.warning("⚠️ Google Sheets returned no data from all tabs.")
-                    except Exception as _e:
-                        st.error(f"❌ Failed to connect to Google Sheets: {_e}")
-                st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        # ════════════════════════════════════════════════
-        # STATE B — ALARM MODULE
-        # ════════════════════════════════════════════════
-        elif active_panel == 'alarm':
-            region_options = ["All Regions", "Fatmawati", "Cipedak", "Pinang/Kalijati", "Lenteng Agung", "Cinere", "Senopati"]
-            st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:12px 0 5px 0;'>TARGET REGION</p>", unsafe_allow_html=True)
-            selected_region_alarm = st.selectbox("Target Alarm Region:", region_options, label_visibility="collapsed", key="alr_target_region_select")
-            
-            btn_disabled = st.session_state.get('data_final', pd.DataFrame()).empty
-            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
-            st.markdown('<div class="alarm-cta">', unsafe_allow_html=True)
-            if st.button("SEND ALARM", use_container_width=True, disabled=btn_disabled, key="alr_send_alarm_btn"):
-                df_problems = st.session_state['data_final'][st.session_state['data_final']['Category'].isin(['LOS', 'BadRx'])]
-                if df_problems.empty:
-                    st.sidebar.info("System Healthy: No Alarms Needed")
-                else:
-                    to_send = []
-                    for row in df_problems.to_dict('records'):
-                        row_region = get_region_from_olt(row.get('OLT', ''))
-                        if selected_region_alarm != "All Regions" and row_region != selected_region_alarm: continue
-                        if should_send_alarm(row.get('Serial Number', ''), row.get('Category', '')): to_send.append(row)
-                    if to_send:
-                        st.success(f"{len(to_send)} Alarms Sent to {selected_region_alarm}!")
-                        for row in to_send:
-                            msg_id = send_telegram_alarm(row)
-                            if msg_id: save_alarm_sent(msg_id, row)
+            # Dynamic Panel Container with key to unmount cleanly on switch
+            with st.container(key=f"panel_container_{active_panel}"):
+                # ════════════════════════════════════════════════
+                # STATE A — SYSTEM MODULE
+                # ════════════════════════════════════════════════
+                if active_panel == 'system':
+                    st.markdown("<div class='section-label'>SCAN ENGINE</div>", unsafe_allow_html=True)
+                    
+                    is_running = st.session_state.get('is_scanning', False)
+                    if is_running:
+                        if st.button("⏹  STOP SCANNING", use_container_width=True, key="sys_stop_scanning_btn"):
+                            st.session_state['is_scanning'] = False
+                            st.session_state['stop_scanning'] = True
+                            if 'temp_results' in st.session_state and st.session_state['temp_results']:
+                                final_df = pd.DataFrame(st.session_state['temp_results'])
+                                if not final_df.empty:
+                                    final_df['Serial Number'] = final_df['Serial Number'].astype(str).str.strip().str.upper()
+                                    final_df['Nama/ID Pelanggan'] = final_df['Nama/ID Pelanggan'].astype(str).str.strip().str.upper()
+                                    final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
+                                    st.session_state['data_final'] = final_df
+                                    save_scan_results(final_df)
+                            st.rerun()
                     else:
-                        st.info("No new alarms to send (or already sent).")
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-            # RECENT ALARMS — Badge + card list
-            st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:25px 0 12px 0;'>RECENT ALARMS</p>", unsafe_allow_html=True)
-            df_log = get_all_alarm_history().head(3)
-            if not df_log.empty:
-                for _, log in df_log.iterrows():
-                    cat = str(log.get('Category', log.get('category','ALARM'))).upper()
-                    sn = log.get('Serial Number', log.get('sn',''))
-                    ts = log.get('Waktu Alarm Dikirim', log.get('timestamp',''))
-                    
-                    try:
-                        t_str = ts.split(" ")[1][:5] if " " in str(ts) else str(ts)[:5]
-                    except:
-                        t_str = "08:00"
-                        
-                    sev = "HIGH" if cat in ['LOS', 'OFFLINE'] else ("MED" if cat in ['BADRX', 'WARNING'] else "LOW")
-                    sev_color = "#F43F5E" if sev == "HIGH" else ("#F59E0B" if sev == "MED" else "#3B82F6")
-                    sev_bg = "rgba(244,63,94,0.12)" if sev == "HIGH" else ("rgba(245,158,11,0.12)" if sev == "MED" else "rgba(59,130,246,0.12)")
-                    
+                        if st.button("START SCAN", use_container_width=True, key="sys_start_scan_btn"):
+                            st.session_state['is_scanning'] = True
+                            st.session_state['stop_scanning'] = False
+                            st.session_state['temp_results'] = []
+                            st.session_state['data_final'] = pd.DataFrame()
+                            st.rerun()
+
+                    _last_sync = get_last_sync_time()
                     st.markdown(f"""
-                    <div style='display:flex; align-items:center; gap:10px;
-                        background:#161B2E; border:1px solid rgba(255,255,255,0.05);
-                        padding:11px 14px; border-radius:12px; margin-bottom:8px;'>
-                        <span style='background:{sev_bg}; color:{sev_color}; font-size:0.6rem; font-weight:700;
-                            padding:3px 10px; border-radius:6px; min-width:42px; text-align:center;
-                            letter-spacing:0.5px;'>{sev}</span>
-                        <span style='color:#E5E7EB; font-size:0.8rem; font-weight:500; flex:1;
-                            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{sn}</span>
-                        <span style='color:#4B5563; font-size:0.72rem; font-weight:500;'>{t_str}</span>
+                    <div class='cache-card'>
+                        <div class='cache-label'>LAST CACHE</div>
+                        <div class='cache-val'>{_last_sync}</div>
                     </div>
                     """, unsafe_allow_html=True)
-            else:
-                st.markdown("<p style='font-size:0.75rem; color:#4B5563;'>No recent logs.</p>", unsafe_allow_html=True)
+                    
+                    if st.button("Sync Google Sheets", use_container_width=True, key="sys_sync_sheets_btn"):
+                        with st.spinner("Fetching data from all Google Sheets tabs..."):
+                            try:
+                                _gconn = st.connection("gsheets", type=GSheetsConnection)
+                                from io import StringIO
+                                import pandas as pd
+                                SPREADSHEET_ID = "1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw"
+                                target_sheets_gid = {
+                                    "Fatmawati": "0", "Senopati": "570642648", "Cinere": "912514856",
+                                    "Lenteng Agung": "162726682", "Cipedak": "2107355748", "Pinang/kalijati": "1647719979"
+                                }
+                                all_data = []
+                                _sheet_errors = {}
+                                for sheet_name, _gid in target_sheets_gid.items():
+                                    try:
+                                        _csv_url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/export?format=csv&gid={_gid}"
+                                        df_sheet = pd.read_csv(_csv_url)
+                                        if df_sheet is not None and not df_sheet.empty:
+                                            if sheet_name == "Senopati" and str(df_sheet.columns[0]).startswith("Unnamed:"):
+                                                expected_cols = ['OLT', 'IP_OLT', 'SN', 'PORT', 'NAMA_ID PELANGGAN', 'Unnamed: 5', 'NAMA PELANGGAN', 'ID_PELANGGAN', 'ID SPLITTER', 'ALAMAT', 'Latitude', 'Longitude', 'Link Maps']
+                                                df_sheet.columns = expected_cols[:len(df_sheet.columns)]
+                                            all_data.append(df_sheet)
+                                    except Exception as e_sheet:
+                                        _sheet_errors[sheet_name] = str(e_sheet)
+                                if _sheet_errors:
+                                    for _sn, _se in _sheet_errors.items(): st.error(f"❌ Tab '{_sn}': {_se}")
+                                if all_data:
+                                    _df_sync_combined = pd.concat(all_data, ignore_index=True)
+                                    cache_input_from_gsheets(_df_sync_combined)
+                                    st.success(f"✅ {len(_df_sync_combined)} rows from {len(all_data)} regions successfully cached to SQLite!")
+                                else:
+                                    st.warning("⚠️ Google Sheets returned no data from all tabs.")
+                            except Exception as _e:
+                                st.error(f"❌ Failed to connect to Google Sheets: {_e}")
+                        st.rerun()
 
-        # ════════════════════════════════════════════════
-        # STATE C — FILTERS MODULE
-        # ════════════════════════════════════════════════
-        elif active_panel == 'filters':
-            st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:12px 0 5px 0;'>SELECT REGION</p>", unsafe_allow_html=True)
-            data_final = st.session_state.get('data_final', pd.DataFrame())
-            if not data_final.empty:
-                from components.telegram import get_region_from_olt
-                regions = sorted(list(set(data_final['OLT'].apply(get_region_from_olt))))
-                olt_options = ["All OLT"] + regions
-                selected_olt = st.selectbox("Select Region:", options=olt_options, index=olt_options.index(st.session_state.get('selected_olt', 'All OLT')), label_visibility="collapsed", key="flt_region_select")
-                st.session_state['selected_olt'] = selected_olt
-            else:
-                st.selectbox("Select Region:", options=["Waiting for Scan..."], disabled=True, label_visibility="collapsed", key="flt_region_select_waiting")
-            
-            st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:20px 0 5px 0;'>SEARCH SN / NAME</p>", unsafe_allow_html=True)
-            s_term = st.text_input("Search SN / Name:", value=st.session_state.get('search_sn_sidebar', ''), label_visibility="collapsed", placeholder="🔍  Search...", key="flt_search_input")
-            st.session_state['search_sn_sidebar'] = s_term
-            
-            if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'):
-                st.markdown("<div style='height:15px;'></div>", unsafe_allow_html=True)
-                if st.button("Clear Filters", use_container_width=True, key="flt_clear_filters_btn"):
-                    st.session_state['selected_olt'] = 'All OLT'
-                    st.session_state['search_sn_sidebar'] = ''
-                    st.rerun()
-
-        # ════════════════════════════════════════════════
-        # STATE D — QUICK FILTERS MODULE
-        # ════════════════════════════════════════════════
-        elif active_panel == 'quick':
-            active_filters = st.session_state.get('filter_mode', {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'})
-            if isinstance(active_filters, str):
-                active_filters = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'} if active_filters == 'All' else {active_filters}
-                st.session_state['filter_mode'] = active_filters
-
-            filter_config = {
-                "Online":    {"color": "#10B981", "icon_bg": "rgba(16,185,129,0.15)",  "fa_code": "\\f0ac",  "label": "Online"},
-                "LOS":       {"color": "#EF4444", "icon_bg": "rgba(239,68,68,0.15)",   "fa_code": "\\f00d",  "label": "Offline"},
-                "BadRx":     {"color": "#F59E0B", "icon_bg": "rgba(245,158,11,0.15)",  "fa_code": "\\f071",  "label": "Warning"},
-                "Dyinggasp": {"color": "#A855F7", "icon_bg": "rgba(168,85,247,0.15)",  "fa_code": "\\f1e6",  "label": "Power"},
-                "Suspend":   {"color": "#6B7280", "icon_bg": "rgba(107,114,128,0.15)", "fa_code": "\\f023",  "label": "Locked"},
-            }
-
-            active_count = len(active_filters)
-
-            # Section header
-            st.markdown("""
-            <p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px;
-                text-transform:uppercase; margin:12px 0 14px 0;'>STATUS FILTERS</p>
-            """, unsafe_allow_html=True)
-
-            # ── Generate per-chip CSS: transform st.button into styled chip ──
-            chip_css = "<style>"
-            for mode, cfg in filter_config.items():
-                is_active = (mode in active_filters)
-                bg      = f"{cfg['color']}14" if is_active else "rgba(255,255,255,0.02)"
-                border  = f"1.5px solid {cfg['color']}50" if is_active else "1px solid rgba(255,255,255,0.05)"
-                border_active = f"1.5px solid {cfg['color']}" if is_active else border
-                txt_col = "#F3F4F6" if is_active else "#6B7280"
-                chk_bg  = cfg['color'] if is_active else "rgba(255,255,255,0.06)"
-                chk_ch  = "\\2713" if is_active else ""
-                chk_col = "#fff" if is_active else "transparent"
-
-                chip_css += f"""
-                /* ── {cfg['label']} chip ── */
-                .st-key-qf_toggle_{mode} {{
-                    margin-bottom: 10px !important;
-                }}
-                .st-key-qf_toggle_{mode} button {{
-                    background: {bg} !important;
-                    border: {border_active} !important;
-                    border-radius: 14px !important;
-                    height: 52px !important;
-                    width: 100% !important;
-                    padding: 0 14px !important;
-                    display: flex !important;
-                    align-items: center !important;
-                    justify-content: flex-start !important;
-                    gap: 12px !important;
-                    cursor: pointer !important;
-                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-                    box-shadow: none !important;
-                }}
-                .st-key-qf_toggle_{mode} button:hover {{
-                    background: {cfg['color']}20 !important;
-                    border-color: {cfg['color']}80 !important;
-                }}
-                .st-key-qf_toggle_{mode} button::before {{
-                    content: "{cfg['fa_code']}";
-                    font-family: "Font Awesome 6 Free", "FontAwesome";
-                    font-weight: 900;
-                    background: {cfg['icon_bg']};
-                    color: {cfg['color']};
-                    min-width: 34px; width: 34px; height: 34px;
-                    border-radius: 10px;
-                    display: inline-flex;
-                    align-items: center; justify-content: center;
-                    font-size: 0.85rem;
-                    flex-shrink: 0;
-                }}
-                .st-key-qf_toggle_{mode} button span,
-                .st-key-qf_toggle_{mode} button p,
-                .st-key-qf_toggle_{mode} button div {{
-                    flex: 1 !important;
-                    text-align: left !important;
-                    color: {txt_col} !important;
-                    font-size: 0.88rem !important;
-                    font-weight: 600 !important;
-                    margin: 0 !important;
-                    font-family: 'Inter', sans-serif !important;
-                }}
-                .st-key-qf_toggle_{mode} button::after {{
-                    content: "{chk_ch}";
-                    background: {chk_bg};
-                    color: {chk_col};
-                    min-width: 22px; width: 22px; height: 22px;
-                    border-radius: 50%;
-                    display: inline-flex;
-                    align-items: center; justify-content: center;
-                    font-size: 0.55rem; font-weight: 800;
-                    margin-left: auto;
-                    flex-shrink: 0;
-                    border: {f"2px solid {cfg['color']}40" if is_active else "1.5px solid rgba(255,255,255,0.08)"};
-                }}
-                """
-            chip_css += "</style>"
-            st.markdown(chip_css, unsafe_allow_html=True)
-
-            # ── Render each chip as a real st.button ──
-            for mode, cfg in filter_config.items():
-                if st.button(cfg["label"], key=f"qf_toggle_{mode}", use_container_width=True):
-                    if mode in active_filters:
-                        active_filters.discard(mode)
+                # ════════════════════════════════════════════════
+                # STATE B — ALARM MODULE
+                # ════════════════════════════════════════════════
+                elif active_panel == 'alarm':
+                    region_options = ["All Regions", "Fatmawati", "Cipedak", "Pinang/Kalijati", "Lenteng Agung", "Cinere", "Senopati"]
+                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:12px 0 5px 0;'>TARGET REGION</p>", unsafe_allow_html=True)
+                    selected_region_alarm = st.selectbox("Target Alarm Region:", region_options, label_visibility="collapsed", key="alr_target_region_select")
+                    
+                    btn_disabled = st.session_state.get('data_final', pd.DataFrame()).empty
+                    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+                    if st.button("SEND ALARM", use_container_width=True, disabled=btn_disabled, key="alr_send_alarm_btn"):
+                        df_problems = st.session_state['data_final'][st.session_state['data_final']['Category'].isin(['LOS', 'BadRx'])]
+                        if df_problems.empty:
+                            st.sidebar.info("System Healthy: No Alarms Needed")
+                        else:
+                            to_send = []
+                            for row in df_problems.to_dict('records'):
+                                row_region = get_region_from_olt(row.get('OLT', ''))
+                                if selected_region_alarm != "All Regions" and row_region != selected_region_alarm: continue
+                                if should_send_alarm(row.get('Serial Number', ''), row.get('Category', '')): to_send.append(row)
+                            if to_send:
+                                st.success(f"{len(to_send)} Alarms Sent to {selected_region_alarm}!")
+                                for row in to_send:
+                                    msg_id = send_telegram_alarm(row)
+                                    if msg_id: save_alarm_sent(msg_id, row)
+                            else:
+                                st.info("No new alarms to send (or already sent).")
+                    
+                    # RECENT ALARMS — Badge + card list
+                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:25px 0 12px 0;'>RECENT ALARMS</p>", unsafe_allow_html=True)
+                    df_log = get_all_alarm_history().head(3)
+                    if not df_log.empty:
+                        for _, log in df_log.iterrows():
+                            cat = str(log.get('Category', log.get('category','ALARM'))).upper()
+                            sn = log.get('Serial Number', log.get('sn',''))
+                            ts = log.get('Waktu Alarm Dikirim', log.get('timestamp',''))
+                            
+                            try:
+                                t_str = ts.split(" ")[1][:5] if " " in str(ts) else str(ts)[:5]
+                            except:
+                                t_str = "08:00"
+                                
+                            sev = "HIGH" if cat in ['LOS', 'OFFLINE'] else ("MED" if cat in ['BADRX', 'WARNING'] else "LOW")
+                            sev_color = "#F43F5E" if sev == "HIGH" else ("#F59E0B" if sev == "MED" else "#3B82F6")
+                            sev_bg = "rgba(244,63,94,0.12)" if sev == "HIGH" else ("rgba(245,158,11,0.12)" if sev == "MED" else "rgba(59,130,246,0.12)")
+                            
+                            st.markdown(f"""
+                            <div style='display:flex; align-items:center; gap:10px;
+                                background:#161B2E; border:1px solid rgba(255,255,255,0.05);
+                                padding:11px 14px; border-radius:12px; margin-bottom:8px;'>
+                                <span style='background:{sev_bg}; color:{sev_color}; font-size:0.6rem; font-weight:700;
+                                    padding:3px 10px; border-radius:6px; min-width:42px; text-align:center;
+                                    letter-spacing:0.5px;'>{sev}</span>
+                                <span style='color:#E5E7EB; font-size:0.8rem; font-weight:500; flex:1;
+                                    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;'>{sn}</span>
+                                <span style='color:#4B5563; font-size:0.72rem; font-weight:500;'>{t_str}</span>
+                            </div>
+                            """, unsafe_allow_html=True)
                     else:
-                        active_filters.add(mode)
-                    st.session_state['filter_mode'] = active_filters
-                    st.rerun()
+                        st.markdown("<p style='font-size:0.75rem; color:#4B5563;'>No recent logs.</p>", unsafe_allow_html=True)
 
-            # ── Footer: "X of 5 active" + Select/Clear all ──
-            has_all = active_count == 5
-            lnk_label = "Clear all" if has_all else "Select all"
-            st.markdown(f"""
-            <style>
-            .st-key-qf_clear_all button {{
-                background: transparent !important; border: none !important;
-                color: #3B82F6 !important; font-size: 0.7rem !important;
-                font-weight: 600 !important; padding: 0 !important;
-                height: auto !important; min-height: 0 !important;
-                box-shadow: none !important; cursor: pointer !important;
-            }}
-            .st-key-qf_clear_all button:hover {{
-                color: #60A5FA !important; text-decoration: underline !important;
-            }}
-            .st-key-qf_clear_all button * {{
-                color: inherit !important; font-size: inherit !important;
-            }}
-            </style>
-            <div style='display:flex; align-items:center; justify-content:space-between; margin-top:8px; padding:0;'>
-                <span style='font-size:0.72rem; color:#4B5563; font-weight:500;
-                    font-family:Inter,sans-serif;'>{active_count} of 5 active</span>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button(lnk_label, key="qf_clear_all", use_container_width=False):
-                st.session_state['filter_mode'] = set() if has_all else {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
-                st.rerun()
+                # ════════════════════════════════════════════════
+                # STATE C — FILTERS MODULE
+                # ════════════════════════════════════════════════
+                elif active_panel == 'filters':
+                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:12px 0 5px 0;'>SELECT REGION</p>", unsafe_allow_html=True)
+                    data_final = st.session_state.get('data_final', pd.DataFrame())
+                    if not data_final.empty:
+                        from components.telegram import get_region_from_olt
+                        regions = sorted(list(set(data_final['OLT'].apply(get_region_from_olt))))
+                        olt_options = ["All OLT"] + regions
+                        selected_olt = st.selectbox("Select Region:", options=olt_options, index=olt_options.index(st.session_state.get('selected_olt', 'All OLT')), label_visibility="collapsed", key="flt_region_select")
+                        st.session_state['selected_olt'] = selected_olt
+                    else:
+                        st.selectbox("Select Region:", options=["Waiting for Scan..."], disabled=True, label_visibility="collapsed", key="flt_region_select_waiting")
+                    
+                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:20px 0 5px 0;'>SEARCH SN / NAME</p>", unsafe_allow_html=True)
+                    s_term = st.text_input("Search SN / Name:", value=st.session_state.get('search_sn_sidebar', ''), label_visibility="collapsed", placeholder="🔍  Search...", key="flt_search_input")
+                    st.session_state['search_sn_sidebar'] = s_term
+                    
+                    if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'):
+                        st.markdown("<div style='height:15px;'></div>", unsafe_allow_html=True)
+                        if st.button("Clear Filters", use_container_width=True, key="flt_clear_filters_btn"):
+                            st.session_state['selected_olt'] = 'All OLT'
+                            st.session_state['search_sn_sidebar'] = ''
+                            st.rerun()
+
+                # ════════════════════════════════════════════════
+                # STATE D — QUICK FILTERS MODULE
+                # ════════════════════════════════════════════════
+                elif active_panel == 'quick':
+                    active_filters = st.session_state.get('filter_mode', {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'})
+                    if isinstance(active_filters, str):
+                        active_filters = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'} if active_filters == 'All' else {active_filters}
+                        st.session_state['filter_mode'] = active_filters
+
+                    filter_config = {
+                        "Online":    {"color": "#10B981", "icon_bg": "rgba(16,185,129,0.15)",  "fa_code": "\\f0ac",  "label": "Online"},
+                        "LOS":       {"color": "#EF4444", "icon_bg": "rgba(239,68,68,0.15)",   "fa_code": "\\f00d",  "label": "Offline"},
+                        "BadRx":     {"color": "#F59E0B", "icon_bg": "rgba(245,158,11,0.15)",  "fa_code": "\\f071",  "label": "Warning"},
+                        "Dyinggasp": {"color": "#A855F7", "icon_bg": "rgba(168,85,247,0.15)",  "fa_code": "\\f1e6",  "label": "Power"},
+                        "Suspend":   {"color": "#6B7280", "icon_bg": "rgba(107,114,128,0.15)", "fa_code": "\\f023",  "label": "Locked"},
+                    }
+
+                    active_count = len(active_filters)
+
+                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:12px 0 14px 0;'>STATUS FILTERS</p>", unsafe_allow_html=True)
+
+                    chip_css = "<style>"
+                    for mode, cfg in filter_config.items():
+                        is_active = (mode in active_filters)
+                        bg      = f"{cfg['color']}14" if is_active else "rgba(255,255,255,0.02)"
+                        border  = f"1.5px solid {cfg['color']}50" if is_active else "1px solid rgba(255,255,255,0.05)"
+                        border_active = f"1.5px solid {cfg['color']}" if is_active else border
+                        txt_col = "#F3F4F6" if is_active else "#6B7280"
+                        chk_bg  = cfg['color'] if is_active else "rgba(255,255,255,0.06)"
+                        chk_ch  = "\\2713" if is_active else ""
+                        chk_col = "#fff" if is_active else "transparent"
+
+                        chip_css += f"""
+                        .st-key-qf_toggle_{mode}, .st-key-qf_toggle_{mode.lower()} {{
+                            margin-bottom: 10px !important;
+                        }}
+                        .st-key-qf_toggle_{mode} button, .st-key-qf_toggle_{mode.lower()} button {{
+                            background: {bg} !important;
+                            border: {border_active} !important;
+                            border-radius: 14px !important;
+                            height: 52px !important;
+                            width: 100% !important;
+                            padding: 0 14px !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: flex-start !important;
+                            gap: 12px !important;
+                            cursor: pointer !important;
+                            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                            box-shadow: none !important;
+                        }}
+                        .st-key-qf_toggle_{mode} button:hover, .st-key-qf_toggle_{mode.lower()} button:hover {{
+                            background: {cfg['color']}20 !important;
+                            border-color: {cfg['color']}80 !important;
+                        }}
+                        .st-key-qf_toggle_{mode} button::before, .st-key-qf_toggle_{mode.lower()} button::before {{
+                            content: "{cfg['fa_code']}";
+                            font-family: "Font Awesome 6 Free", "FontAwesome";
+                            font-weight: 900;
+                            background: {cfg['icon_bg']};
+                            color: {cfg['color']};
+                            min-width: 34px; width: 34px; height: 34px;
+                            border-radius: 10px;
+                            display: inline-flex;
+                            align-items: center; justify-content: center;
+                            font-size: 0.85rem;
+                            flex-shrink: 0;
+                        }}
+                        .st-key-qf_toggle_{mode} button span,
+                        .st-key-qf_toggle_{mode} button p,
+                        .st-key-qf_toggle_{mode} button div,
+                        .st-key-qf_toggle_{mode.lower()} button span,
+                        .st-key-qf_toggle_{mode.lower()} button p,
+                        .st-key-qf_toggle_{mode.lower()} button div {{
+                            flex: 1 !important;
+                            text-align: left !important;
+                            color: {txt_col} !important;
+                            font-size: 0.88rem !important;
+                            font-weight: 600 !important;
+                            margin: 0 !important;
+                            font-family: 'Inter', sans-serif !important;
+                        }}
+                        .st-key-qf_toggle_{mode} button::after, .st-key-qf_toggle_{mode.lower()} button::after {{
+                            content: "{chk_ch}";
+                            background: {chk_bg};
+                            color: {chk_col};
+                            min-width: 22px; width: 22px; height: 22px;
+                            border-radius: 50%;
+                            display: inline-flex;
+                            align-items: center; justify-content: center;
+                            font-size: 0.55rem; font-weight: 800;
+                            margin-left: auto;
+                            flex-shrink: 0;
+                            border: {f"2px solid {cfg['color']}40" if is_active else "1.5px solid rgba(255,255,255,0.08)"};
+                        }}
+                        """
+                    chip_css += "</style>"
+                    st.markdown(chip_css, unsafe_allow_html=True)
+
+                    for mode, cfg in filter_config.items():
+                        if st.button(cfg["label"], key=f"qf_toggle_{mode}", use_container_width=True):
+                            if mode in active_filters:
+                                active_filters.discard(mode)
+                            else:
+                                active_filters.add(mode)
+                            st.session_state['filter_mode'] = active_filters
+                            st.rerun()
+
+                    has_all = active_count == 5
+                    lnk_label = "Clear all" if has_all else "Select all"
+                    st.markdown(f"""
+                    <style>
+                    .st-key-qf_clear_all button {{
+                        background: transparent !important; border: none !important;
+                        color: #3B82F6 !important; font-size: 0.7rem !important;
+                        font-weight: 600 !important; padding: 0 !important;
+                        height: auto !important; min-height: 0 !important;
+                        box-shadow: none !important; cursor: pointer !important;
+                    }}
+                    .st-key-qf_clear_all button:hover {{
+                        color: #60A5FA !important; text-decoration: underline !important;
+                    }}
+                    .st-key-qf_clear_all button * {{
+                        color: inherit !important; font-size: inherit !important;
+                    }}
+                    </style>
+                    <div style='display:flex; align-items:center; justify-content:space-between; margin-top:8px; padding:0;'>
+                        <span style='font-size:0.72rem; color:#4B5563; font-weight:500; font-family:Inter,sans-serif;'>{active_count} of 5 active</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    if st.button(lnk_label, key="qf_clear_all", use_container_width=False):
+                        st.session_state['filter_mode'] = set() if has_all else {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
+                        st.rerun()
+
 # --- FILTER DATA FOR DISPLAY ---
 df_raw = st.session_state['data_final']
 df_filtered = df_raw.copy()

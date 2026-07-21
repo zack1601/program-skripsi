@@ -103,30 +103,6 @@ def parse_ont_optical_info(raw_output: str) -> dict:
     return result
 
 
-def parse_ont_detail(raw_output: str) -> dict:
-    """Parse output detail ONT (description, profiles, dll)."""
-    result = {
-        "description": "", "sn": "",
-        "line_profile": "", "service_profile": "",
-        "raw": raw_output,
-    }
-    
-    if not raw_output or not raw_output.strip():
-        return result
-    
-    patterns = {
-        "description": r'Description\s*:\s*(.+)',
-        "sn": r'SN\s*:\s*(\S+)',
-        "line_profile": r'Line profile\s*:\s*(.+)',
-        "service_profile": r'Service profile\s*:\s*(.+)',
-    }
-    
-    for key, pattern in patterns.items():
-        match = re.search(pattern, raw_output, re.IGNORECASE)
-        if match:
-            result[key] = match.group(1).strip()
-    
-    return result
 def strip_ansi(text: str) -> str:
     """Hapus ANSI escape codes dari teks."""
     return re.sub(r'\x1b\[[0-9;]*[a-zA-Z]', '', text)
@@ -444,4 +420,3 @@ def check_coordinate_anomaly(raw_lat, raw_lon, sanitized_lat, sanitized_lon) -> 
             return True
             
     return False
-

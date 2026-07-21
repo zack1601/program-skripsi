@@ -322,7 +322,7 @@ if not st.session_state['data_final'].empty:
         display_df.insert(0, 'No', range(1, len(display_df) + 1))
         
         display_df['Serial Number'] = display_df['Serial Number'].apply(mask_sn)
-        cols_order = ["No", "OLT", "Nama/ID Pelanggan", "Port", "Serial Number", "Category", "Power/Cause"]
+        cols_order = ["No", "OLT", "Nama/ID Pelanggan", "Port", "Serial Number", "Power/Cause"]
         
         st.dataframe(display_df[cols_order], use_container_width=True, height=450, hide_index=True)
 
