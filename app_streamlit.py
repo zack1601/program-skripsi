@@ -303,10 +303,10 @@ st.markdown(f"""
        PANEL CONTENT & HEADERS
        ══════════════════════════════════════════════════ */
     .panel-header {{
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 20px 18px 14px 18px;
+        padding: 0 18px 14px 18px;
         border-bottom: 1px solid rgba(255,255,255,0.05);
         margin-bottom: 16px;
+        margin-top: -58px; /* pull up under the close button row */
     }}
     .panel-module-label {{
         font-family: 'Inter', sans-serif;
@@ -319,9 +319,13 @@ st.markdown(f"""
         line-height: 1.2;
     }}
 
-    /* Close Button — in header columns layout */
+    /* Close Button — renders first, floated right via margin-left:auto, 
+       negative margin-bottom makes panel-header slide up to same row level */
     .st-key-panel_close {{
-        margin: 0 !important; padding: 0 !important;
+        display: flex !important;
+        justify-content: flex-end !important;
+        padding: 14px 14px 0 0 !important;
+        margin-bottom: 0 !important;
     }}
     .st-key-panel_close button {{
         width: 32px !important; height: 32px !important;
@@ -586,23 +590,20 @@ with st.sidebar:
         
     with panel_col:
         if active_panel:
-            # ── Panel Header Row: Title left, Close button right ──
             panel_titles = {'system': 'System', 'alarm': 'Alarm', 'filters': 'Filters', 'quick': 'Quick'}
-            hdr_left, hdr_right = st.columns([5, 1])
-            with hdr_left:
-                st.markdown(f"""
-                <div style='padding: 18px 0 10px 0;'>
-                    <div class='panel-module-label'>MODULE</div>
-                    <div class='panel-title'>{panel_titles.get(active_panel, '')}</div>
-                </div>
-                """, unsafe_allow_html=True)
-            with hdr_right:
-                st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
-                if st.button("✕", key="panel_close"):
-                    st.session_state['active_panel'] = None
-                    st.rerun()
 
-            st.markdown("<div style='border-bottom:1px solid rgba(255,255,255,0.05); margin-bottom:14px;'></div>", unsafe_allow_html=True)
+            # ── Close button FIRST — CSS pulls it to top-right visually ──
+            if st.button("✕", key="panel_close"):
+                st.session_state['active_panel'] = None
+                st.rerun()
+
+            # ── Panel title rendered after — CSS pulls it up alongside the button ──
+            st.markdown(f"""
+            <div class='panel-header'>
+                <div class='panel-module-label'>MODULE</div>
+                <div class='panel-title'>{panel_titles.get(active_panel, '')}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
             # ── Use st.empty() for panel content — forces full teardown on switch ──
             panel_slot = st.empty()
