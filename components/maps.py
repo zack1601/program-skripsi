@@ -298,9 +298,8 @@ def render_map(df_filtered):
                                     popup=folium.Popup(tooltip_ont, max_width=350)
                                 ).add_to(m)
             if coordinates_list: m.fit_bounds(coordinates_list, padding=(30, 30))
-            import hashlib
-            df_hash = hashlib.md5(pd.util.hash_pandas_object(df_filtered).values).hexdigest()
-            st_folium(m, width="100%", height=350, key=f"ftth_map_{df_hash}", returned_objects=[])
+            map_key = f"ftth_map_{len(df_filtered)}"
+            st_folium(m, width="100%", height=350, key=map_key, returned_objects=[])
         else:
             st.info("Waiting for GPS Data... (Map will appear here)")
     else:

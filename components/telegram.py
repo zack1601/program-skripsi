@@ -7,11 +7,14 @@ import os
 from typing import Optional
 import config
 
+from functools import lru_cache
+
 ALARM_HISTORY_FILE = "output/alarm_history.json"
 
+@lru_cache(maxsize=1024)
 def get_region_from_olt(olt_name):
     """
-    Menentukan wilayah berdasarkan nama OLT.
+    Menentukan wilayah berdasarkan nama OLT (cached with LRU).
     """
     olt_name_upper = str(olt_name).upper()
     if "FATMAWATI" in olt_name_upper:

@@ -949,11 +949,18 @@ if not df_raw.empty:
     if len(active_filters) < 5:
         df_filtered = df_filtered[df_filtered['Category'].isin(active_filters)]
     if st.session_state.get('selected_olt', 'All OLT') != "All OLT":
+        sel_olt = st.session_state.get('selected_olt')
         from components.telegram import get_region_from_olt
-        df_filtered = df_filtered[df_filtered['OLT'].apply(get_region_from_olt) == st.session_state.get('selected_olt')]
+        df_filtered = df_filtered[df_filtered['OLT'].apply(get_region_from_olt) == sel_olt]
     if st.session_state.get('search_sn_sidebar'):
-        s_term = st.session_state.get('search_sn_sidebar')
-        df_filtered = df_filtered[df_filtered.astype(str).apply(lambda x: x.str.contains(s_term, case=False)).any(axis=1)]
+        s_term = str(st.session_state.get('search_sn_sidebar')).strip().lower()
+        if s_term:
+            search_cols = [c for c in ['Serial Number', 'Nama/ID Pelanggan', 'OLT', 'PORT', 'Category', 'Alamat', 'SN', 'IP_OLT'] if c in df_filtered.columns]
+            if search_cols:
+                mask = pd.Series(False, index=df_filtered.index)
+                for col in search_cols:
+                    mask |= df_filtered[col].astype(str).str.lower().str.contains(s_term, regex=False, na=False)
+                df_filtered = df_filtered[mask]
 
 # --- RENDER DASHBOARD (Hanya tampil jika TIDAK sedang proses scan) ---
 if not st.session_state.get('is_scanning', False):

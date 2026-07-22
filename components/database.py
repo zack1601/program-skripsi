@@ -2,6 +2,7 @@ import sqlite3
 import pandas as pd
 import os
 import datetime
+import streamlit as st
 
 # Timezone Jakarta (WIB = UTC+7)
 _WIB = datetime.timezone(datetime.timedelta(hours=7))
@@ -77,11 +78,16 @@ def save_scan_results(df):
         
         # Append to history
         df_history.to_sql('scan_history', conn, if_exists='append', index=False)
+        try:
+            st.cache_data.clear()
+        except:
+            pass
     except Exception as e:
         print(f"Error saving to database: {e}")
     finally:
         conn.close()
 
+@st.cache_data(ttl=5, show_spinner=False)
 def load_latest_scan():
     """Load the most recent scan data from the database."""
     if not os.path.exists(DB_PATH):
@@ -97,6 +103,7 @@ def load_latest_scan():
     finally:
         conn.close()
 
+@st.cache_data(ttl=5, show_spinner=False)
 def get_historical_trend():
     """
     Get a summary of scan history for the line chart.
