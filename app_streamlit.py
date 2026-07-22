@@ -307,6 +307,7 @@ st.markdown(f"""
         border-bottom: 1px solid rgba(255,255,255,0.05);
         margin-bottom: 16px;
         margin-top: -58px; /* pull up under the close button row */
+        pointer-events: none; /* let clicks pass through to button behind */
     }}
     .panel-module-label {{
         font-family: 'Inter', sans-serif;
@@ -320,12 +321,13 @@ st.markdown(f"""
     }}
 
     /* Close Button — renders first in DOM, CSS pushes it to top-right.
-       Streamlit nests button in multiple full-width divs, so we must
-       target ALL levels to achieve right-alignment. */
+       z-index ensures it stays clickable above the panel-header overlay. */
     .st-key-panel_close {{
         text-align: right !important;
         padding: 14px 14px 0 0 !important;
         margin-bottom: 0 !important;
+        position: relative !important;
+        z-index: 10 !important;
     }}
     .st-key-panel_close > div,
     .st-key-panel_close > div > div,
@@ -349,6 +351,9 @@ st.markdown(f"""
         transition: all 0.2s !important;
         box-shadow: none !important;
         float: right !important;
+        position: relative !important;
+        z-index: 11 !important;
+        cursor: pointer !important;
     }}
     .st-key-panel_close button * {{
         font-size: 0.9rem !important; margin: 0 !important; color: inherit !important;
@@ -486,6 +491,19 @@ st.markdown(f"""
         padding-left: 18px !important;
         padding-right: 18px !important;
     }}
+
+    /* ── TAB LABELS — White text, no icons ── */
+    [data-testid="stTabs"] button[data-baseweb="tab"] {{
+        color: #9CA3AF !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 600 !important;
+    }}
+    [data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] {{
+        color: #F9FAFB !important;
+    }}
+    [data-testid="stTabs"] button[data-baseweb="tab"]:hover {{
+        color: #E5E7EB !important;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -616,9 +634,8 @@ with st.sidebar:
             </div>
             """, unsafe_allow_html=True)
 
-            # ── Use st.empty() for panel content — forces full teardown on switch ──
-            panel_slot = st.empty()
-            with panel_slot.container():
+            # ── Dynamic-key container forces Streamlit to unmount old panel DOM ──
+            with st.container(key=f"panel_body_{active_panel}"):
                 # ════════════════════════════════════════════════
                 # STATE A — SYSTEM MODULE
                 # ════════════════════════════════════════════════
@@ -788,11 +805,11 @@ with st.sidebar:
                         st.session_state['filter_mode'] = active_filters
 
                     filter_config = {
-                        "Online":    {"color": "#10B981", "icon_bg": "rgba(16,185,129,0.15)",  "fa_code": "\\\\f0ac",  "label": "Online"},
-                        "LOS":       {"color": "#EF4444", "icon_bg": "rgba(239,68,68,0.15)",   "fa_code": "\\\\f00d",  "label": "Offline"},
-                        "BadRx":     {"color": "#F59E0B", "icon_bg": "rgba(245,158,11,0.15)",  "fa_code": "\\\\f071",  "label": "Warning"},
-                        "Dyinggasp": {"color": "#A855F7", "icon_bg": "rgba(168,85,247,0.15)",  "fa_code": "\\\\f1e6",  "label": "Power"},
-                        "Suspend":   {"color": "#6B7280", "icon_bg": "rgba(107,114,128,0.15)", "fa_code": "\\\\f023",  "label": "Locked"},
+                        "Online":    {"color": "#10B981", "icon_bg": "rgba(16,185,129,0.15)",  "fa_code": "\\f0ac",  "label": "Online"},
+                        "LOS":       {"color": "#EF4444", "icon_bg": "rgba(239,68,68,0.15)",   "fa_code": "\\f00d",  "label": "Offline"},
+                        "BadRx":     {"color": "#F59E0B", "icon_bg": "rgba(245,158,11,0.15)",  "fa_code": "\\f071",  "label": "Warning"},
+                        "Dyinggasp": {"color": "#A855F7", "icon_bg": "rgba(168,85,247,0.15)",  "fa_code": "\\f1e6",  "label": "Power"},
+                        "Suspend":   {"color": "#6B7280", "icon_bg": "rgba(107,114,128,0.15)", "fa_code": "\\f023",  "label": "Locked"},
                     }
 
                     active_count = len(active_filters)
@@ -807,7 +824,7 @@ with st.sidebar:
                         border_active = f"1.5px solid {cfg['color']}" if is_active else border
                         txt_col = "#F3F4F6" if is_active else "#6B7280"
                         chk_bg  = cfg['color'] if is_active else "rgba(255,255,255,0.06)"
-                        chk_ch  = "\\\\2713" if is_active else ""
+                        chk_ch  = "\\2713" if is_active else ""
                         chk_col = "#fff" if is_active else "transparent"
 
                         chip_css += f"""
@@ -953,7 +970,7 @@ if not st.session_state.get('is_scanning', False):
 
 
     st.markdown("<br>", unsafe_allow_html=True)
-    tab1, tab2, tab3 = st.tabs(["🌍 Live Monitoring", "📈 Analytics & Trend", "🛠️ Field Updates"])
+    tab1, tab2, tab3 = st.tabs(["Live Monitoring", "Analytics & Trend", "Field Updates"])
     
     with tab1:
 
