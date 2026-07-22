@@ -634,8 +634,8 @@ with st.sidebar:
             </div>
             """, unsafe_allow_html=True)
 
-            # ── Dynamic-key container forces Streamlit to unmount old panel DOM ──
-            with st.container(key=f"panel_body_{active_panel}"):
+            # ── Fixed-key container ensures Streamlit completely replaces panel DOM ──
+            with st.container(key="sidebar_panel_container"):
                 # ════════════════════════════════════════════════
                 # STATE A — SYSTEM MODULE
                 # ════════════════════════════════════════════════
