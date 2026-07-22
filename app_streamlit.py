@@ -684,6 +684,7 @@ with st.sidebar:
                             st.session_state['stop_scanning'] = False
                             st.session_state['temp_results'] = []
                             st.session_state['data_final'] = pd.DataFrame()
+                            st.session_state['scan_performed'] = False
                             st.rerun()
 
                     _last_sync = get_last_sync_time()
@@ -804,10 +805,10 @@ with st.sidebar:
                         st.markdown("<p style='font-size:0.75rem; color:#4B5563;'>No recent logs.</p>", unsafe_allow_html=True)
 
                 # ════════════════════════════════════════════════
-                # STATE C — FILTERS MODULE
+                # STATE C & D — UNIFIED FILTERS MODULE
                 # ════════════════════════════════════════════════
-                elif active_panel == 'filters':
-                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:12px 0 5px 0;'>SELECT REGION</p>", unsafe_allow_html=True)
+                elif active_panel in ['filters', 'quick']:
+                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:8px 0 4px 0;'>SELECT REGION</p>", unsafe_allow_html=True)
                     data_final = st.session_state.get('data_final', pd.DataFrame())
                     if not data_final.empty:
                         from components.telegram import get_region_from_olt
@@ -818,21 +819,11 @@ with st.sidebar:
                     else:
                         st.selectbox("Select Region:", options=["Waiting for Scan..."], disabled=True, label_visibility="collapsed", key="flt_region_select_waiting")
                     
-                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:20px 0 5px 0;'>SEARCH SN / NAME</p>", unsafe_allow_html=True)
+                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:14px 0 4px 0;'>SEARCH SN / NAME</p>", unsafe_allow_html=True)
                     s_term = st.text_input("Search SN / Name:", value=st.session_state.get('search_sn_sidebar', ''), label_visibility="collapsed", placeholder="🔍  Search...", key="flt_search_input")
                     st.session_state['search_sn_sidebar'] = s_term
                     
-                    if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'):
-                        st.markdown("<div style='height:15px;'></div>", unsafe_allow_html=True)
-                        if st.button("Clear Filters", use_container_width=True, key="flt_clear_filters_btn"):
-                            st.session_state['selected_olt'] = 'All OLT'
-                            st.session_state['search_sn_sidebar'] = ''
-                            st.rerun()
-
-                # ════════════════════════════════════════════════
-                # STATE D — QUICK FILTERS MODULE
-                # ════════════════════════════════════════════════
-                elif active_panel == 'quick':
+                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:16px 0 10px 0;'>STATUS FILTERS</p>", unsafe_allow_html=True)
                     active_filters = st.session_state.get('filter_mode', {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'})
                     if isinstance(active_filters, str):
                         active_filters = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'} if active_filters == 'All' else {active_filters}
@@ -846,10 +837,6 @@ with st.sidebar:
                         "Suspend":   {"color": "#6B7280", "icon_bg": "rgba(107,114,128,0.15)", "fa_code": "\\f023",  "label": "Suspend"},
                     }
 
-                    active_count = len(active_filters)
-
-                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:12px 0 14px 0;'>STATUS FILTERS</p>", unsafe_allow_html=True)
-
                     chip_css = "<style>"
                     for mode, cfg in filter_config.items():
                         is_active = (mode in active_filters)
@@ -862,71 +849,43 @@ with st.sidebar:
                         chk_col = "#fff" if is_active else "transparent"
 
                         chip_css += f"""
-                        .st-key-qf_toggle_{mode}, .st-key-qf_toggle_{mode.lower()} {{
-                            margin-bottom: 10px !important;
-                        }}
-                        .st-key-qf_toggle_{mode} button, .st-key-qf_toggle_{mode.lower()} button {{
+                        .st-key-qf_toggle_{mode} button {{
                             background: {bg} !important;
                             border: {border_active} !important;
-                            border-radius: 12px !important;
-                            height: 48px !important;
+                            border-radius: 10px !important;
+                            height: 42px !important;
                             width: 100% !important;
                             padding: 0 10px !important;
                             display: flex !important;
                             align-items: center !important;
                             justify-content: flex-start !important;
                             gap: 8px !important;
+                            margin-bottom: 6px !important;
                             cursor: pointer !important;
-                            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
                             box-shadow: none !important;
                         }}
-                        .st-key-qf_toggle_{mode} button:hover, .st-key-qf_toggle_{mode.lower()} button:hover {{
-                            background: {cfg['color']}20 !important;
-                            border-color: {cfg['color']}80 !important;
-                        }}
-                        .st-key-qf_toggle_{mode} button::before, .st-key-qf_toggle_{mode.lower()} button::before {{
+                        .st-key-qf_toggle_{mode} button::before {{
                             content: "{cfg['fa_code']}";
                             font-family: "Font Awesome 6 Free", "FontAwesome";
                             font-weight: 900;
                             background: {cfg['icon_bg']};
                             color: {cfg['color']};
-                            min-width: 30px; width: 30px; height: 30px;
-                            border-radius: 8px;
+                            min-width: 26px; width: 26px; height: 26px;
+                            border-radius: 6px;
                             display: inline-flex;
                             align-items: center; justify-content: center;
-                            font-size: 0.8rem;
+                            font-size: 0.75rem;
                             flex-shrink: 0;
                         }}
                         .st-key-qf_toggle_{mode} button span,
-                        .st-key-qf_toggle_{mode} button p,
-                        .st-key-qf_toggle_{mode} button div,
-                        .st-key-qf_toggle_{mode.lower()} button span,
-                        .st-key-qf_toggle_{mode.lower()} button p,
-                        .st-key-qf_toggle_{mode.lower()} button div {{
+                        .st-key-qf_toggle_{mode} button p {{
                             flex: 1 !important;
                             text-align: left !important;
                             color: {txt_col} !important;
                             font-size: 0.75rem !important;
                             font-weight: 700 !important;
                             margin: 0 !important;
-                            font-family: 'Inter', sans-serif !important;
                             white-space: nowrap !important;
-                            overflow: hidden !important;
-                            text-overflow: ellipsis !important;
-                            letter-spacing: 0.3px !important;
-                        }}
-                        .st-key-qf_toggle_{mode} button::after, .st-key-qf_toggle_{mode.lower()} button::after {{
-                            content: "{chk_ch}";
-                            background: {chk_bg};
-                            color: {chk_col};
-                            min-width: 20px; width: 20px; height: 20px;
-                            border-radius: 50%;
-                            display: inline-flex;
-                            align-items: center; justify-content: center;
-                            font-size: 0.55rem; font-weight: 800;
-                            margin-left: auto;
-                            flex-shrink: 0;
-                            border: {f"2px solid {cfg['color']}40" if is_active else "1.5px solid rgba(255,255,255,0.08)"};
                         }}
                         """
                     chip_css += "</style>"
@@ -941,30 +900,11 @@ with st.sidebar:
                             st.session_state['filter_mode'] = active_filters
                             st.rerun()
 
-                    has_all = active_count == 5
-                    lnk_label = "Clear all" if has_all else "Select all"
-                    st.markdown(f"""
-                    <style>
-                    .st-key-qf_clear_all button {{
-                        background: transparent !important; border: none !important;
-                        color: #3B82F6 !important; font-size: 0.7rem !important;
-                        font-weight: 600 !important; padding: 0 !important;
-                        height: auto !important; min-height: 0 !important;
-                        box-shadow: none !important; cursor: pointer !important;
-                    }}
-                    .st-key-qf_clear_all button:hover {{
-                        color: #60A5FA !important; text-decoration: underline !important;
-                    }}
-                    .st-key-qf_clear_all button * {{
-                        color: inherit !important; font-size: inherit !important;
-                    }}
-                    </style>
-                    <div style='display:flex; align-items:center; justify-content:space-between; margin-top:8px; padding:0;'>
-                        <span style='font-size:0.72rem; color:#4B5563; font-weight:500; font-family:Inter,sans-serif;'>{active_count} of 5 active</span>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    if st.button(lnk_label, key="qf_clear_all", use_container_width=False):
-                        st.session_state['filter_mode'] = set() if has_all else {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
+                    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+                    if st.button("Clear All Filters", use_container_width=True, key="flt_clear_all_unified"):
+                        st.session_state['selected_olt'] = 'All OLT'
+                        st.session_state['search_sn_sidebar'] = ''
+                        st.session_state['filter_mode'] = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
                         st.rerun()
 
 # --- FILTER DATA FOR DISPLAY ---
@@ -1013,8 +953,8 @@ if not st.session_state.get('is_scanning', False):
     # --- RENDER METRICS & RISK SCORE GAUGE (STICKY HEADER) ---
     render_metrics(df_filtered)
 
-    # --- REPEAT FAULT / CHRONIC ONT WARNING BANNER (Hanya tampil jika ada data hasil scan) ---
-    if not df_filtered.empty and not st.session_state.get('is_scanning', False):
+    # --- REPEAT FAULT / CHRONIC ONT WARNING BANNER (Hanya tampil setelah scan dijalankan) ---
+    if st.session_state.get('scan_performed', False) and not df_filtered.empty and not st.session_state.get('is_scanning', False):
         df_chronic = get_chronic_onts(days=7, min_incidents=3)
         if not df_chronic.empty:
             chronic_count = len(df_chronic)
@@ -1712,6 +1652,7 @@ if st.session_state['is_scanning']:
                 final_df = final_df.drop_duplicates(subset=['Serial Number'], keep='first')
                 st.session_state['data_final'] = final_df
                 save_scan_results(final_df)
+                st.session_state['scan_performed'] = True
         
         st.session_state['is_scanning'] = False
         st.session_state['stop_scanning'] = False
