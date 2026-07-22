@@ -809,7 +809,7 @@ with st.sidebar:
                         "LOS":       {"color": "#EF4444", "icon_bg": "rgba(239,68,68,0.15)",   "fa_code": "\\f00d",  "label": "Offline"},
                         "BadRx":     {"color": "#F59E0B", "icon_bg": "rgba(245,158,11,0.15)",  "fa_code": "\\f071",  "label": "Warning"},
                         "Dyinggasp": {"color": "#A855F7", "icon_bg": "rgba(168,85,247,0.15)",  "fa_code": "\\f1e6",  "label": "Power"},
-                        "Suspend":   {"color": "#6B7280", "icon_bg": "rgba(107,114,128,0.15)", "fa_code": "\\f023",  "label": "Locked"},
+                        "Suspend":   {"color": "#6B7280", "icon_bg": "rgba(107,114,128,0.15)", "fa_code": "\\f023",  "label": "Suspend"},
                     }
 
                     active_count = len(active_filters)
@@ -872,7 +872,7 @@ with st.sidebar:
                             flex: 1 !important;
                             text-align: left !important;
                             color: {txt_col} !important;
-                            font-size: 0.88rem !important;
+                            font-size: 0.72rem !important;
                             font-weight: 600 !important;
                             margin: 0 !important;
                             font-family: 'Inter', sans-serif !important;
