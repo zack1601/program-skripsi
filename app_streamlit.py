@@ -806,9 +806,9 @@ with st.sidebar:
 
                     filter_config = {
                         "Online":    {"color": "#10B981", "icon_bg": "rgba(16,185,129,0.15)",  "fa_code": "\\f0ac",  "label": "Online"},
-                        "LOS":       {"color": "#EF4444", "icon_bg": "rgba(239,68,68,0.15)",   "fa_code": "\\f00d",  "label": "Offline"},
-                        "BadRx":     {"color": "#F59E0B", "icon_bg": "rgba(245,158,11,0.15)",  "fa_code": "\\f071",  "label": "Warning"},
-                        "Dyinggasp": {"color": "#A855F7", "icon_bg": "rgba(168,85,247,0.15)",  "fa_code": "\\f1e6",  "label": "Power"},
+                        "LOS":       {"color": "#EF4444", "icon_bg": "rgba(239,68,68,0.15)",   "fa_code": "\\f00d",  "label": "LOS"},
+                        "BadRx":     {"color": "#F59E0B", "icon_bg": "rgba(245,158,11,0.15)",  "fa_code": "\\f071",  "label": "BadRx"},
+                        "Dyinggasp": {"color": "#A855F7", "icon_bg": "rgba(168,85,247,0.15)",  "fa_code": "\\f1e6",  "label": "Dying"},
                         "Suspend":   {"color": "#6B7280", "icon_bg": "rgba(107,114,128,0.15)", "fa_code": "\\f023",  "label": "Suspend"},
                     }
 
