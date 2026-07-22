@@ -504,6 +504,29 @@ st.markdown(f"""
     [data-testid="stTabs"] button[data-baseweb="tab"]:hover {{
         color: #E5E7EB !important;
     }}
+
+    /* ── ST.DOWNLOAD_BUTTON DARK COMMAND CENTER THEME ── */
+    div[data-testid="stDownloadButton"] button,
+    .stDownloadButton button {{
+        background: #161B2E !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        color: #E5E7EB !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        transition: all 0.2s ease !important;
+    }}
+    div[data-testid="stDownloadButton"] button:hover,
+    .stDownloadButton button:hover {{
+        background: #21262d !important;
+        border-color: #00F0FF !important;
+        color: #00F0FF !important;
+        box-shadow: 0 0 12px rgba(0, 240, 255, 0.25) !important;
+    }}
+    div[data-testid="stDownloadButton"] button *,
+    .stDownloadButton button * {{
+        color: inherit !important;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -618,24 +641,23 @@ with st.sidebar:
         st.markdown(f"<style>{dynamic_css}</style>", unsafe_allow_html=True)
         
     with panel_col:
+        panel_slot = st.empty()
         if active_panel:
             panel_titles = {'system': 'System', 'alarm': 'Alarm', 'filters': 'Filters', 'quick': 'Quick'}
+            panel_slot.empty()
+            with panel_slot.container():
+                # ── Close button FIRST — CSS pulls it to top-right visually ──
+                if st.button("✕", key="panel_close"):
+                    st.session_state['active_panel'] = None
+                    st.rerun()
 
-            # ── Close button FIRST — CSS pulls it to top-right visually ──
-            if st.button("✕", key="panel_close"):
-                st.session_state['active_panel'] = None
-                st.rerun()
-
-            # ── Panel title rendered after — CSS pulls it up alongside the button ──
-            st.markdown(f"""
-            <div class='panel-header'>
-                <div class='panel-module-label'>MODULE</div>
-                <div class='panel-title'>{panel_titles.get(active_panel, '')}</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-            # ── Fixed-key container ensures Streamlit completely replaces panel DOM ──
-            with st.container(key="sidebar_panel_container"):
+                # ── Panel title rendered after — CSS pulls it up alongside the button ──
+                st.markdown(f"""
+                <div class='panel-header'>
+                    <div class='panel-module-label'>MODULE</div>
+                    <div class='panel-title'>{panel_titles.get(active_panel, '')}</div>
+                </div>
+                """, unsafe_allow_html=True)
                 # ════════════════════════════════════════════════
                 # STATE A — SYSTEM MODULE
                 # ════════════════════════════════════════════════
@@ -991,25 +1013,26 @@ if not st.session_state.get('is_scanning', False):
     # --- RENDER METRICS & RISK SCORE GAUGE (STICKY HEADER) ---
     render_metrics(df_filtered)
 
-    # --- REPEAT FAULT / CHRONIC ONT WARNING BANNER ---
-    df_chronic = get_chronic_onts(days=7, min_incidents=3)
-    if not df_chronic.empty:
-        chronic_count = len(df_chronic)
-        st.markdown(f"""
-        <div style='background: rgba(244, 63, 94, 0.10); border: 1.5px solid rgba(244, 63, 94, 0.35); border-radius: 12px; padding: 14px 18px; margin: 16px 0 10px 0; display: flex; align-items: center; justify-content: space-between;'>
-            <div style='display: flex; align-items: center; gap: 12px;'>
-                <span style='font-size: 1.4rem;'>⚠️</span>
-                <div>
-                    <div style='color: #F43F5E; font-size: 0.95rem; font-weight: 800; letter-spacing: 0.5px;'>REPEAT FAULT WARNING ({chronic_count} ONT / PELANGGAN DETECTED)</div>
-                    <div style='color: #9CA3AF; font-size: 0.8rem; margin-top: 2px;'>Terdeteksi <b>{chronic_count} pelanggan</b> mengalami gangguan berulang ≥3 kali dalam 7 hari terakhir (direkomendasikan kunjungan teknisi/pemeliharaan fisik).</div>
+    # --- REPEAT FAULT / CHRONIC ONT WARNING BANNER (Hanya tampil jika ada data hasil scan) ---
+    if not df_filtered.empty and not st.session_state.get('is_scanning', False):
+        df_chronic = get_chronic_onts(days=7, min_incidents=3)
+        if not df_chronic.empty:
+            chronic_count = len(df_chronic)
+            st.markdown(f"""
+            <div style='background: rgba(244, 63, 94, 0.10); border: 1.5px solid rgba(244, 63, 94, 0.35); border-radius: 12px; padding: 14px 18px; margin: 16px 0 10px 0; display: flex; align-items: center; justify-content: space-between;'>
+                <div style='display: flex; align-items: center; gap: 12px;'>
+                    <span style='font-size: 1.4rem;'>⚠️</span>
+                    <div>
+                        <div style='color: #F43F5E; font-size: 0.95rem; font-weight: 800; letter-spacing: 0.5px;'>PERINGATAN GANGGUAN BERULANG ({chronic_count} ONT / PELANGGAN TERDETEKSI)</div>
+                        <div style='color: #9CA3AF; font-size: 0.8rem; margin-top: 2px;'>Terdeteksi <b>{chronic_count} pelanggan</b> mengalami gangguan berulang ≥3 kali dalam 7 hari terakhir (direkomendasikan kunjungan teknisi/pemeliharaan fisik).</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
-        with st.expander(f"🔴 Detail Pelanggan Repeat Fault (≥3x/minggu)", expanded=False):
-            rows_chr = ""
-            for idx_c, r_c in df_chronic.iterrows():
-                rows_chr += f"""<tr style='border-bottom:1px solid #21262d;'>
+            """, unsafe_allow_html=True)
+            with st.expander(f"🔴 Detail Pelanggan Gangguan Berulang (≥3x/minggu)", expanded=False):
+                rows_chr = ""
+                for idx_c, r_c in df_chronic.iterrows():
+                    rows_chr += f"""<tr style='border-bottom:1px solid #21262d;'>
 <td style='padding:10px 8px; font-size:0.85rem; color:#484f58; font-weight:600;'>{idx_c+1}</td>
 <td style='padding:10px 8px; font-size:0.9rem; color:#00F0FF; font-weight:700; font-family:monospace;'>{r_c['Serial Number']}</td>
 <td style='padding:10px 8px; font-size:0.88rem; color:#e6edf3; font-weight:600;'>{r_c['Pelanggan']}</td>
@@ -1019,7 +1042,7 @@ if not st.session_state.get('is_scanning', False):
 <td style='padding:10px 8px; font-size:0.8rem; color:#8b949e; font-family:monospace;'>{r_c['Waktu Terakhir']}</td>
 </tr>"""
 
-            table_chr_html = f"""<div style='background:#0d1117; border:1px solid #30363d; border-radius:12px; padding:12px 16px; margin-top:8px;'>
+                table_chr_html = f"""<div style='background:#0d1117; border:1px solid #30363d; border-radius:12px; padding:12px 16px; margin-top:8px;'>
 <table style='width:100%; border-collapse:collapse; text-align:left; font-family:Inter,sans-serif;'>
 <thead>
 <tr style='border-bottom:1.5px solid #30363d;'>
@@ -1037,7 +1060,7 @@ if not st.session_state.get('is_scanning', False):
 </tbody>
 </table>
 </div>"""
-            st.markdown(table_chr_html, unsafe_allow_html=True)
+                st.markdown(table_chr_html, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
     tab1, tab2, tab3 = st.tabs(["Live Monitoring", "Analytics & Trend", "Field Updates"])
