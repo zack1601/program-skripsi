@@ -29,7 +29,7 @@ from components.database import (
     save_alarm_sent, get_alarm_updates, init_db,
     cache_input_from_gsheets, load_input_cache,
     get_last_sync_time, load_scan_history_full,
-    update_alarm_status_by_sn, get_all_alarm_history,
+    update_alarm_status_by_sn, get_all_alarm_history, get_chronic_onts,
 )
 from components.validation import validate_input_dataframe
 from components.telegram_listener import start_listener
@@ -979,6 +979,23 @@ if not st.session_state.get('is_scanning', False):
     # --- RENDER METRICS & RISK SCORE GAUGE (STICKY HEADER) ---
     render_metrics(df_filtered)
 
+    # --- REPEAT FAULT / CHRONIC ONT WARNING BANNER ---
+    df_chronic = get_chronic_onts(days=7, min_incidents=3)
+    if not df_chronic.empty:
+        chronic_count = len(df_chronic)
+        st.markdown(f"""
+        <div style='background: rgba(244, 63, 94, 0.10); border: 1.5px solid rgba(244, 63, 94, 0.35); border-radius: 12px; padding: 14px 18px; margin: 16px 0 10px 0; display: flex; align-items: center; justify-content: space-between;'>
+            <div style='display: flex; align-items: center; gap: 12px;'>
+                <span style='font-size: 1.4rem;'>⚠️</span>
+                <div>
+                    <div style='color: #F43F5E; font-size: 0.95rem; font-weight: 800; letter-spacing: 0.5px;'>REPEAT FAULT WARNING ({chronic_count} ONT / PELANGGAN DETECTED)</div>
+                    <div style='color: #9CA3AF; font-size: 0.8rem; margin-top: 2px;'>Terdeteksi <b>{chronic_count} pelanggan</b> mengalami gangguan berulang ≥3 kali dalam 7 hari terakhir (direkomendasikan kunjungan teknisi/pemeliharaan fisik).</div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        with st.expander(f"🔴 Detail Pelanggan Repeat Fault (≥3x/minggu)", expanded=False):
+            st.dataframe(df_chronic, use_container_width=True, hide_index=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
     tab1, tab2, tab3 = st.tabs(["Live Monitoring", "Analytics & Trend", "Field Updates"])

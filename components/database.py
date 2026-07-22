@@ -419,3 +419,60 @@ def load_scan_history_full() -> pd.DataFrame:
         return pd.DataFrame()
     finally:
         conn.close()
+
+
+@st.cache_data(ttl=5, show_spinner=False)
+def get_chronic_onts(days: int = 7, min_incidents: int = 3) -> pd.DataFrame:
+    """
+    Identifikasi ONT / Pelanggan dengan gangguan berulang (Repeat Fault / Chronic ONT).
+    Kriteria: Mengalami gangguan (LOS/BadRx/Dyinggasp/Offline) >= min_incidents kali
+    dalam kurun waktu 'days' hari terakhir.
+    """
+    if not os.path.exists(DB_PATH):
+        return pd.DataFrame()
+        
+    conn = get_connection()
+    try:
+        cutoff_dt = (datetime.datetime.now(_WIB) - datetime.timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+        
+        query = """
+        SELECT 
+            sn AS "Serial Number",
+            pelanggan AS "Pelanggan",
+            olt AS "OLT",
+            category AS "Kategori Terakhir",
+            COUNT(*) AS "Jumlah Gangguan",
+            MAX(sent_at) AS "Waktu Terakhir"
+        FROM alarm_sent
+        WHERE sent_at >= ?
+          AND sn IS NOT NULL AND sn != ''
+        GROUP BY sn
+        HAVING COUNT(*) >= ?
+        ORDER BY "Jumlah Gangguan" DESC, "Waktu Terakhir" DESC
+        """
+        df = pd.read_sql_query(query, conn, params=(cutoff_dt, min_incidents))
+        if df.empty:
+            query_hist = """
+            SELECT 
+                "Serial Number",
+                "Nama/ID Pelanggan" AS "Pelanggan",
+                "OLT",
+                "Category" AS "Kategori Terakhir",
+                COUNT(DISTINCT scan_timestamp) AS "Jumlah Gangguan",
+                MAX(scan_timestamp) AS "Waktu Terakhir"
+            FROM scan_history
+            WHERE scan_timestamp >= ? 
+              AND Category IN ('LOS', 'BadRx', 'Dyinggasp', 'Offline')
+              AND "Serial Number" IS NOT NULL AND "Serial Number" != ''
+            GROUP BY "Serial Number"
+            HAVING COUNT(DISTINCT scan_timestamp) >= ?
+            ORDER BY "Jumlah Gangguan" DESC, "Waktu Terakhir" DESC
+            """
+            df = pd.read_sql_query(query_hist, conn, params=(cutoff_dt, min_incidents))
+        return df
+    except Exception as e:
+        print(f"[DB] Error loading chronic ONTs: {e}")
+        return pd.DataFrame()
+    finally:
+        conn.close()
+

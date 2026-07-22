@@ -40,6 +40,10 @@ def render_table(df_filtered):
         df_work = df_filtered.copy()
         df_work['Region'] = df_work['OLT'].apply(get_region_from_olt)
         
+        from components.database import get_chronic_onts
+        df_chr = get_chronic_onts(days=7, min_incidents=3)
+        chronic_sn_set = set(df_chr['Serial Number'].dropna().astype(str).str.strip().str.upper().values) if not df_chr.empty else set()
+
         import re
         def normalize_olt(name):
             name = re.sub(r'\s+OLT[-\s]+\d+\s*$', '', str(name), flags=re.IGNORECASE).strip()
@@ -59,6 +63,9 @@ def render_table(df_filtered):
             dying = status_counts.get('dyinggasp', 0)
             suspend = sum(v for k, v in status_counts.items() if 'suspend' in k)
             
+            reg_sns = set(group['Serial Number'].dropna().astype(str).str.strip().str.upper().values) if 'Serial Number' in group.columns else set()
+            chr_cnt = len(reg_sns.intersection(chronic_sn_set))
+
             summary_rows.append({
                 "Region": region,
                 "Total User": len(group),
@@ -66,7 +73,8 @@ def render_table(df_filtered):
                 "Bad Rx": badrx,
                 "LOS": los,
                 "Dying Gasp": dying,
-                "Suspend": suspend
+                "Suspend": suspend,
+                "Chronic Count": chr_cnt
             })
             
         df_summary = pd.DataFrame(summary_rows)
@@ -94,9 +102,10 @@ def render_table(df_filtered):
 
         rows_html = ""
         for idx, r in df_summary.iterrows():
+            chr_badge = f"<span style='background:rgba(244,63,94,0.18); color:#f43f5e; padding:2px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; margin-left:8px; border:1px solid rgba(244,63,94,0.3);'>⚠️ REPEAT ({r['Chronic Count']})</span>" if r['Chronic Count'] > 0 else ""
             rows_html += f"""<tr style='border-bottom:1px solid #21262d;'>
 <td style='padding:10px 8px; font-size:0.85rem; color:#484f58; font-weight:600;'>{idx+1}</td>
-<td style='padding:10px 8px; font-size:0.95rem; color:#e6edf3; font-weight:700;'>{r['Region']}</td>
+<td style='padding:10px 8px; font-size:0.95rem; color:#e6edf3; font-weight:700;'>{r['Region']}{chr_badge}</td>
 <td style='padding:10px 8px;'><span style='background:rgba(63,185,80,0.12); color:#3fb950; padding:3px 10px; border-radius:8px; font-size:0.85rem; font-weight:700;'>{r['Total User']}</span></td>
 <td style='padding:10px 8px;'>{fmt_m(r['Bad Rx'], "#F59E0B", "rgba(245,158,11,0.15)")}</td>
 <td style='padding:10px 8px;'>{fmt_m(r['LOS'], "#F43F5E", "rgba(244,63,94,0.15)")}</td>
