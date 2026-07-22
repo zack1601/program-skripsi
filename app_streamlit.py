@@ -805,10 +805,10 @@ with st.sidebar:
                         st.markdown("<p style='font-size:0.75rem; color:#4B5563;'>No recent logs.</p>", unsafe_allow_html=True)
 
                 # ════════════════════════════════════════════════
-                # STATE C & D — UNIFIED FILTERS MODULE
+                # STATE C — DATA FILTERS MODULE
                 # ════════════════════════════════════════════════
-                elif active_panel in ['filters', 'quick']:
-                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:8px 0 4px 0;'>SELECT REGION</p>", unsafe_allow_html=True)
+                elif active_panel == 'filters':
+                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:12px 0 5px 0;'>SELECT REGION</p>", unsafe_allow_html=True)
                     data_final = st.session_state.get('data_final', pd.DataFrame())
                     if not data_final.empty:
                         from components.telegram import get_region_from_olt
@@ -819,11 +819,21 @@ with st.sidebar:
                     else:
                         st.selectbox("Select Region:", options=["Waiting for Scan..."], disabled=True, label_visibility="collapsed", key="flt_region_select_waiting")
                     
-                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:14px 0 4px 0;'>SEARCH SN / NAME</p>", unsafe_allow_html=True)
+                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:20px 0 5px 0;'>SEARCH SN / NAME</p>", unsafe_allow_html=True)
                     s_term = st.text_input("Search SN / Name:", value=st.session_state.get('search_sn_sidebar', ''), label_visibility="collapsed", placeholder="🔍  Search...", key="flt_search_input")
                     st.session_state['search_sn_sidebar'] = s_term
                     
-                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:16px 0 10px 0;'>STATUS FILTERS</p>", unsafe_allow_html=True)
+                    if st.session_state.get('selected_olt', 'All OLT') != 'All OLT' or st.session_state.get('search_sn_sidebar'):
+                        st.markdown("<div style='height:15px;'></div>", unsafe_allow_html=True)
+                        if st.button("Clear Filters", use_container_width=True, key="flt_clear_filters_btn"):
+                            st.session_state['selected_olt'] = 'All OLT'
+                            st.session_state['search_sn_sidebar'] = ''
+                            st.rerun()
+
+                # ════════════════════════════════════════════════
+                # STATE D — QUICK FILTERS MODULE
+                # ════════════════════════════════════════════════
+                elif active_panel == 'quick':
                     active_filters = st.session_state.get('filter_mode', {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'})
                     if isinstance(active_filters, str):
                         active_filters = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'} if active_filters == 'All' else {active_filters}
@@ -836,6 +846,10 @@ with st.sidebar:
                         "Dyinggasp": {"color": "#A855F7", "icon_bg": "rgba(168,85,247,0.15)",  "fa_code": "\\f1e6",  "label": "Dying"},
                         "Suspend":   {"color": "#6B7280", "icon_bg": "rgba(107,114,128,0.15)", "fa_code": "\\f023",  "label": "Suspend"},
                     }
+
+                    active_count = len(active_filters)
+
+                    st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:12px 0 14px 0;'>STATUS FILTERS</p>", unsafe_allow_html=True)
 
                     chip_css = "<style>"
                     for mode, cfg in filter_config.items():
@@ -852,15 +866,15 @@ with st.sidebar:
                         .st-key-qf_toggle_{mode} button {{
                             background: {bg} !important;
                             border: {border_active} !important;
-                            border-radius: 10px !important;
-                            height: 42px !important;
+                            border-radius: 12px !important;
+                            height: 48px !important;
                             width: 100% !important;
                             padding: 0 10px !important;
                             display: flex !important;
                             align-items: center !important;
                             justify-content: flex-start !important;
                             gap: 8px !important;
-                            margin-bottom: 6px !important;
+                            margin-bottom: 10px !important;
                             cursor: pointer !important;
                             box-shadow: none !important;
                         }}
@@ -870,11 +884,11 @@ with st.sidebar:
                             font-weight: 900;
                             background: {cfg['icon_bg']};
                             color: {cfg['color']};
-                            min-width: 26px; width: 26px; height: 26px;
-                            border-radius: 6px;
+                            min-width: 30px; width: 30px; height: 30px;
+                            border-radius: 8px;
                             display: inline-flex;
                             align-items: center; justify-content: center;
-                            font-size: 0.75rem;
+                            font-size: 0.8rem;
                             flex-shrink: 0;
                         }}
                         .st-key-qf_toggle_{mode} button span,
@@ -886,6 +900,19 @@ with st.sidebar:
                             font-weight: 700 !important;
                             margin: 0 !important;
                             white-space: nowrap !important;
+                        }}
+                        .st-key-qf_toggle_{mode} button::after {{
+                            content: "{chk_ch}";
+                            background: {chk_bg};
+                            color: {chk_col};
+                            min-width: 20px; width: 20px; height: 20px;
+                            border-radius: 50%;
+                            display: inline-flex;
+                            align-items: center; justify-content: center;
+                            font-size: 0.55rem; font-weight: 800;
+                            margin-left: auto;
+                            flex-shrink: 0;
+                            border: {f"2px solid {cfg['color']}40" if is_active else "1.5px solid rgba(255,255,255,0.08)"};
                         }}
                         """
                     chip_css += "</style>"
@@ -900,11 +927,15 @@ with st.sidebar:
                             st.session_state['filter_mode'] = active_filters
                             st.rerun()
 
-                    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
-                    if st.button("Clear All Filters", use_container_width=True, key="flt_clear_all_unified"):
-                        st.session_state['selected_olt'] = 'All OLT'
-                        st.session_state['search_sn_sidebar'] = ''
-                        st.session_state['filter_mode'] = {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
+                    has_all = active_count == 5
+                    lnk_label = "Clear all" if has_all else "Select all"
+                    st.markdown(f"""
+                    <div style='display:flex; align-items:center; justify-content:space-between; margin-top:12px;'>
+                        <span style='font-size:0.72rem; color:#4B5563; font-weight:500; font-family:Inter,sans-serif;'>{active_count} of 5 active</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    if st.button(lnk_label, key="qf_clear_all", use_container_width=True):
+                        st.session_state['filter_mode'] = set() if has_all else {'Online', 'LOS', 'BadRx', 'Dyinggasp', 'Suspend'}
                         st.rerun()
 
 # --- FILTER DATA FOR DISPLAY ---
