@@ -319,13 +319,23 @@ st.markdown(f"""
         line-height: 1.2;
     }}
 
-    /* Close Button — renders first, floated right via margin-left:auto, 
-       negative margin-bottom makes panel-header slide up to same row level */
+    /* Close Button — renders first in DOM, CSS pushes it to top-right.
+       Streamlit nests button in multiple full-width divs, so we must
+       target ALL levels to achieve right-alignment. */
     .st-key-panel_close {{
-        display: flex !important;
-        justify-content: flex-end !important;
+        text-align: right !important;
         padding: 14px 14px 0 0 !important;
         margin-bottom: 0 !important;
+    }}
+    .st-key-panel_close > div,
+    .st-key-panel_close > div > div,
+    .st-key-panel_close > div > div > div,
+    .st-key-panel_close [data-testid="stElementContainer"],
+    .st-key-panel_close [data-testid="stButton"] {{
+        display: inline-block !important;
+        width: auto !important;
+        text-align: right !important;
+        float: right !important;
     }}
     .st-key-panel_close button {{
         width: 32px !important; height: 32px !important;
@@ -335,9 +345,10 @@ st.markdown(f"""
         border: 1px solid rgba(255,255,255,0.08) !important;
         color: #9CA3AF !important;
         padding: 0 !important;
-        display: flex !important; align-items: center !important; justify-content: center !important;
+        display: inline-flex !important; align-items: center !important; justify-content: center !important;
         transition: all 0.2s !important;
         box-shadow: none !important;
+        float: right !important;
     }}
     .st-key-panel_close button * {{
         font-size: 0.9rem !important; margin: 0 !important; color: inherit !important;
