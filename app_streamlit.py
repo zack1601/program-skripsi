@@ -673,35 +673,47 @@ with st.sidebar:
                     """, unsafe_allow_html=True)
                     
                     if st.button("Sync Google Sheets", use_container_width=True, key="sys_sync_sheets_btn"):
-                        with st.spinner("Fetching data from all Google Sheets tabs..."):
+                        with st.spinner("⚡ Fetching all Google Sheets tabs in parallel..."):
                             try:
-                                _gconn = st.connection("gsheets", type=GSheetsConnection)
-                                from io import StringIO
                                 import pandas as pd
+                                from concurrent.futures import ThreadPoolExecutor
                                 SPREADSHEET_ID = "1lQYkUIFhzW5oWDUWSjOlR1PGhSBl8gMH7uQQxeX3_xw"
                                 target_sheets_gid = {
                                     "Fatmawati": "0", "Senopati": "570642648", "Cinere": "912514856",
                                     "Lenteng Agung": "162726682", "Cipedak": "2107355748", "Pinang/kalijati": "1647719979"
                                 }
-                                all_data = []
-                                _sheet_errors = {}
-                                for sheet_name, _gid in target_sheets_gid.items():
+                                
+                                def _fetch_tab(item):
+                                    s_name, s_gid = item
                                     try:
-                                        _csv_url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/export?format=csv&gid={_gid}"
-                                        df_sheet = pd.read_csv(_csv_url)
+                                        csv_url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/export?format=csv&gid={s_gid}"
+                                        df_sheet = pd.read_csv(csv_url)
                                         if df_sheet is not None and not df_sheet.empty:
-                                            if sheet_name == "Senopati" and str(df_sheet.columns[0]).startswith("Unnamed:"):
+                                            if s_name == "Senopati" and str(df_sheet.columns[0]).startswith("Unnamed:"):
                                                 expected_cols = ['OLT', 'IP_OLT', 'SN', 'PORT', 'NAMA_ID PELANGGAN', 'Unnamed: 5', 'NAMA PELANGGAN', 'ID_PELANGGAN', 'ID SPLITTER', 'ALAMAT', 'Latitude', 'Longitude', 'Link Maps']
                                                 df_sheet.columns = expected_cols[:len(df_sheet.columns)]
-                                            all_data.append(df_sheet)
-                                    except Exception as e_sheet:
-                                        _sheet_errors[sheet_name] = str(e_sheet)
+                                            return s_name, df_sheet, None
+                                        return s_name, None, "Empty sheet"
+                                    except Exception as ex:
+                                        return s_name, None, str(ex)
+
+                                all_data = []
+                                _sheet_errors = {}
+                                with ThreadPoolExecutor(max_workers=6) as executor:
+                                    results = list(executor.map(_fetch_tab, target_sheets_gid.items()))
+
+                                for s_name, df_sheet, err in results:
+                                    if err and err != "Empty sheet":
+                                        _sheet_errors[s_name] = err
+                                    elif df_sheet is not None and not df_sheet.empty:
+                                        all_data.append(df_sheet)
+
                                 if _sheet_errors:
                                     for _sn, _se in _sheet_errors.items(): st.error(f"❌ Tab '{_sn}': {_se}")
                                 if all_data:
                                     _df_sync_combined = pd.concat(all_data, ignore_index=True)
                                     cache_input_from_gsheets(_df_sync_combined)
-                                    st.success(f"✅ {len(_df_sync_combined)} rows from {len(all_data)} regions successfully cached to SQLite!")
+                                    st.success(f"⚡ {len(_df_sync_combined)} rows from {len(all_data)} regions successfully cached to SQLite!")
                                 else:
                                     st.warning("⚠️ Google Sheets returned no data from all tabs.")
                             except Exception as _e:
@@ -995,7 +1007,37 @@ if not st.session_state.get('is_scanning', False):
         </div>
         """, unsafe_allow_html=True)
         with st.expander(f"🔴 Detail Pelanggan Repeat Fault (≥3x/minggu)", expanded=False):
-            st.dataframe(df_chronic, use_container_width=True, hide_index=True)
+            rows_chr = ""
+            for idx_c, r_c in df_chronic.iterrows():
+                rows_chr += f"""<tr style='border-bottom:1px solid #21262d;'>
+<td style='padding:10px 8px; font-size:0.85rem; color:#484f58; font-weight:600;'>{idx_c+1}</td>
+<td style='padding:10px 8px; font-size:0.9rem; color:#00F0FF; font-weight:700; font-family:monospace;'>{r_c['Serial Number']}</td>
+<td style='padding:10px 8px; font-size:0.88rem; color:#e6edf3; font-weight:600;'>{r_c['Pelanggan']}</td>
+<td style='padding:10px 8px; font-size:0.85rem; color:#8b949e;'>{r_c['OLT']}</td>
+<td style='padding:10px 8px;'><span style='background:rgba(244,63,94,0.15); color:#F43F5E; padding:3px 10px; border-radius:12px; font-size:0.8rem; font-weight:800;'>{r_c['Kategori Terakhir']}</span></td>
+<td style='padding:10px 8px;'><span style='background:rgba(245,158,11,0.2); color:#F59E0B; padding:3px 10px; border-radius:12px; font-size:0.85rem; font-weight:800;'>⚠️ {r_c['Jumlah Gangguan']}x</span></td>
+<td style='padding:10px 8px; font-size:0.8rem; color:#8b949e; font-family:monospace;'>{r_c['Waktu Terakhir']}</td>
+</tr>"""
+
+            table_chr_html = f"""<div style='background:#0d1117; border:1px solid #30363d; border-radius:12px; padding:12px 16px; margin-top:8px;'>
+<table style='width:100%; border-collapse:collapse; text-align:left; font-family:Inter,sans-serif;'>
+<thead>
+<tr style='border-bottom:1.5px solid #30363d;'>
+<th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase; width:35px;'>No</th>
+<th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Serial Number</th>
+<th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Pelanggan</th>
+<th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>OLT</th>
+<th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Kategori</th>
+<th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Frekuensi</th>
+<th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Terakhir Terdeteksi</th>
+</tr>
+</thead>
+<tbody>
+{rows_chr}
+</tbody>
+</table>
+</div>"""
+            st.markdown(table_chr_html, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
     tab1, tab2, tab3 = st.tabs(["Live Monitoring", "Analytics & Trend", "Field Updates"])
