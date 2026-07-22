@@ -835,7 +835,7 @@ with st.sidebar:
                             background: {bg} !important;
                             border: {border_active} !important;
                             border-radius: 12px !important;
-                            height: 44px !important;
+                            height: 48px !important;
                             width: 100% !important;
                             padding: 0 10px !important;
                             display: flex !important;
@@ -856,11 +856,11 @@ with st.sidebar:
                             font-weight: 900;
                             background: {cfg['icon_bg']};
                             color: {cfg['color']};
-                            min-width: 28px; width: 28px; height: 28px;
+                            min-width: 30px; width: 30px; height: 30px;
                             border-radius: 8px;
                             display: inline-flex;
                             align-items: center; justify-content: center;
-                            font-size: 0.7rem;
+                            font-size: 0.8rem;
                             flex-shrink: 0;
                         }}
                         .st-key-qf_toggle_{mode} button span,
@@ -872,20 +872,24 @@ with st.sidebar:
                             flex: 1 !important;
                             text-align: left !important;
                             color: {txt_col} !important;
-                            font-size: 0.72rem !important;
-                            font-weight: 600 !important;
+                            font-size: 0.75rem !important;
+                            font-weight: 700 !important;
                             margin: 0 !important;
                             font-family: 'Inter', sans-serif !important;
+                            white-space: nowrap !important;
+                            overflow: hidden !important;
+                            text-overflow: ellipsis !important;
+                            letter-spacing: 0.3px !important;
                         }}
                         .st-key-qf_toggle_{mode} button::after, .st-key-qf_toggle_{mode.lower()} button::after {{
                             content: "{chk_ch}";
                             background: {chk_bg};
                             color: {chk_col};
-                            min-width: 18px; width: 18px; height: 18px;
+                            min-width: 20px; width: 20px; height: 20px;
                             border-radius: 50%;
                             display: inline-flex;
                             align-items: center; justify-content: center;
-                            font-size: 0.5rem; font-weight: 800;
+                            font-size: 0.55rem; font-weight: 800;
                             margin-left: auto;
                             flex-shrink: 0;
                             border: {f"2px solid {cfg['color']}40" if is_active else "1.5px solid rgba(255,255,255,0.08)"};
