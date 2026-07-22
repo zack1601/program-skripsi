@@ -834,14 +834,14 @@ with st.sidebar:
                         .st-key-qf_toggle_{mode} button, .st-key-qf_toggle_{mode.lower()} button {{
                             background: {bg} !important;
                             border: {border_active} !important;
-                            border-radius: 14px !important;
-                            height: 52px !important;
+                            border-radius: 12px !important;
+                            height: 44px !important;
                             width: 100% !important;
-                            padding: 0 14px !important;
+                            padding: 0 10px !important;
                             display: flex !important;
                             align-items: center !important;
                             justify-content: flex-start !important;
-                            gap: 12px !important;
+                            gap: 8px !important;
                             cursor: pointer !important;
                             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
                             box-shadow: none !important;
@@ -856,11 +856,11 @@ with st.sidebar:
                             font-weight: 900;
                             background: {cfg['icon_bg']};
                             color: {cfg['color']};
-                            min-width: 34px; width: 34px; height: 34px;
-                            border-radius: 10px;
+                            min-width: 28px; width: 28px; height: 28px;
+                            border-radius: 8px;
                             display: inline-flex;
                             align-items: center; justify-content: center;
-                            font-size: 0.85rem;
+                            font-size: 0.7rem;
                             flex-shrink: 0;
                         }}
                         .st-key-qf_toggle_{mode} button span,
@@ -881,11 +881,11 @@ with st.sidebar:
                             content: "{chk_ch}";
                             background: {chk_bg};
                             color: {chk_col};
-                            min-width: 22px; width: 22px; height: 22px;
+                            min-width: 18px; width: 18px; height: 18px;
                             border-radius: 50%;
                             display: inline-flex;
                             align-items: center; justify-content: center;
-                            font-size: 0.55rem; font-weight: 800;
+                            font-size: 0.5rem; font-weight: 800;
                             margin-left: auto;
                             flex-shrink: 0;
                             border: {f"2px solid {cfg['color']}40" if is_active else "1.5px solid rgba(255,255,255,0.08)"};
