@@ -90,40 +90,38 @@ def render_table(df_filtered):
                 return f"<span style='background-color:{bg_color}; color:{color}; padding:3px 10px; border-radius:12px; font-size:0.85rem; font-weight:800;'>{val}</span>"
             return "<span style='color:rgba(255,255,255,0.15); font-size:0.85rem;'>—</span>"
 
+        import textwrap
+
         rows_html = ""
         for idx, r in df_summary.iterrows():
-            rows_html += f"""
-            <tr style='border-bottom:1px solid #21262d;'>
-                <td style='padding:10px 8px; font-size:0.85rem; color:#484f58; font-weight:600;'>{idx+1}</td>
-                <td style='padding:10px 8px; font-size:0.95rem; color:#e6edf3; font-weight:700;'>{r['Region']}</td>
-                <td style='padding:10px 8px;'><span style='background:rgba(63,185,80,0.12); color:#3fb950; padding:3px 10px; border-radius:8px; font-size:0.85rem; font-weight:700;'>{r['Total User']}</span></td>
-                <td style='padding:10px 8px;'>{fmt_m(r['Bad Rx'], "#F59E0B", "rgba(245,158,11,0.15)")}</td>
-                <td style='padding:10px 8px;'>{fmt_m(r['LOS'], "#F43F5E", "rgba(244,63,94,0.15)")}</td>
-                <td style='padding:10px 8px;'>{fmt_m(r['Dying Gasp'], "#A855F7", "rgba(168,85,247,0.15)")}</td>
-                <td style='padding:10px 8px;'>{fmt_m(r['Suspend'], "#94A3B8", "rgba(100,116,139,0.15)")}</td>
-            </tr>
-            """
+            rows_html += f"""<tr style='border-bottom:1px solid #21262d;'>
+<td style='padding:10px 8px; font-size:0.85rem; color:#484f58; font-weight:600;'>{idx+1}</td>
+<td style='padding:10px 8px; font-size:0.95rem; color:#e6edf3; font-weight:700;'>{r['Region']}</td>
+<td style='padding:10px 8px;'><span style='background:rgba(63,185,80,0.12); color:#3fb950; padding:3px 10px; border-radius:8px; font-size:0.85rem; font-weight:700;'>{r['Total User']}</span></td>
+<td style='padding:10px 8px;'>{fmt_m(r['Bad Rx'], "#F59E0B", "rgba(245,158,11,0.15)")}</td>
+<td style='padding:10px 8px;'>{fmt_m(r['LOS'], "#F43F5E", "rgba(244,63,94,0.15)")}</td>
+<td style='padding:10px 8px;'>{fmt_m(r['Dying Gasp'], "#A855F7", "rgba(168,85,247,0.15)")}</td>
+<td style='padding:10px 8px;'>{fmt_m(r['Suspend'], "#94A3B8", "rgba(100,116,139,0.15)")}</td>
+</tr>"""
 
-        table_html = f"""
-        <div style='background:#0d1117; border:1px solid #30363d; border-radius:12px; padding:12px 16px; margin-top:8px;'>
-            <table style='width:100%; border-collapse:collapse; text-align:left; font-family:Inter,sans-serif;'>
-                <thead>
-                    <tr style='border-bottom:1.5px solid #30363d;'>
-                        <th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase; width:40px;'>No</th>
-                        <th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Region</th>
-                        <th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Total User</th>
-                        <th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Bad Rx</th>
-                        <th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>LOS</th>
-                        <th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Dying Gasp</th>
-                        <th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Suspend</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows_html}
-                </tbody>
-            </table>
-        </div>
-        """
+        table_html = f"""<div style='background:#0d1117; border:1px solid #30363d; border-radius:12px; padding:12px 16px; margin-top:8px;'>
+<table style='width:100%; border-collapse:collapse; text-align:left; font-family:Inter,sans-serif;'>
+<thead>
+<tr style='border-bottom:1.5px solid #30363d;'>
+<th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase; width:40px;'>No</th>
+<th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Region</th>
+<th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Total User</th>
+<th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Bad Rx</th>
+<th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>LOS</th>
+<th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Dying Gasp</th>
+<th style='padding:8px; font-size:0.72rem; color:#8b949e; font-weight:700; text-transform:uppercase;'>Suspend</th>
+</tr>
+</thead>
+<tbody>
+{rows_html}
+</tbody>
+</table>
+</div>"""
         st.markdown(table_html, unsafe_allow_html=True)
     else:
         st.info("Click 'START SCAN' to populate data.")
