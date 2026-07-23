@@ -561,8 +561,8 @@ with st.sidebar:
             st.session_state['active_panel'] = 'quick' if active_panel != 'quick' else None
             st.rerun()
             
-        # Spacer to push logout to bottom
-        st.markdown("<div style='flex:1; min-height: 30vh;'></div>", unsafe_allow_html=True)
+        # Spacer before logout
+        st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
         
         # LOGOUT — Muted Blue Sign-out
         if st.button("", key="rail_out", help="Logout"):
