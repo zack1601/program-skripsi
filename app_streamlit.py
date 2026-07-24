@@ -561,8 +561,8 @@ with st.sidebar:
             st.session_state['active_panel'] = 'quick' if active_panel != 'quick' else None
             st.rerun()
             
-        # Spacer before logout
-        st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
+        # Spacer to push logout to bottom
+        st.markdown("<div style='flex:1; min-height: 30vh;'></div>", unsafe_allow_html=True)
         
         # LOGOUT — Muted Blue Sign-out
         if st.button("", key="rail_out", help="Logout"):
@@ -641,11 +641,9 @@ with st.sidebar:
         st.markdown(f"<style>{dynamic_css}</style>", unsafe_allow_html=True)
         
     with panel_col:
-        panel_slot = st.empty()
         if active_panel:
             panel_titles = {'system': 'System', 'alarm': 'Alarm', 'filters': 'Filters', 'quick': 'Quick'}
-            panel_slot.empty()
-            with panel_slot.container():
+            with st.container(key=f"panel_body_container_{active_panel}"):
                 # ── Close button FIRST — CSS pulls it to top-right visually ──
                 if st.button("✕", key="panel_close"):
                     st.session_state['active_panel'] = None
@@ -811,14 +809,13 @@ with st.sidebar:
                     st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:12px 0 5px 0;'>SELECT REGION</p>", unsafe_allow_html=True)
                     data_final = st.session_state.get('data_final', pd.DataFrame())
                     if not data_final.empty:
-                        from components.telegram import get_region_from_olt
                         regions = sorted(list(set(data_final['OLT'].apply(get_region_from_olt))))
                         olt_options = ["All OLT"] + regions
                         selected_olt = st.selectbox("Select Region:", options=olt_options, index=olt_options.index(st.session_state.get('selected_olt', 'All OLT')), label_visibility="collapsed", key="flt_region_select")
                         st.session_state['selected_olt'] = selected_olt
                     else:
                         st.selectbox("Select Region:", options=["Waiting for Scan..."], disabled=True, label_visibility="collapsed", key="flt_region_select_waiting")
-                    
+                        
                     st.markdown("<p style='color:#4B5563; font-size:0.6rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin:20px 0 5px 0;'>SEARCH SN / NAME</p>", unsafe_allow_html=True)
                     s_term = st.text_input("Search SN / Name:", value=st.session_state.get('search_sn_sidebar', ''), label_visibility="collapsed", placeholder="🔍  Search...", key="flt_search_input")
                     st.session_state['search_sn_sidebar'] = s_term
@@ -1684,7 +1681,7 @@ if st.session_state['is_scanning']:
                 st.session_state['data_final'] = final_df
                 save_scan_results(final_df)
                 st.session_state['scan_performed'] = True
-        
+            
         st.session_state['is_scanning'] = False
         st.session_state['stop_scanning'] = False
         terminal_placeholder.empty()
