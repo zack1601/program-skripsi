@@ -102,7 +102,7 @@ def render_table(df_filtered):
 
         rows_html = ""
         for idx, r in df_summary.iterrows():
-            chr_badge = f"<span style='background:rgba(244,63,94,0.18); color:#f43f5e; padding:2px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; margin-left:8px; border:1px solid rgba(244,63,94,0.3);'>⚠️ REPEAT ({r['Chronic Count']})</span>" if r['Chronic Count'] > 0 else ""
+            chr_badge = f"<span style='background:rgba(244,63,94,0.18); color:#f43f5e; padding:2px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; margin-left:8px; border:1px solid rgba(244,63,94,0.3);'>⚠️ REPEAT ({r['Chronic Count']})</span>" if (r['Chronic Count'] > 0 and st.session_state.get('scan_performed', False)) else ""
             rows_html += f"""<tr style='border-bottom:1px solid #21262d;'>
 <td style='padding:10px 8px; font-size:0.85rem; color:#484f58; font-weight:600;'>{idx+1}</td>
 <td style='padding:10px 8px; font-size:0.95rem; color:#e6edf3; font-weight:700;'>{r['Region']}{chr_badge}</td>

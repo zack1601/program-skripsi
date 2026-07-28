@@ -118,6 +118,25 @@ def _build_cached_folium_map(df_disp):
             odc_clusters = simple_kmeans(fat_points, k_odc)
             
             for odc_lat, odc_lon, cluster_fats in odc_clusters:
+                # Pre-adjust FAT coordinates so FAT doesn't stack directly on top of users
+                adjusted_cluster_fats = []
+                for f_lat, f_lon, cluster_users in cluster_fats:
+                    if cluster_users:
+                        avg_u_lat = sum(u[0] for u in cluster_users) / len(cluster_users)
+                        avg_u_lon = sum(u[1] for u in cluster_users) / len(cluster_users)
+                        if calculate_haversine_distance(f_lat, f_lon, avg_u_lat, avg_u_lon) < 15:
+                            f_lat = avg_u_lat + 0.12 * (o_lat - avg_u_lat)
+                            f_lon = avg_u_lon + 0.12 * (o_lon - avg_u_lon)
+                    adjusted_cluster_fats.append((f_lat, f_lon, cluster_users))
+
+                # Pre-adjust FDT coordinate so FDT doesn't stack directly on top of FATs
+                if adjusted_cluster_fats:
+                    avg_f_lat = sum(f[0] for f in adjusted_cluster_fats) / len(adjusted_cluster_fats)
+                    avg_f_lon = sum(f[1] for f in adjusted_cluster_fats) / len(adjusted_cluster_fats)
+                    if calculate_haversine_distance(odc_lat, odc_lon, avg_f_lat, avg_f_lon) < 15:
+                        odc_lat = avg_f_lat + 0.35 * (o_lat - avg_f_lat)
+                        odc_lon = avg_f_lon + 0.35 * (o_lon - avg_f_lon)
+
                 odc_loc = [odc_lat, odc_lon]
                 folium.PolyLine(locations=[[o_lat, o_lon], odc_loc], color="#FACC15", weight=9).add_to(m)
                 
@@ -166,7 +185,7 @@ def _build_cached_folium_map(df_disp):
                     popup=folium.Popup(tooltip_odc, max_width=350)
                 ).add_to(m)
                 
-                for f_lat, f_lon, cluster_users in cluster_fats:
+                for f_lat, f_lon, cluster_users in adjusted_cluster_fats:
                     fat_loc = [f_lat, f_lon]
                     folium.PolyLine(locations=[odc_loc, fat_loc], color="#22D3EE", weight=5).add_to(m)
                     
