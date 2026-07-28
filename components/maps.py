@@ -262,6 +262,9 @@ def _build_cached_folium_map(df_disp):
                         dist_str_ont = f"{dist_fat_ont/1000:.2f} km" if dist_fat_ont >= 1000 else f"{dist_fat_ont:.0f} m"
                         dist_color = "#EF4444" if dist_fat_ont > 500 else "#10B981"
                         
+                        raw_maps_val = str(u[5]).strip() if u[5] else ""
+                        maps_url = raw_maps_val if raw_maps_val.startswith('http') else f"https://www.google.com/maps/dir/?api=1&destination={u_loc[0]},{u_loc[1]}"
+
                         tooltip_ont = f"""
                         <div style='font-family: "Share Tech Mono", monospace; padding: 12px; border-radius: 10px; background: #0d1117; border: 1.5px solid {u_color}; color: white; min-width: 230px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);'>
                             <div style='color: {u_color}; font-weight: 800; font-size: 0.95rem; border-bottom: 1px solid #30363d; padding-bottom: 6px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;'>
@@ -275,7 +278,7 @@ def _build_cached_folium_map(df_disp):
                                 <tr><td style='padding: 4px 0; color: #8B949E;'>Redaman/Penyebab:</td><td style='padding: 4px 0; font-weight: 800; color: {u_color}; text-align: right;'>{u[4]}</td></tr>
                             </table>
                             <div style='margin-top: 10px; text-align: center; border-top: 1px solid #30363d; padding-top: 8px;'>
-                                <a href='{u[5]}' target='_blank' style='color: #58A6FF; text-decoration: none; font-size: 0.8rem; font-weight: bold;'>Buka Navigasi Rute ↗</a>
+                                <a href='{maps_url}' target='_blank' style='color: #58A6FF; text-decoration: none; font-size: 0.8rem; font-weight: bold;'>Buka Navigasi Rute ↗</a>
                             </div>
                         </div>
                         """
