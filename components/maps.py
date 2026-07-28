@@ -108,9 +108,14 @@ def _build_cached_folium_map(df_disp):
                 tooltip=tooltip_olt
             ).add_to(m)
             
-            coordinates_list.append([o_lat, o_lon])
-            
-            user_points = olt_df[['lat', 'lon', 'Category', 'Nama/ID Pelanggan', 'Power/Cause', 'maps', 'Serial Number', 'Port']].values.tolist()
+            import urllib.parse
+
+            map_cols = ['lat', 'lon', 'Category', 'Nama/ID Pelanggan', 'Power/Cause', 'maps', 'Serial Number', 'Port']
+            for addr_col in ['Alamat', 'ALAMAT', 'alamat']:
+                if addr_col in olt_df.columns:
+                    map_cols.append(addr_col)
+                    break
+            user_points = olt_df[map_cols].values.tolist()
             k_fat = max(1, len(user_points) // 14)
             fat_clusters = simple_kmeans(user_points, k_fat)
             k_odc = max(1, len(fat_clusters) // 6)
@@ -263,7 +268,16 @@ def _build_cached_folium_map(df_disp):
                         dist_color = "#EF4444" if dist_fat_ont > 500 else "#10B981"
                         
                         raw_maps_val = str(u[5]).strip() if u[5] else ""
-                        maps_url = raw_maps_val if raw_maps_val.startswith('http') else f"https://www.google.com/maps/dir/?api=1&destination={u_loc[0]},{u_loc[1]}"
+                        u_alamat = str(u[8]).strip() if len(u) > 8 and u[8] and str(u[8]).lower() != 'nan' else ""
+                        
+                        if raw_maps_val.startswith('http'):
+                            maps_url = raw_maps_val
+                        elif u_alamat and u_alamat != "-":
+                            maps_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(u_alamat)}"
+                        else:
+                            maps_url = f"https://www.google.com/maps/dir/?api=1&destination={u_loc[0]},{u_loc[1]}"
+
+                        alamat_row = f"<tr style='border-bottom: 1px solid rgba(255,255,255,0.05);'><td style='padding: 4px 0; color: #8B949E;'>Alamat:</td><td style='padding: 4px 0; font-weight: bold; text-align: right;'>{u_alamat}</td></tr>" if u_alamat and u_alamat != "-" else ""
 
                         tooltip_ont = f"""
                         <div style='font-family: "Share Tech Mono", monospace; padding: 12px; border-radius: 10px; background: #0d1117; border: 1.5px solid {u_color}; color: white; min-width: 230px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);'>
@@ -272,6 +286,7 @@ def _build_cached_folium_map(df_disp):
                             </div>
                             <table style='width: 100%; font-size: 0.85rem; border-collapse: collapse;'>
                                 <tr style='border-bottom: 1px solid rgba(255,255,255,0.05);'><td style='padding: 4px 0; color: #8B949E;'>Pelanggan:</td><td style='padding: 4px 0; font-weight: bold; text-align: right;'>{u[3]}</td></tr>
+                                {alamat_row}
                                 <tr style='border-bottom: 1px solid rgba(255,255,255,0.05);'><td style='padding: 4px 0; color: #8B949E;'>SN ONT:</td><td style='padding: 4px 0; font-family: monospace; text-align: right;'>{u[6]}</td></tr>
                                 <tr style='border-bottom: 1px solid rgba(255,255,255,0.05);'><td style='padding: 4px 0; color: #8B949E;'>Port OLT:</td><td style='padding: 4px 0; text-align: right;'>{u[7]}</td></tr>
                                 <tr style='border-bottom: 1px solid rgba(255,255,255,0.05);'><td style='padding: 4px 0; color: #8B949E;'>Jarak Kabel Drop (dari FAT):</td><td style='padding: 4px 0; font-weight: bold; color: {dist_color}; text-align: right;'>{dist_str_ont}</td></tr>
