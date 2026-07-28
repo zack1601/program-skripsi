@@ -18,6 +18,8 @@ Output : hasil_geocoding_data_noc1.xlsx
 Log    : geocoding.log
 """
 
+from __future__ import annotations
+
 import os
 import re
 import time
